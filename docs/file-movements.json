@@ -1,0 +1,442 @@
+[
+  {
+    "from": "backend/php/api/v1/admin/users/approve.php",
+    "to": "backend/api/v1/admin/users/approve.php"
+  },
+  {
+    "from": "backend/php/api/v1/admin/users/directory.php",
+    "to": "backend/api/v1/admin/users/directory.php"
+  },
+  {
+    "from": "backend/php/api/v1/admin/users/disable.php",
+    "to": "backend/api/v1/admin/users/disable.php"
+  },
+  {
+    "from": "backend/php/api/v1/admin/users/list.php",
+    "to": "backend/api/v1/admin/users/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/admin/users/manage.php",
+    "to": "backend/api/v1/admin/users/manage.php"
+  },
+  {
+    "from": "backend/php/api/v1/admin/users/reset-password.php",
+    "to": "backend/api/v1/admin/users/reset-password.php"
+  },
+  {
+    "from": "backend/php/api/v1/ambulances/archive.php",
+    "to": "backend/api/v1/ambulances/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/ambulances/create.php",
+    "to": "backend/api/v1/ambulances/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/ambulances/get.php",
+    "to": "backend/api/v1/ambulances/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/ambulances/list.php",
+    "to": "backend/api/v1/ambulances/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/ambulances/restore.php",
+    "to": "backend/api/v1/ambulances/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/ambulances/update.php",
+    "to": "backend/api/v1/ambulances/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/change-password.php",
+    "to": "backend/api/v1/auth/change-password.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/csrf.php",
+    "to": "backend/api/v1/auth/csrf.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/heartbeat.php",
+    "to": "backend/api/v1/auth/heartbeat.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/login.php",
+    "to": "backend/api/v1/auth/login.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/logout.php",
+    "to": "backend/api/v1/auth/logout.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/me.php",
+    "to": "backend/api/v1/auth/me.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/page.php",
+    "to": "backend/api/v1/auth/page.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/register.php",
+    "to": "backend/api/v1/auth/register.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/reset-password.php",
+    "to": "backend/api/v1/auth/reset-password.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/reset-request.php",
+    "to": "backend/api/v1/auth/reset-request.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/revoke-session.php",
+    "to": "backend/api/v1/auth/revoke-session.php"
+  },
+  {
+    "from": "backend/php/api/v1/auth/sessions.php",
+    "to": "backend/api/v1/auth/sessions.php"
+  },
+  {
+    "from": "backend/php/api/v1/catalogs/document-categories.php",
+    "to": "backend/api/v1/catalogs/document-categories.php"
+  },
+  {
+    "from": "backend/php/api/v1/catalogs/facilities.php",
+    "to": "backend/api/v1/catalogs/facilities.php"
+  },
+  {
+    "from": "backend/php/api/v1/catalogs/patients.php",
+    "to": "backend/api/v1/catalogs/patients.php"
+  },
+  {
+    "from": "backend/php/api/v1/catalogs/specialties.php",
+    "to": "backend/api/v1/catalogs/specialties.php"
+  },
+  {
+    "from": "backend/php/api/v1/destinations/archive.php",
+    "to": "backend/api/v1/destinations/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/destinations/create.php",
+    "to": "backend/api/v1/destinations/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/destinations/get.php",
+    "to": "backend/api/v1/destinations/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/destinations/list.php",
+    "to": "backend/api/v1/destinations/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/destinations/restore.php",
+    "to": "backend/api/v1/destinations/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/destinations/update.php",
+    "to": "backend/api/v1/destinations/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/archive.php",
+    "to": "backend/api/v1/doctors/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/catalogs.php",
+    "to": "backend/api/v1/doctors/catalogs.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/create.php",
+    "to": "backend/api/v1/doctors/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/get.php",
+    "to": "backend/api/v1/doctors/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/list.php",
+    "to": "backend/api/v1/doctors/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/restore.php",
+    "to": "backend/api/v1/doctors/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/doctors/update.php",
+    "to": "backend/api/v1/doctors/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/archive.php",
+    "to": "backend/api/v1/documents/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/bulk-archive.php",
+    "to": "backend/api/v1/documents/bulk-archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/content.php",
+    "to": "backend/api/v1/documents/content.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/create-token.php",
+    "to": "backend/api/v1/documents/create-token.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/create.php",
+    "to": "backend/api/v1/documents/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/get.php",
+    "to": "backend/api/v1/documents/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/list.php",
+    "to": "backend/api/v1/documents/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/patient-link.php",
+    "to": "backend/api/v1/documents/patient-link.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/public-file.php",
+    "to": "backend/api/v1/documents/public-file.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/replace-file.php",
+    "to": "backend/api/v1/documents/replace-file.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/restore.php",
+    "to": "backend/api/v1/documents/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/documents/update.php",
+    "to": "backend/api/v1/documents/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/errors/not-found.php",
+    "to": "backend/api/v1/errors/not-found.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/archive.php",
+    "to": "backend/api/v1/patients/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/catalogs.php",
+    "to": "backend/api/v1/patients/catalogs.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/create.php",
+    "to": "backend/api/v1/patients/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/get.php",
+    "to": "backend/api/v1/patients/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/list.php",
+    "to": "backend/api/v1/patients/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/restore.php",
+    "to": "backend/api/v1/patients/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/patients/update.php",
+    "to": "backend/api/v1/patients/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/personnel/archive.php",
+    "to": "backend/api/v1/personnel/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/personnel/create.php",
+    "to": "backend/api/v1/personnel/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/personnel/get.php",
+    "to": "backend/api/v1/personnel/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/personnel/list.php",
+    "to": "backend/api/v1/personnel/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/personnel/restore.php",
+    "to": "backend/api/v1/personnel/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/personnel/update.php",
+    "to": "backend/api/v1/personnel/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/routes/archive.php",
+    "to": "backend/api/v1/routes/archive.php"
+  },
+  {
+    "from": "backend/php/api/v1/routes/create.php",
+    "to": "backend/api/v1/routes/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/routes/get.php",
+    "to": "backend/api/v1/routes/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/routes/list.php",
+    "to": "backend/api/v1/routes/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/routes/restore.php",
+    "to": "backend/api/v1/routes/restore.php"
+  },
+  {
+    "from": "backend/php/api/v1/routes/update.php",
+    "to": "backend/api/v1/routes/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/diagnostics.php",
+    "to": "backend/api/v1/settings/diagnostics.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/get.php",
+    "to": "backend/api/v1/settings/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/notifications-read.php",
+    "to": "backend/api/v1/settings/notifications-read.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/notifications.php",
+    "to": "backend/api/v1/settings/notifications.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/photo-delete.php",
+    "to": "backend/api/v1/settings/photo-delete.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/photo.php",
+    "to": "backend/api/v1/settings/photo.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/preferences-update.php",
+    "to": "backend/api/v1/settings/preferences-update.php"
+  },
+  {
+    "from": "backend/php/api/v1/settings/profile-update.php",
+    "to": "backend/api/v1/settings/profile-update.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/answers.php",
+    "to": "backend/api/v1/surveys/answers.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/create.php",
+    "to": "backend/api/v1/surveys/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/get.php",
+    "to": "backend/api/v1/surveys/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/link-update.php",
+    "to": "backend/api/v1/surveys/link-update.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/links.php",
+    "to": "backend/api/v1/surveys/links.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/list.php",
+    "to": "backend/api/v1/surveys/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/public/get.php",
+    "to": "backend/api/v1/surveys/public/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/public/submit.php",
+    "to": "backend/api/v1/surveys/public/submit.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/transition.php",
+    "to": "backend/api/v1/surveys/transition.php"
+  },
+  {
+    "from": "backend/php/api/v1/surveys/update.php",
+    "to": "backend/api/v1/surveys/update.php"
+  },
+  {
+    "from": "backend/php/api/v1/tracking/control.php",
+    "to": "backend/api/v1/tracking/control.php"
+  },
+  {
+    "from": "backend/php/api/v1/tracking/history.php",
+    "to": "backend/api/v1/tracking/history.php"
+  },
+  {
+    "from": "backend/php/api/v1/tracking/snapshot.php",
+    "to": "backend/api/v1/tracking/snapshot.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/catalogs.php",
+    "to": "backend/api/v1/transfers/catalogs.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/create-token.php",
+    "to": "backend/api/v1/transfers/create-token.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/create.php",
+    "to": "backend/api/v1/transfers/create.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/draft.php",
+    "to": "backend/api/v1/transfers/draft.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/get.php",
+    "to": "backend/api/v1/transfers/get.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/list.php",
+    "to": "backend/api/v1/transfers/list.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/patients.php",
+    "to": "backend/api/v1/transfers/patients.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/status.php",
+    "to": "backend/api/v1/transfers/status.php"
+  },
+  {
+    "from": "backend/php/api/v1/transfers/update.php",
+    "to": "backend/api/v1/transfers/update.php"
+  },
+  {
+    "from": "public/src/js/api-client.js",
+    "to": "public/src/api-connection/api-client.js"
+  },
+  {
+    "from": "public/src/js/auth-session.js",
+    "to": "public/src/api-connection/auth-session.js"
+  },
+  {
+    "from": "public/src/js/i18n.js",
+    "to": "public/src/api-connection/i18n.js"
+  },
+  {
+    "from": "public/src/js/theme.js",
+    "to": "public/src/api-connection/theme.js"
+  },
+  {
+    "from": "public/src/js/universal-search.js",
+    "to": "public/src/api-connection/universal-search.js"
+  },
+  {
+    "from": "public/assets/i18n/en.json",
+    "to": "db/json/en.json"
+  },
+  {
+    "from": "public/assets/i18n/es.json",
+    "to": "db/json/es.json"
+  }
+]

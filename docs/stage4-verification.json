@@ -1,0 +1,78 @@
+{
+  "stage": 4,
+  "status": "complete; paused for review",
+  "functional_checks": {
+    "modules": {
+      "auth": 50,
+      "documents": 83,
+      "audit_corrections": 25,
+      "document_links": 46
+    },
+    "total": 204
+  },
+  "browser_checks": {
+    "document_and_patient_links": 137,
+    "matrix": "root and /hospital, dark/light, Spanish/English, desktop/mobile",
+    "journey": "Upload 503 retains metadata/category/file; retry persists, edit replaces attachment, both versions download unchanged, staff share requires login, archive/restore retains history."
+  },
+  "visual": {
+    "pages": 7,
+    "page_comparisons": 28,
+    "navigation_menu_comparisons": 36,
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "viewports": [
+      "1440x900",
+      "390x844"
+    ],
+    "unhandled_script_errors": 0,
+    "maximum_surrounding_interface_pixel_difference_percent": 0.066,
+    "method": "Compare the original/reference and current pages with identical fictional data. Full screenshots retained; intentional Stage 3 dropdown/autocomplete regions excluded from surrounding-interface pixels. Visual-load diagnostics stubbed as in Stage 3.",
+    "manual_inspection": [
+      "Mobile light document edit form",
+      "Desktop dark document viewer"
+    ]
+  },
+  "syntax": {
+    "php_nonprivate": 104,
+    "application_js": 35,
+    "browser_test_js": 10,
+    "python_test_sources": 23,
+    "errors": []
+  },
+  "integrity": {
+    "javascript_syntax_files": 45,
+    "python_syntax_files": 23,
+    "original_files": 607,
+    "original_changes": [],
+    "artwork_vendor_files": 308,
+    "artwork_vendor_changes": [],
+    "relocated_dictionaries_unchanged": true
+  },
+  "private_path_http_checks": 10,
+  "anonymous_document_page_gates": 8,
+  "internal_page_link_targets": 19,
+  "preflight": "passed",
+  "metrics": {
+    "files": -10,
+    "bytes": -24514,
+    "code_files": -10,
+    "code_bytes": -24514,
+    "pages": 0,
+    "repeated_8_line_groups": -142,
+    "repeated_8_line_extra_occurrences": -213
+  },
+  "schema_changes": false,
+  "cleanup": {
+    "temporary_databases_removed": 5,
+    "temporary_accounts_removed": 10,
+    "document_link_suites": "Disposable schemas/accounts/storage cleaned in their own finally blocks."
+  },
+  "limitations": [
+    "Other UI inconsistencies are deferred to the later cleanup, per user instruction.",
+    "External email delivery remains unverified without provider configuration."
+  ],
+  "evidence_root": "tests/.runtime/stage4 (ignored/private)"
+}

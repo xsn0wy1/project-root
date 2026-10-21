@@ -1,0 +1,101 @@
+{
+  "pages": [
+    {
+      "from": "public/src/views/documents/documents.html",
+      "to": "public/src/views/documents/documents.php"
+    },
+    {
+      "from": "public/src/views/documents/documents-upload.html",
+      "to": "public/src/views/documents/documents-upload.php"
+    },
+    {
+      "from": "public/src/views/documents/documents-edit.html",
+      "to": "public/src/views/documents/documents-edit.php"
+    },
+    {
+      "from": "public/src/views/documents/documents-viewer.html",
+      "to": "public/src/views/documents/documents-viewer.php"
+    }
+  ],
+  "api": [
+    {
+      "from": "backend/api/v1/documents/archive.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "archive"
+    },
+    {
+      "from": "backend/api/v1/documents/bulk-archive.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "bulk-archive"
+    },
+    {
+      "from": "backend/api/v1/documents/content.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "content"
+    },
+    {
+      "from": "backend/api/v1/documents/create-token.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "create-token"
+    },
+    {
+      "from": "backend/api/v1/documents/create.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "create"
+    },
+    {
+      "from": "backend/api/v1/documents/get.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "get"
+    },
+    {
+      "from": "backend/api/v1/documents/list.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "list"
+    },
+    {
+      "from": "backend/api/v1/documents/patient-link.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "patient-link"
+    },
+    {
+      "from": "backend/api/v1/documents/public-file.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "public-file"
+    },
+    {
+      "from": "backend/api/v1/documents/replace-file.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "replace-file"
+    },
+    {
+      "from": "backend/api/v1/documents/restore.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "restore"
+    },
+    {
+      "from": "backend/api/v1/documents/update.php",
+      "to": "backend/api/v1/documents.php",
+      "action": "update"
+    }
+  ],
+  "modules": [
+    {
+      "from": "backend/php/modules/Documents/DocumentService.php",
+      "to": "backend/php/modules/documents.php"
+    },
+    {
+      "from": "backend/php/modules/Documents/DocumentFiles.php",
+      "to": "backend/php/modules/document-files.php"
+    }
+  ],
+  "shared_components": [
+    "backend/php/components/shell.php",
+    "backend/php/components/document-form.php"
+  ],
+  "notes": [
+    "All four document views use the existing staff guard and shared shell. The upload/edit form is rendered by one private PHP include.",
+    "Consolidated domain action URLs retain /api/v1/, request fields, envelopes, statuses, multipart uploads and binary semantics.",
+    "Page links, shared navigation/search, form actions, staff share links, patient QR/download URLs and focused tests were updated together. No obsolete page or API wrappers remain."
+  ]
+}

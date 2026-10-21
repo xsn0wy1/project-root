@@ -1,0 +1,146 @@
+<?php
+declare(strict_types=1);
+require dirname(__DIR__, 4) . '/backend/php/core/page.php';
+require_staff_page('documents/documents-viewer.php');
+require dirname(__DIR__, 4) . '/backend/php/components/shell.php';
+staff_page_open([
+    'module' => 'documents',
+    'body_class' => '',
+    'background' => true,
+    'described_nav' => true,
+    'title_key' => 'documents_viewer.documento_medico_visor_de_documentos',
+    'title' => 'Documento médico · Visor de documentos',
+    'theme_styles' => 'main-menu documents-viewer',
+    'stylesheets' => ['documents/documents-viewer.css?v=20261012-documents'],
+    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap',
+    'nav_section' => 'document-viewer',
+    'main_class' => 'app-shell document-viewer-shell',
+    'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../../assets/vendor/qrcode/qrcode.js', '../../../assets/vendor/qrcode/qrcode_UTF8.js', '../../js/documents/documents-viewer.js?v=stage4'],
+]);
+?>
+<?php staff_header('quick'); ?>
+    <section class="hero-panel document-viewer-hero">
+      <div class="viewer-card">
+        <header class="document-header">
+          <a class="back-link" href="documents.php"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12H19M5 12L11 6M5 12L11 18"/></svg><span data-i18n="documents_upload.volver_a_documentos">Volver a documentos</span></a>
+          <div class="header-main">
+            <div class="document-heading">
+              <h1 id="document-title" data-i18n="documents_viewer.cargando_documento">Cargando documento...</h1>
+              <p><span id="patient-name"></span><span aria-hidden="true"> · </span><span><i18n-text data-i18n="documents_viewer.id" style="display:contents">ID:</i18n-text> <span id="document-id"></span></span></p>
+            </div>
+            <div class="header-actions">
+              <button class="action-button download-button" id="download-button" type="button"><img class="icon" src="../../../assets/Icons/download-icon.svg" alt="" aria-hidden="true"><span data-i18n="documents_viewer.descargar">Descargar</span></button>
+              <button class="action-button share-button" id="share-button" type="button"><img class="icon" src="../../../assets/Icons/share-icon.svg" alt="" aria-hidden="true"><span data-i18n="documents_viewer.compartir">Compartir</span></button>
+              <div class="more-wrap">
+                <button class="action-button icon-action" id="more-button" type="button" aria-label="Más opciones" data-i18n-aria-label="documents_viewer.mas_opciones" aria-haspopup="menu" aria-expanded="false" aria-controls="more-menu"><span aria-hidden="true">⋮</span></button>
+                <div class="more-menu" id="more-menu" role="menu" hidden>
+                  <button type="button" role="menuitem" id="edit-document-menu" data-i18n="documents_viewer.editar_documento">Editar documento</button>
+                  <button type="button" role="menuitem" id="copy-link-menu" data-i18n="survey_view.copiar_enlace">Copiar enlace</button>
+                  <button type="button" role="menuitem" id="reset-view-menu" data-i18n="trace_map.restablecer_vista">Restablecer vista</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="content-grid">
+          <section class="viewer-container" id="viewer-container" aria-label="Visor de documento" data-i18n-aria-label="documents_viewer.visor_de_documento">
+            <div class="viewer-toolbar" role="toolbar" aria-label="Herramientas del visor" data-i18n-aria-label="documents_viewer.herramientas_del_visor">
+              <div class="toolbar-group">
+                <button class="tool-button" id="toggle-thumbnails" type="button" aria-label="Ocultar miniaturas" data-i18n-aria-label="documents_viewer.ocultar_miniaturas" aria-pressed="true" title="Mostrar u ocultar miniaturas" data-i18n-title="documents_viewer.mostrar_u_ocultar_miniaturas"><img class="icon" src="../../../assets/Icons/list-icon.svg" alt="" aria-hidden="true"></button>
+                <label class="visually-hidden" for="page-input" data-i18n="documents_viewer.pagina_actual">Página actual</label>
+                <input id="page-input" class="page-input" type="number" min="1" max="1" value="1" inputmode="numeric">
+                <span class="page-total">/ <span id="total-pages">0</span></span>
+                <span class="toolbar-space" aria-hidden="true"></span>
+                <button class="tool-button" id="zoom-out" type="button" aria-label="Reducir zoom" data-i18n-aria-label="documents_viewer.reducir_zoom" title="Reducir zoom" data-i18n-title="documents_viewer.reducir_zoom"><img class="icon" src="../../../assets/Icons/zoom-out.svg" alt="" aria-hidden="true"></button>
+                <button class="zoom-level" id="zoom-reset" type="button" aria-label="Restablecer zoom a 100%" data-i18n-aria-label="documents_viewer.restablecer_zoom_a_100" title="Restablecer zoom" data-i18n-title="documents_viewer.restablecer_zoom">100%</button>
+                <button class="tool-button" id="zoom-in" type="button" aria-label="Aumentar zoom" data-i18n-aria-label="documents_viewer.aumentar_zoom" title="Aumentar zoom" data-i18n-title="documents_viewer.aumentar_zoom"><img class="icon" src="../../../assets/Icons/zoom-in.svg" alt="" aria-hidden="true"></button>
+              </div>
+              <div class="toolbar-group toolbar-group-right">
+                <button class="tool-button" id="rotate-button" type="button" aria-label="Rotar 90 grados" data-i18n-aria-label="documents_viewer.rotar_90_grados" title="Rotar 90 grados" data-i18n-title="documents_viewer.rotar_90_grados"><img class="icon" src="../../../assets/Icons/reload-icon.svg" alt="" aria-hidden="true"></button>
+                <button class="tool-button" id="fullscreen-button" type="button" aria-label="Pantalla completa" data-i18n-aria-label="trace_map.pantalla_completa" title="Pantalla completa" data-i18n-title="trace_map.pantalla_completa"><img class="icon" src="../../../assets/Icons/full-screen.svg" alt="" aria-hidden="true"></button>
+              </div>
+            </div>
+            <div class="viewer-body" id="viewer-body">
+              <nav class="thumbnail-rail" id="thumbnail-rail" aria-label="Páginas del documento" data-i18n-aria-label="documents_viewer.paginas_del_documento">
+                <div class="thumbnail-list" id="thumbnail-list"></div>
+              </nav>
+              <div class="document-viewport" id="document-viewport" aria-label="Vista previa del documento" data-i18n-aria-label="documents_viewer.vista_previa_del_documento">
+                <div class="page-scroll-inner">
+                  <div class="page-frame" id="page-frame">
+                    <div class="document-sheet" id="document-sheet" role="img" aria-label="Vista previa de la página 1" data-i18n-aria-label="documents_viewer.vista_previa_de_la_pagina_1">
+                      <canvas class="document-canvas" id="document-canvas" hidden></canvas>
+                      <img class="document-image" id="document-image" alt="Documento" data-i18n-alt="documents_viewer.documento" hidden>
+                      <div class="unavailable-preview" id="unavailable-preview" hidden>
+                        <img class="icon" src="../../../assets/Icons/format-icon.svg" alt="" aria-hidden="true">
+                        <strong data-i18n="documents_viewer.archivo_docx">Archivo DOCX</strong>
+                        <span data-i18n="documents_viewer.descarga_el_archivo_para_abrirlo_en_tu_dispositivo">Descargá el archivo para abrirlo en tu dispositivo.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="visually-hidden" id="viewer-status" role="status" aria-live="polite"></p>
+          </section>
+
+          <aside class="document-sidebar" aria-label="Detalles y acciones del documento" data-i18n-aria-label="documents_viewer.detalles_y_acciones_del_documento">
+            <section class="sidebar-panel information-panel" aria-labelledby="info-heading">
+              <h2 id="info-heading" data-i18n="documents_viewer.informacion_del_documento">Información del documento</h2>
+              <dl class="metadata-list">
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/information-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_viewer.tipo_de_documento">Tipo de documento</dt><dd id="document-kind"></dd></div></div>
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/format-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_viewer.formato">Formato</dt><dd id="document-format"></dd></div></div>
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/server-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_viewer.tamano">Tamaño</dt><dd id="document-size"></dd></div></div>
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/person-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_viewer.subido_por">Subido por</dt><dd id="document-author"></dd></div></div>
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/calendar-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_viewer.fecha_de_subida">Fecha de subida</dt><dd id="document-uploaded"></dd></div></div>
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/calendar-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_upload.fecha_del_documento">Fecha del documento</dt><dd id="document-date"></dd></div></div>
+                <div class="metadata-row"><img class="icon" src="../../../assets/Icons/folder-icon.svg" alt="" aria-hidden="true"><div><label for="file-version" data-i18n="documents_viewer.archivo">Archivo</label><select id="file-version" disabled></select></div></div>
+                <div class="metadata-row last-modified"><img class="icon" src="../../../assets/Icons/time-icon.svg" alt="" aria-hidden="true"><div><dt data-i18n="documents_viewer.ultima_modificacion">Última modificación</dt><dd id="document-updated"></dd></div></div>
+              </dl>
+              <p id="document-description" class="document-description" hidden></p>
+            </section>
+            <section class="sidebar-panel quick-panel" aria-labelledby="quick-heading">
+              <h2 id="quick-heading" data-i18n="documents_viewer.acciones_rapidas">Acciones rápidas</h2>
+              <div class="quick-actions">
+                <button type="button" id="print-button"><img class="icon" src="../../../assets/Icons/print-icon.svg" alt="" aria-hidden="true"><span data-i18n="documents_viewer.imprimir_documento">Imprimir documento</span></button>
+                <button type="button" id="qr-button"><img class="icon" src="../../../assets/Icons/qr-icon.svg" alt="" aria-hidden="true"><span data-i18n="documents_viewer.generar_codigo_qr">Generar código QR</span></button>
+                <button type="button" class="danger-button" id="delete-button"><img class="icon" src="../../../assets/Icons/trash-icon.svg" alt="" aria-hidden="true"><span data-i18n="documents_viewer.eliminar_documento">Eliminar documento</span></button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="viewer-dialog" id="share-dialog" aria-labelledby="share-title">
+    <div class="dialog-heading"><h2 id="share-title" data-i18n="documents_viewer.compartir_documento">Compartir documento</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
+    <p data-i18n="documents_viewer.el_destinatario_debe_iniciar_sesion_y_tener_permiso_para_acceder_al_documento">El destinatario debe iniciar sesión y tener permiso para acceder al documento.</p>
+    <label class="visually-hidden" for="share-url" data-i18n="documents_viewer.enlace_del_documento">Enlace del documento</label>
+    <input id="share-url" type="text" readonly>
+    <button type="button" class="dialog-primary" id="copy-share-link"><img class="icon" src="../../../assets/Icons/select-multiple-icon.svg" alt="" aria-hidden="true"><span data-i18n="survey_view.copiar_enlace">Copiar enlace</span></button>
+  </dialog>
+
+  <dialog class="viewer-dialog qr-dialog" id="qr-dialog" aria-labelledby="qr-title">
+    <div class="dialog-heading"><h2 id="qr-title" data-i18n="documents_viewer.codigo_qr_del_documento">Código QR del documento</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
+    <div class="qr-preview"><canvas id="qr-canvas" width="264" height="264" role="img" aria-label="Código QR de acceso al archivo para el paciente" data-i18n-aria-label="documents_viewer.patient_file_qr"></canvas></div>
+    <p><i18n-text data-i18n="documents_viewer.patient_file_access" style="display:contents">Acceso al archivo del documento</i18n-text> <strong id="qr-document-id"></strong>.</p>
+    <p id="qr-expiry"></p>
+    <p data-i18n="documents_viewer.patient_link_notice">Cualquier persona con este enlace puede abrir este archivo sin iniciar sesión.</p>
+    <input id="patient-qr-url" type="text" readonly aria-label="Enlace del archivo para el paciente" data-i18n-aria-label="documents_viewer.patient_file_url">
+    <button type="button" class="dialog-primary" id="copy-qr-link"><img class="icon" src="../../../assets/Icons/select-multiple-icon.svg" alt="" aria-hidden="true"><span data-i18n="survey_view.copiar_enlace">Copiar enlace</span></button>
+    <button type="button" class="dialog-primary" id="revoke-qr-link" data-i18n="documents_viewer.revoke_patient_link">Revocar enlace</button>
+  </dialog>
+
+  <dialog class="viewer-dialog" id="pdf-password-dialog" aria-labelledby="pdf-password-title">
+    <form id="pdf-password-form">
+      <h2 id="pdf-password-title" data-i18n="documents_viewer.contrasena_del_pdf">Contraseña del PDF</h2>
+      <label class="visually-hidden" for="pdf-password" data-i18n="login.contrasena">Contraseña</label>
+      <input id="pdf-password" type="password" autocomplete="off" required>
+      <button type="submit" class="dialog-primary" data-i18n="documents_viewer.abrir_pdf">Abrir PDF</button>
+      <button type="button" class="dialog-close" id="cancel-pdf-password" aria-label="Cancelar" data-i18n-aria-label="settings.cancelar" data-i18n="documents_upload.times">×</button>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

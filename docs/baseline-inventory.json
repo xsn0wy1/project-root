@@ -1,0 +1,1427 @@
+{
+  "note": "Stage 1 inventory; input references preserve existing API expressions, not a new schema. Detailed role/ownership/conflict rules remain in api-contracts.md. No credentials or data IDs are stored here.",
+  "pages": [
+    {
+      "url": "/index.html",
+      "access": "public authentication shell",
+      "input": null,
+      "scripts": [
+        "src/api-connection/theme.js?v=20261019-light",
+        "src/api-connection/i18n.js?v=20261019-i18n",
+        "src/api-connection/api-client.js?v=20261019-i18n",
+        "src/api-connection/auth-session.js?v=20261019-light",
+        "src/js/login-register/login.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/documents/documents-edit.html",
+      "access": "staff session",
+      "input": "id",
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/documents/document-api.js?v=20261019-i18n",
+        "../../js/documents/document-form.js?v=20261020-category-dropdown"
+      ]
+    },
+    {
+      "url": "/src/views/documents/documents-upload.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/documents/document-api.js?v=20261019-i18n",
+        "../../js/documents/document-form.js?v=20261020-category-dropdown"
+      ]
+    },
+    {
+      "url": "/src/views/documents/documents-viewer.html",
+      "access": "staff session",
+      "input": "id",
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/documents/document-api.js?v=20261020-patient-file",
+        "../../../assets/vendor/qrcode/qrcode.js",
+        "../../../assets/vendor/qrcode/qrcode_UTF8.js",
+        "../../js/documents/documents-viewer.js?v=20261020-patient-file"
+      ]
+    },
+    {
+      "url": "/src/views/documents/documents.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/documents/document-api.js?v=20261019-i18n",
+        "../../js/documents/documents.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/main-menu.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../api-connection/theme.js?v=20261019-light",
+        "../api-connection/i18n.js?v=20261019-i18n",
+        "../api-connection/api-client.js?v=20261019-i18n",
+        "../api-connection/auth-session.js?v=20261019-light",
+        "../js/main-menu.js?v=20261019-light",
+        "../api-connection/universal-search.js?v=20261019-role-shortcuts"
+      ]
+    },
+    {
+      "url": "/src/views/management/accounts.html",
+      "access": "admin",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/accounts.js?v=20261020-dropdown"
+      ]
+    },
+    {
+      "url": "/src/views/management/ambulances.html",
+      "access": "dispatcher",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/ambulances.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/management/destinations.html",
+      "access": "dispatcher",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/destinations.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/management/doctors.html",
+      "access": "records_manager",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/doctors.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/management/management.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts"
+      ]
+    },
+    {
+      "url": "/src/views/management/patients.html",
+      "access": "records_manager",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/patients.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/management/personnel.html",
+      "access": "dispatcher",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/personnel.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/management/routes.html",
+      "access": "dispatcher",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/management/routes.js?v=20261019-light"
+      ]
+    },
+    {
+      "url": "/src/views/register-restore/register.html",
+      "access": "public authentication shell",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/login-register/register.js?v=20261019-light"
+      ]
+    },
+    {
+      "url": "/src/views/register-restore/restore-password.html",
+      "access": "public authentication shell",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../js/login-register/recovery.js?v=20261019-recovery"
+      ]
+    },
+    {
+      "url": "/src/views/settings.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../api-connection/theme.js?v=20261019-light",
+        "../api-connection/i18n.js?v=20261019-i18n",
+        "../api-connection/api-client.js?v=20261019-i18n",
+        "../api-connection/auth-session.js?v=20261019-light",
+        "../js/main-menu.js?v=20261019-light",
+        "../js/settings.js?v=20261020-center-dropdown"
+      ]
+    },
+    {
+      "url": "/src/views/surveys/survey-new.html",
+      "access": "staff session",
+      "input": "id (optional: edit existing)",
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../../assets/vendor/qrcode/qrcode.js",
+        "../../js/surveys/survey-api.js?v=20261019-i18n",
+        "../../js/surveys/survey-templates.js?v=20261019-i18n",
+        "../../js/surveys/survey-new.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/surveys/survey-view.html",
+      "access": "staff session",
+      "input": "id",
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../../assets/vendor/qrcode/qrcode.js",
+        "../../js/surveys/survey-api.js?v=20261019-i18n",
+        "../../js/surveys/survey-view.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/surveys/survey.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../../assets/vendor/qrcode/qrcode.js",
+        "../../js/surveys/survey-api.js?v=20261019-i18n",
+        "../../js/surveys/survey-templates.js?v=20261019-i18n",
+        "../../js/surveys/survey.js?v=20261020-dropdown"
+      ]
+    },
+    {
+      "url": "/src/views/surveys/user-view/survey-user.html",
+      "access": "public shell; token controls survey access",
+      "input": "#token (public invitation capability)",
+      "scripts": [
+        "../../../api-connection/theme.js?v=20261019-light",
+        "../../../api-connection/i18n.js?v=20261019-i18n",
+        "survey-user.js?v=20261019-light"
+      ]
+    },
+    {
+      "url": "/src/views/traces/trace-map.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/traces/trace-api.js?v=20261019-i18n",
+        "../../../assets/vendor/leaflet/leaflet.js",
+        "../../js/traces/trace-map-shared.js?v=20261019-light",
+        "../../js/traces/trace-map.js?v=20261019-i18n"
+      ]
+    },
+    {
+      "url": "/src/views/traces/trace-new.html",
+      "access": "dispatcher",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/traces/trace-api.js?v=20261019-i18n",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/traces/trace.js?v=20261020-dropdowns"
+      ]
+    },
+    {
+      "url": "/src/views/traces/trace-view.html",
+      "access": "staff session",
+      "input": "id",
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/traces/trace-api.js?v=20261019-i18n",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../../assets/vendor/leaflet/leaflet.js",
+        "../../js/traces/trace-map-shared.js?v=20261019-light",
+        "../../js/traces/trace-view.js?v=20261019-light"
+      ]
+    },
+    {
+      "url": "/src/views/traces/trace.html",
+      "access": "staff session",
+      "input": null,
+      "scripts": [
+        "../../api-connection/theme.js?v=20261019-light",
+        "../../api-connection/i18n.js?v=20261019-i18n",
+        "../../api-connection/api-client.js?v=20261019-i18n",
+        "../../api-connection/auth-session.js?v=20261019-light",
+        "../../js/traces/trace-api.js?v=20261019-i18n",
+        "../../js/main-menu.js?v=20261019-light",
+        "../../api-connection/universal-search.js?v=20261019-role-shortcuts",
+        "../../js/traces/trace.js?v=20261020-dropdowns"
+      ]
+    }
+  ],
+  "endpoints": [
+    {
+      "url": "/api/v1/admin/users/approve.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['user_id', 'role']"
+      ]
+    },
+    {
+      "url": "/api/v1/admin/users/directory.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/admin/users/disable.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['user_id']"
+      ]
+    },
+    {
+      "url": "/api/v1/admin/users/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/admin/users/manage.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['user_id','version','action','roles'],['roles']"
+      ]
+    },
+    {
+      "url": "/api/v1/admin/users/reset-password.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['user_id','version','new_password']"
+      ]
+    },
+    {
+      "url": "/api/v1/ambulances/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/ambulances/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "AmbulanceService::FIELDS"
+      ]
+    },
+    {
+      "url": "/api/v1/ambulances/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/ambulances/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/ambulances/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/ambulances/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(AmbulanceService::FIELDS,['id','version'])"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/change-password.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['current_password','new_password']"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/csrf.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/auth/heartbeat.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/auth/login.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['username', 'password']))"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/logout.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/auth/me.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/auth/page.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "html",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/auth/register.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['username', 'password', 'email', 'national_id'])), 201"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/reset-password.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['token','new_password']"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/reset-request.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['email']"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/revoke-session.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['session_id']"
+      ]
+    },
+    {
+      "url": "/api/v1/auth/sessions.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/catalogs/document-categories.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/catalogs/facilities.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/catalogs/patients.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['q']"
+      ]
+    },
+    {
+      "url": "/api/v1/catalogs/specialties.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/destinations/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/destinations/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "DestinationService::FIELDS"
+      ]
+    },
+    {
+      "url": "/api/v1/destinations/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/destinations/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/destinations/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/destinations/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(DestinationService::FIELDS,['id','version'])"
+      ]
+    },
+    {
+      "url": "/api/v1/doctors/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/doctors/catalogs.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/doctors/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "DoctorInput::FIELDS"
+      ]
+    },
+    {
+      "url": "/api/v1/doctors/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/doctors/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/doctors/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/doctors/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(DoctorInput::FIELDS,['id','version'])"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id', 'version']"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/bulk-archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['documents'], ['documents']"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/content.php",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "csrf": false,
+      "response": "binary",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/documents/create-token.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/documents/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['title', 'description', 'patient_id', 'category_id', 'document_date', 'create_token'], [], 11 * 1024 * 1024"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/documents/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/documents/patient-link.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id', 'version', 'file_version', 'action', 'token']"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/public-file.php",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "csrf": false,
+      "response": "binary",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/documents/replace-file.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id', 'version', 'title', 'description', 'patient_id', 'category_id', 'document_date'], [], 11 * 1024 * 1024"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id', 'version']"
+      ]
+    },
+    {
+      "url": "/api/v1/documents/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id', 'version', 'title', 'description', 'patient_id', 'category_id', 'document_date']"
+      ]
+    },
+    {
+      "url": "/api/v1/errors/not-found.php",
+      "methods": [
+        "error handler"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/patients/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/patients/catalogs.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/patients/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(PatientInput::FIELDS,['create_token'])"
+      ]
+    },
+    {
+      "url": "/api/v1/patients/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/patients/list.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['q','care_status','state','page','page_size']"
+      ]
+    },
+    {
+      "url": "/api/v1/patients/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/patients/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(PatientInput::FIELDS,['id','version'])"
+      ]
+    },
+    {
+      "url": "/api/v1/personnel/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/personnel/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "PersonnelService::FIELDS"
+      ]
+    },
+    {
+      "url": "/api/v1/personnel/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/personnel/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/personnel/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/personnel/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(PersonnelService::FIELDS,['id','version'])"
+      ]
+    },
+    {
+      "url": "/api/v1/routes/archive.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/routes/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "RouteService::FIELDS,['stops']"
+      ]
+    },
+    {
+      "url": "/api/v1/routes/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/routes/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/routes/restore.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version']"
+      ]
+    },
+    {
+      "url": "/api/v1/routes/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(RouteService::FIELDS,['id','version']),['stops']"
+      ]
+    },
+    {
+      "url": "/api/v1/settings/diagnostics.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['load_ms']"
+      ]
+    },
+    {
+      "url": "/api/v1/settings/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/settings/notifications-read.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['through_id']"
+      ]
+    },
+    {
+      "url": "/api/v1/settings/notifications.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/settings/photo-delete.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['version']"
+      ]
+    },
+    {
+      "url": "/api/v1/settings/photo.php",
+      "methods": [
+        "error handler"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['version'], [], 6 * 1024 * 1024"
+      ]
+    },
+    {
+      "url": "/api/v1/settings/preferences-update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['version', 'locale', 'theme', 'photo_visible_to_staff', 'optional_diagnostics', 'security_notifications', 'automatic_logout'], []"
+      ]
+    },
+    {
+      "url": "/api/v1/settings/profile-update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['version', 'full_name', 'email', 'default_facility_id', 'specialties'], ['specialties']"
+      ]
+    },
+    {
+      "url": "/api/v1/surveys/answers.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/surveys/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "SurveyInput::FIELDS,['config','items'],262144"
+      ]
+    },
+    {
+      "url": "/api/v1/surveys/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/surveys/link-update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version','link_id']"
+      ]
+    },
+    {
+      "url": "/api/v1/surveys/links.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/surveys/list.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/surveys/public/get.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": [
+        "['token']"
+      ]
+    },
+    {
+      "url": "/api/v1/surveys/public/submit.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['token','version','submit_token','participant_name','answers'],['answers'],262144"
+      ]
+    },
+    {
+      "url": "/api/v1/surveys/transition.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version','action']"
+      ]
+    },
+    {
+      "url": "/api/v1/surveys/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(SurveyInput::FIELDS,['id','version']),['config','items'],262144"
+      ]
+    },
+    {
+      "url": "/api/v1/tracking/control.php",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['command','version','speed']"
+      ]
+    },
+    {
+      "url": "/api/v1/tracking/history.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/tracking/snapshot.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/transfers/catalogs.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/transfers/create-token.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/transfers/create.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(TransferInput::FIELDS,['create_token','draft_version'])"
+      ]
+    },
+    {
+      "url": "/api/v1/transfers/draft.php",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['version','payload','clear'],['payload']"
+      ]
+    },
+    {
+      "url": "/api/v1/transfers/get.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "json",
+      "fields": []
+    },
+    {
+      "url": "/api/v1/transfers/list.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['page','page_size','state','type','sort','q']"
+      ]
+    },
+    {
+      "url": "/api/v1/transfers/patients.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['q']"
+      ]
+    },
+    {
+      "url": "/api/v1/transfers/status.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "['id','version','status']"
+      ]
+    },
+    {
+      "url": "/api/v1/transfers/update.php",
+      "methods": [
+        "POST"
+      ],
+      "csrf": true,
+      "response": "json",
+      "fields": [
+        "array_merge(TransferInput::FIELDS,['id','version','refresh_route'])"
+      ]
+    },
+    {
+      "url": "/api/v1/translations.php",
+      "methods": [
+        "GET"
+      ],
+      "csrf": false,
+      "response": "dictionary",
+      "fields": []
+    }
+  ]
+}

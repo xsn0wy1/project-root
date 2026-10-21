@@ -1,0 +1,86 @@
+<?php
+require_once dirname(__DIR__, 4) . '/backend/php/core/page.php';
+require_staff_page('management/routes.php');
+require_once dirname(__DIR__, 4) . '/backend/php/components/shell.php';
+staff_page_open([
+    'module' => 'routes',
+    'title_key' => 'routes.rutas_hospital_de_clinicas',
+    'title' => 'Rutas | Hospital de Clínicas',
+    'stylesheet' => 'management/routes.css?v=20261004-controls-design',
+    'background' => false,
+    'described_nav' => false,
+    'script' => 'management/routes.js?v=20261020-pilot',
+]);
+?>
+<div class="routes-layout">
+      <?php staff_header('plain'); ?>
+
+      <section class="routes-content" aria-label="Gestión de rutas" data-i18n-aria-label="routes.gestion_de_rutas">
+        <div class="routes-heading">
+          <a href="management.php" class="routes-back" aria-label="Volver a Gestión" data-i18n-aria-label="routes.volver_a_gestion"><img src="../../../assets/Icons/arrow-left.svg" alt=""></a>
+          <div class="route-summary" aria-label="Resumen de rutas" data-i18n-aria-label="routes.resumen_de_rutas">
+            <div><strong id="total-routes">0</strong><span data-i18n="routes.registradas">Registradas</span></div>
+            <div><strong id="active-routes" class="active-total">0</strong><span data-i18n="routes.activas">Activas</span></div>
+            <div><strong id="inactive-routes" class="inactive-total">0</strong><span data-i18n="routes.inactivas">Inactivas</span></div>
+          </div>
+        </div>
+
+        <div class="routes-workspace">
+          <section class="route-directory" aria-labelledby="catalog-title">
+            <div class="panel-heading"><div><h1 id="catalog-title" data-i18n="routes.catalogo_de_rutas">Catálogo de rutas</h1><p data-i18n="routes.selecciona_un_recorrido_para_ver_sus_detalles">Selecciona un recorrido para ver sus detalles.</p></div><button type="button" class="primary-button" id="new-route"><img src="../../../assets/Icons/plus-icon.svg" alt=""><i18n-text data-i18n="routes.nueva_ruta" style="display:contents">Nueva ruta</i18n-text></button></div>
+            <label class="route-search"><img src="../../../assets/Icons/search-icon.svg" alt=""><input id="route-search" type="search" autocomplete="off" placeholder="Buscar ruta, origen, destino o parada..." data-i18n-placeholder="routes.buscar_ruta_origen_destino_o_parada" aria-label="Buscar ruta, origen, destino o parada" data-i18n-aria-label="routes.buscar_ruta_origen_destino_o_parada_2"></label>
+            <div class="catalog-filters">
+              <div class="status-filters" role="group" aria-label="Filtrar rutas por estado" data-i18n-aria-label="routes.filtrar_rutas_por_estado">
+                <button type="button" class="filter-button is-active" data-filter="all" aria-pressed="true" data-i18n="routes.todas">Todas</button>
+                <button type="button" class="filter-button" data-filter="active" aria-pressed="false" data-i18n="routes.activas">Activas</button>
+                <button type="button" class="filter-button" data-filter="inactive" aria-pressed="false" data-i18n="routes.inactivas">Inactivas</button>
+              </div>
+              <label class="sort-control"><span class="visually-hidden" data-i18n="routes.ordenar_rutas">Ordenar rutas</span><select id="route-sort"><option value="code" data-i18n="routes.por_codigo">Por código</option><option value="name" data-i18n="routes.por_nombre">Por nombre</option><option value="duration" data-i18n="routes.menor_duracion">Menor duración</option></select></label>
+            </div>
+            <div class="route-list" id="route-list"></div>
+            <div class="catalog-empty" id="catalog-empty" hidden><span class="empty-icon"><img src="../../../assets/Icons/map-icon.svg" alt=""></span><h3 data-i18n="routes.sin_rutas_para_mostrar">Sin rutas para mostrar</h3><p id="empty-description" data-i18n="routes.prueba_con_otra_busqueda_o_cambia_el_filtro">Prueba con otra búsqueda o cambia el filtro.</p><button type="button" class="secondary-button" id="clear-filters" data-i18n="routes.limpiar_filtros">Limpiar filtros</button></div>
+            <footer class="directory-footer"><span id="results-summary" role="status" aria-live="polite"></span><nav class="pagination" id="route-pagination" aria-label="Páginas de rutas" data-i18n-aria-label="routes.paginas_de_rutas"></nav></footer>
+          </section>
+
+          <aside class="route-detail" aria-labelledby="detail-panel-title">
+            <div class="detail-panel-heading"><span class="eyebrow" id="detail-panel-title" data-i18n="routes.vista_del_recorrido">VISTA DEL RECORRIDO</span><img src="../../../assets/Icons/map-icon.svg" alt=""></div>
+            <div class="detail-scroll" id="route-detail-content"></div>
+            <div class="detail-actions" id="detail-actions"><button type="button" class="danger-button" id="delete-route"><img src="../../../assets/Icons/trash-icon.svg" alt=""><i18n-text data-i18n="routes.eliminar" style="display:contents">Eliminar</i18n-text></button><button type="button" class="save-button" id="edit-route"><img src="../../../assets/Icons/pencil-icon.svg" alt=""><i18n-text data-i18n="routes.editar_ruta" style="display:contents">Editar ruta</i18n-text></button></div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <dialog class="route-dialog" id="route-dialog" aria-labelledby="form-title">
+    <form id="route-form" novalidate>
+      <div class="dialog-heading"><div><p class="eyebrow" data-i18n="routes.catalogo_de_rutas_2">CATÁLOGO DE RUTAS</p><h2 id="form-title" data-i18n="routes.nueva_ruta">Nueva ruta</h2><p id="form-description" data-i18n="routes.define_un_recorrido_para_reutilizarlo_en_tus_traslados">Define un recorrido para reutilizarlo en tus traslados.</p></div><button type="button" class="icon-button" data-close-form aria-label="Cerrar formulario" data-i18n-aria-label="routes.cerrar_formulario"><img src="../../../assets/Icons/cross-icon.svg" alt=""></button></div>
+      <div class="form-scroll">
+        <fieldset class="form-section"><legend><span>01</span><i18n-text data-i18n="routes.informacion_general" style="display:contents">Información general</i18n-text></legend><div class="form-grid">
+          <label class="full-width"><i18n-text data-i18n="routes.nombre_de_la_ruta" style="display:contents">Nombre de la ruta</i18n-text><input id="route-name" name="name" type="text" maxlength="80" placeholder="Ej. Clínicas → Hospital Maciel" data-i18n-placeholder="routes.ej_clinicas_hospital_maciel" required></label>
+          <label><i18n-text data-i18n="trace_view.tipo_de_traslado" style="display:contents">Tipo de traslado</i18n-text><select name="category" id="route-category"><option value="interhospital" data-i18n="routes.interhospitalario">Interhospitalario</option><option value="consultation" data-i18n="routes.consulta">Consulta</option><option value="treatment" data-i18n="routes.tratamiento">Tratamiento</option><option value="discharge" data-i18n="routes.category_discharge">Alta</option></select></label>
+          <label><i18n-text data-i18n="routes.sentido" style="display:contents">Sentido</i18n-text><select name="direction" id="route-direction"><option value="one_way" data-i18n="routes.solo_ida">Solo ida</option><option value="round_trip" data-i18n="routes.ida_y_vuelta">Ida y vuelta</option></select></label>
+        </div></fieldset>
+        <fieldset class="form-section"><legend><span>02</span><i18n-text data-i18n="routes.itinerario" style="display:contents">Itinerario</i18n-text></legend>
+          <div class="endpoint-fields origin-fields"><span class="stop-marker" data-i18n="routes.a">A</span><div class="form-grid"><label><i18n-text data-i18n="trace_view.origen" style="display:contents">Origen</i18n-text><input id="route-origin" name="originName" type="text" maxlength="100" placeholder="Institución o punto de salida" data-i18n-placeholder="routes.institucion_o_punto_de_salida" required></label><label><i18n-text data-i18n="routes.direccion_de_origen" style="display:contents">Dirección de origen</i18n-text><input name="originAddress" type="text" maxlength="160" placeholder="Calle y número" data-i18n-placeholder="routes.calle_y_numero" required></label></div></div>
+          <div class="stop-editor" id="stop-editor"></div>
+          <button type="button" class="add-stop-button" id="add-stop"><img src="../../../assets/Icons/plus-icon.svg" alt=""><i18n-text data-i18n="routes.anadir_parada_intermedia" style="display:contents">Añadir parada intermedia</i18n-text> <span id="stop-limit">0 / 6</span></button>
+          <div class="endpoint-fields destination-fields"><span class="stop-marker" data-i18n="routes.b">B</span><div class="form-grid"><label><i18n-text data-i18n="trace_view.destino" style="display:contents">Destino</i18n-text><input id="route-destination" name="destinationName" type="text" maxlength="100" placeholder="Institución o punto de llegada" data-i18n-placeholder="routes.institucion_o_punto_de_llegada" required></label><label><i18n-text data-i18n="routes.direccion_de_destino" style="display:contents">Dirección de destino</i18n-text><input name="destinationAddress" type="text" maxlength="160" placeholder="Calle y número" data-i18n-placeholder="routes.calle_y_numero" required></label></div></div>
+        </fieldset>
+        <fieldset class="form-section"><legend><span>03</span><i18n-text data-i18n="routes.caracteristicas_del_recorrido" style="display:contents">Características del recorrido</i18n-text></legend><div class="form-grid three-columns">
+          <label><i18n-text data-i18n="routes.distancia_estimada_km" style="display:contents">Distancia estimada (km)</i18n-text><input name="distance" type="number" min="0.1" max="2000" step="0.1" placeholder="Ej. 8.5" data-i18n-placeholder="routes.ej_8_5" required></label>
+          <label><i18n-text data-i18n="routes.duracion_estimada_min" style="display:contents">Duración estimada (min)</i18n-text><input name="duration" type="number" min="1" max="2880" step="1" placeholder="Ej. 25" data-i18n-placeholder="routes.ej_25" required></label>
+          <label><i18n-text data-i18n="trace_view.estado" style="display:contents">Estado</i18n-text><select name="status" id="route-status"><option value="active" data-i18n="routes.activa">Activa</option><option value="inactive" data-i18n="routes.inactiva">Inactiva</option></select></label>
+        </div><p class="field-hint" data-i18n="routes.distancia_y_duracion_por_tramo_de_ida_considera_las_paradas_intermedias">Distancia y duración por tramo de ida. Considera las paradas intermedias.</p><label class="notes-label"><i18n-text data-i18n="routes.indicaciones" style="display:contents">Indicaciones</i18n-text> <span data-i18n="routes.opcional">Opcional</span><textarea name="notes" rows="2" maxlength="500" placeholder="Accesos, punto de encuentro o indicaciones para el equipo..." data-i18n-placeholder="routes.accesos_punto_de_encuentro_o_indicaciones_para_el_equipo"></textarea></label></fieldset>
+      </div>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <div class="dialog-actions"><span class="required-hint" data-i18n="routes.solo_las_indicaciones_son_opcionales">Solo las indicaciones son opcionales.</span><button type="button" class="secondary-button" data-close-form data-i18n="settings.cancelar">Cancelar</button><button type="submit" class="save-button"><img src="../../../assets/Icons/save-floppy.svg" alt=""><span id="save-label" data-i18n="routes.guardar_ruta">Guardar ruta</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog class="route-dialog delete-dialog" id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description">
+    <div class="delete-content"><span class="delete-symbol"><img src="../../../assets/Icons/trash-icon.svg" alt=""></span><h2 id="delete-title" data-i18n="routes.archivar_esta_ruta">¿Archivar esta ruta?</h2><p id="delete-description"></p><p class="delete-warning" data-i18n="routes.se_quitara_del_catalogo_de_rutas_los_traslados_existentes_conservaran_su_recorrido_podes_r">Se quitará del catálogo de rutas. Los traslados existentes conservarán su recorrido. Podés restaurarla desde Inactivas.</p><div class="dialog-actions"><button type="button" class="secondary-button" data-close-delete autofocus data-i18n="settings.cancelar">Cancelar</button><button type="button" class="danger-button" id="confirm-delete" data-i18n="routes.eliminar_ruta">Eliminar ruta</button></div></div>
+  </dialog>
+  <div class="route-toast" id="route-toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

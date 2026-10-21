@@ -1,0 +1,30 @@
+{
+  "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+  "before": {
+    "files": 358,
+    "bytes": 12552303,
+    "code_files": 262,
+    "code_bytes": 2263043,
+    "pages": 25,
+    "repeated_8_line_groups": 1154,
+    "repeated_8_line_extra_occurrences": 1424
+  },
+  "after": {
+    "files": 266,
+    "bytes": 12451207,
+    "code_files": 170,
+    "code_bytes": 2161947,
+    "pages": 25,
+    "repeated_8_line_groups": 854,
+    "repeated_8_line_extra_occurrences": 886
+  },
+  "delta": {
+    "files": -92,
+    "bytes": -101096,
+    "code_files": -92,
+    "code_bytes": -101096,
+    "pages": 0,
+    "repeated_8_line_groups": -300,
+    "repeated_8_line_extra_occurrences": -538
+  }
+}

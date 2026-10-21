@@ -1,0 +1,54 @@
+{
+  "stage": 2,
+  "pages": 7,
+  "visual_page_comparisons": 28,
+  "visual_interaction_comparisons": 32,
+  "maximum_changed_pixels_percent": 0,
+  "script_errors": 0,
+  "api_and_permission_checks": 59,
+  "browser_journey_checks": 18,
+  "mounted_browser_checks": 8,
+  "private_path_http_checks": 10,
+  "php_syntax_files": 164,
+  "translation_keys": 1846,
+  "total_page_bindings": 25,
+  "source_hashes_unchanged": 607,
+  "artwork_vendor_hashes_unchanged": 308,
+  "unchanged_stylesheets": 26,
+  "metrics": {
+    "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+    "before": {
+      "files": 359,
+      "bytes": 12555054,
+      "code_files": 263,
+      "code_bytes": 2265794,
+      "pages": 25,
+      "repeated_8_line_groups": 1154,
+      "repeated_8_line_extra_occurrences": 1424
+    },
+    "after": {
+      "files": 357,
+      "bytes": 12533737,
+      "code_files": 261,
+      "code_bytes": 2244477,
+      "pages": 25,
+      "repeated_8_line_groups": 1098,
+      "repeated_8_line_extra_occurrences": 1293
+    },
+    "delta": {
+      "files": -2,
+      "bytes": -21317,
+      "code_files": -2,
+      "code_bytes": -21317,
+      "pages": 0,
+      "repeated_8_line_groups": -56,
+      "repeated_8_line_extra_occurrences": -131
+    }
+  },
+  "interface_changes": {
+    "page_extensions": "Seven management views use .php; links updated and old files removed.",
+    "ambulance_api": "/api/v1/ambulances.php?action=list|get|create|update|archive|restore",
+    "module_case": "backend/php/modules with retained class namespaces mapped by the transitional loader"
+  },
+  "note": "Stage 2 is complete and paused for review. Raw reports, credentials, source snapshots and images remain in ignored tests/.runtime/stage2. No schema migration, original-installation change or global Apache change."
+}

@@ -1,0 +1,102 @@
+{
+  "stage": 5,
+  "status": "complete; paused for review",
+  "functional_checks": {
+    "modules": {
+      "transfers": 76,
+      "surveys": 48,
+      "ambulances": 99,
+      "patients": 66,
+      "doctors": 15,
+      "personnel": 17,
+      "destinations": 17,
+      "routes": 21,
+      "audit_corrections": 25,
+      "release_fixes": 27,
+      "auth": 50
+    },
+    "total": 461
+  },
+  "browser_checks": {
+    "transfer_survey_workflows": 53,
+    "mounted_localization": 8,
+    "total": 61,
+    "cases": [
+      "root dark desktop, Spanish",
+      "root light mobile, English",
+      "mounted dark mobile, English",
+      "mounted light desktop, Spanish"
+    ],
+    "journeys": [
+      "Transfer typed-location draft save/reload, failed-save retention, mapped creation/edit/start, shared simulation in independent browser sessions, completion/history.",
+      "Survey authoring/publication, shared and individual invitations/QR, participant language/answer retention, failed submission retry, SQL results and revocation/single use."
+    ],
+    "mobile_exception": "The original participant language picker is hidden at narrow widths; verify English URL hydration and locale state without changing that layout."
+  },
+  "visual": {
+    "pages": 10,
+    "page_comparisons": 40,
+    "navigation_menu_dialog_comparisons": 60,
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "viewports": [
+      "1440x900",
+      "390x844"
+    ],
+    "unhandled_script_errors": 0,
+    "maximum_surrounding_interface_pixel_difference_percent": 0.08,
+    "method": "Original/current captures use identical fictional SQL records. Geometry includes representative dialogs and generated QR containers. Full screenshots retained; requested dropdown regions, generated link/QR contents and live remote tile pixels excluded from surrounding-interface pixel comparisons. Use the map existing reduced-motion preference to settle capture pans; production animation behavior unchanged.",
+    "dialogs": [
+      "transfer edit",
+      "transfer status",
+      "survey sharing",
+      "survey form preview",
+      "representative Ambulances dialog and Documents filter"
+    ],
+    "manual_inspection": [
+      "Map expanded reference/current captures",
+      "Mobile light survey form preview"
+    ]
+  },
+  "syntax": {
+    "php_nonprivate": 89,
+    "application_js": 35,
+    "browser_test_js": 11,
+    "python_test_sources": 23
+  },
+  "integrity": {
+    "original_files": 607,
+    "original_changes": [],
+    "artwork_vendor_files": 308,
+    "artwork_vendor_changes": [],
+    "relocated_dictionaries_unchanged": true
+  },
+  "private_path_http_checks": 10,
+  "anonymous_staff_page_redirects": 42,
+  "anonymous_participant_page_responses": 2,
+  "internal_page_link_targets": 19,
+  "preflight": "passed",
+  "metrics": {
+    "files": -23,
+    "bytes": -31992,
+    "code_files": -23,
+    "code_bytes": -31992,
+    "pages": 0,
+    "repeated_8_line_groups": -73,
+    "repeated_8_line_extra_occurrences": -118
+  },
+  "schema_changes": false,
+  "cleanup": {
+    "temporary_databases_removed": 12,
+    "temporary_accounts_removed": 24,
+    "fictional_browser_fixture_database_preserved": true
+  },
+  "limitations": [
+    "Deferred UI inconsistencies remain for Stage 6, per user instruction.",
+    "Unchanged external map tile failures use the existing fallback.",
+    "External email delivery remains unverified without provider configuration."
+  ],
+  "evidence_root": "tests/.runtime/stage5 (ignored/private)"
+}

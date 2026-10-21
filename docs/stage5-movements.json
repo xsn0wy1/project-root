@@ -1,0 +1,196 @@
+{
+  "pages": [
+    {
+      "from": "public/src/views/traces/trace-map.html",
+      "to": "public/src/views/traces/trace-map.php"
+    },
+    {
+      "from": "public/src/views/traces/trace-view.html",
+      "to": "public/src/views/traces/trace-view.php"
+    },
+    {
+      "from": "public/src/views/traces/trace-new.html",
+      "to": "public/src/views/traces/trace-new.php"
+    },
+    {
+      "from": "public/src/views/traces/trace.html",
+      "to": "public/src/views/traces/trace.php"
+    },
+    {
+      "from": "public/src/views/surveys/survey-view.html",
+      "to": "public/src/views/surveys/survey-view.php"
+    },
+    {
+      "from": "public/src/views/surveys/survey.html",
+      "to": "public/src/views/surveys/survey.php"
+    },
+    {
+      "from": "public/src/views/surveys/survey-new.html",
+      "to": "public/src/views/surveys/survey-new.php"
+    },
+    {
+      "from": "public/src/views/surveys/user-view/survey-user.html",
+      "to": "public/src/views/surveys/user-view/survey-user.php"
+    }
+  ],
+  "api": [
+    {
+      "from": "backend/api/v1/transfers/update.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "update"
+    },
+    {
+      "from": "backend/api/v1/transfers/patients.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "patients"
+    },
+    {
+      "from": "backend/api/v1/transfers/get.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "get"
+    },
+    {
+      "from": "backend/api/v1/transfers/create.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "create"
+    },
+    {
+      "from": "backend/api/v1/transfers/list.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "list"
+    },
+    {
+      "from": "backend/api/v1/transfers/status.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "status"
+    },
+    {
+      "from": "backend/api/v1/transfers/create-token.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "create-token"
+    },
+    {
+      "from": "backend/api/v1/transfers/catalogs.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "catalogs"
+    },
+    {
+      "from": "backend/api/v1/transfers/draft.php",
+      "to": "backend/api/v1/transfers.php",
+      "action": "draft"
+    },
+    {
+      "from": "backend/api/v1/tracking/snapshot.php",
+      "to": "backend/api/v1/tracking.php",
+      "action": "snapshot"
+    },
+    {
+      "from": "backend/api/v1/tracking/control.php",
+      "to": "backend/api/v1/tracking.php",
+      "action": "control"
+    },
+    {
+      "from": "backend/api/v1/tracking/history.php",
+      "to": "backend/api/v1/tracking.php",
+      "action": "history"
+    },
+    {
+      "from": "backend/api/v1/surveys/update.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "update"
+    },
+    {
+      "from": "backend/api/v1/surveys/get.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "get"
+    },
+    {
+      "from": "backend/api/v1/surveys/link-update.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "link-update"
+    },
+    {
+      "from": "backend/api/v1/surveys/create.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "create"
+    },
+    {
+      "from": "backend/api/v1/surveys/list.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "list"
+    },
+    {
+      "from": "backend/api/v1/surveys/transition.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "transition"
+    },
+    {
+      "from": "backend/api/v1/surveys/links.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "links"
+    },
+    {
+      "from": "backend/api/v1/surveys/answers.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "answers"
+    },
+    {
+      "from": "backend/api/v1/surveys/public/get.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "public-get"
+    },
+    {
+      "from": "backend/api/v1/surveys/public/submit.php",
+      "to": "backend/api/v1/surveys.php",
+      "action": "public-submit"
+    }
+  ],
+  "modules": [
+    {
+      "from": "backend/php/modules/Transfers/TransferAccess.php",
+      "to": "backend/php/modules/transfer-access.php"
+    },
+    {
+      "from": "backend/php/modules/Transfers/TransferInput.php",
+      "to": "backend/php/modules/transfer-input.php"
+    },
+    {
+      "from": "backend/php/modules/Transfers/TransferCatalog.php",
+      "to": "backend/php/modules/transfers.php"
+    },
+    {
+      "from": "backend/php/modules/Transfers/TransferLocations.php",
+      "to": "backend/php/modules/transfers.php"
+    },
+    {
+      "from": "backend/php/modules/Transfers/TransferDraft.php",
+      "to": "backend/php/modules/transfers.php"
+    },
+    {
+      "from": "backend/php/modules/Transfers/TransferService.php",
+      "to": "backend/php/modules/transfers.php"
+    },
+    {
+      "from": "backend/php/modules/Transfers/TrackingService.php",
+      "to": "backend/php/modules/tracking.php"
+    },
+    {
+      "from": "backend/php/modules/Surveys/SurveyInput.php",
+      "to": "backend/php/modules/surveys.php"
+    },
+    {
+      "from": "backend/php/modules/Surveys/SurveyService.php",
+      "to": "backend/php/modules/surveys.php"
+    }
+  ],
+  "shared_components": [
+    "backend/php/components/shell.php"
+  ],
+  "notes": [
+    "All eight remaining HTML views became PHP; seven staff views call the existing guard. The participant page stays public and isolated.",
+    "The dedicated map shares its head while retaining its own accessible navigation and layout. Other staff pages reuse the shared shell/header.",
+    "Booking, management edits and worker ticks call one transfer_serialized() implementation with the same named locks. The CLI worker retains exclusive ownership.",
+    "Browser links, API consumers, generated participant links/QR, private CLI callers, routing and focused tests were updated together. Old domain classes/action files were removed without wrappers.",
+    "Identical survey/participant HTML escaping uses HospitalUI; distinct search normalization remains explicit."
+  ]
+}
