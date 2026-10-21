@@ -9,14 +9,16 @@ const assert = require('assert/strict');
 const {chromium} = require('playwright');
 const {PNG} = require('pngjs');
 const root = path.join(__dirname, '..');
-const runtime = path.join(__dirname, '.runtime/stage1');
+const runtime = process.env.BASELINE_ENV_DIR || path.join(__dirname, '.runtime/stage1');
+const reference = process.env.BASELINE_REFERENCE_DIR || path.join(__dirname, '.runtime/stage1/reference');
+const referencePhp = fs.existsSync(path.join(reference, 'public/index.php'));
 const output = process.env.BASELINE_OUTPUT_DIR ? path.resolve(process.env.BASELINE_OUTPUT_DIR) : runtime;
 const env = JSON.parse(fs.readFileSync(path.join(runtime, 'env.json')));
 const selectedFiles = (process.env.BASELINE_FILES || '').split(',').filter(Boolean);
 const phpViews = new Set(['ambulances', 'patients', 'doctors', 'personnel', 'destinations', 'routes', 'management', 'accounts']);
 const records = JSON.parse(fs.readFileSync(path.join(runtime, 'records.json')));
-const pages = fs.readdirSync(path.join(runtime, 'reference/public'), {recursive: true})
-    .filter(file => file.endsWith('.html')).sort();
+const pages = fs.readdirSync(path.join(reference, 'public'), {recursive: true})
+    .filter(file => file.endsWith(referencePhp ? '.php' : '.html')).sort();
 const ids = {'documents-viewer.html': records.document.id, 'documents-edit.html': records.document.id,
     'trace-view.html': records.transfer.id, 'survey-view.html': records.survey.id, 'survey-new.html': records.survey.id};
 const selectors = ['.tarjeta', '.app-shell', '.topbar', '.sidebar', '.hero-panel', '.bg-panel',
@@ -112,7 +114,7 @@ async function capturePair(pair, name, captures) {
 async function navigate(pair, file, theme, bases) {
     await Promise.all(pair.map(async (page, i) => {
         // Use the map's existing motion preference so Leaflet pans settle identically.
-        if (file.endsWith('trace-map.html')) await page.emulateMedia({reducedMotion: 'reduce'});
+        if (/trace-map\.(html|php)$/.test(file)) await page.emulateMedia({reducedMotion: 'reduce'});
         const target = i ? currentPath(file) : file;
         const response = await page.goto(pageUrl(bases[i], target), {waitUntil: 'domcontentloaded'});
         // Navigating an already-open participant URL can be a same-document hash navigation.
@@ -133,14 +135,14 @@ async function navigate(pair, file, theme, bases) {
     fs.mkdirSync(path.join(output, 'screenshots'), {recursive: true});
     const browser = await chromium.launch({channel: 'chrome', headless: true});
     try {
-        const bases = ['http://127.0.0.1:8092', 'http://127.0.0.1:8091'];
+        const bases = [process.env.BASELINE_REFERENCE_URL || 'http://127.0.0.1:8092', process.env.BASELINE_CURRENT_URL || 'http://127.0.0.1:8091'];
         const contexts = [];
         for (const base of bases) {
             const staff = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             const publicContext = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             for (const context of [staff, publicContext]) await context.route(/\/api\/v1\/settings(?:\/diagnostics\.php|\.php\?action=diagnostics)$/, route => route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({success: true, data: {recorded: true}})}));
             const login = await staff.newPage(); await login.goto(base + '/', {waitUntil: 'domcontentloaded'}); await ready(login);
-            await login.evaluate(async ({password, endpoint}) => HospitalApi.post(endpoint, {username: 'system_admin', password}), {password: env.HOSPITAL_ADMIN_PASSWORD, endpoint: base.endsWith(':8092') ? 'auth/login.php' : 'auth.php?action=login'});
+            await login.evaluate(async ({password, endpoint}) => HospitalApi.post(endpoint, {username: 'system_admin', password}), {password: env.HOSPITAL_ADMIN_PASSWORD, endpoint: base === bases[0] && !referencePhp ? 'auth/login.php' : 'auth.php?action=login'});
             await login.close(); contexts.push({staff, public: publicContext});
         }
         for (const file of selectedPages) {
@@ -149,7 +151,7 @@ async function navigate(pair, file, theme, bases) {
             if (!selectedFiles.length && report.comparisons.filter(belongs).length === 4) continue;
             report.comparisons = report.comparisons.filter(row => !belongs(row));
             report.interactions = report.interactions.filter(row => !belongs(row));
-            const isPublic = file === 'index.html' || file.includes('register-restore/') || file.endsWith('survey-user.html');
+            const isPublic = /^index\.(html|php)$/.test(file) || file.includes('register-restore/') || /survey-user\.(html|php)$/.test(file);
             const pair = await Promise.all(contexts.map(context => context[isPublic ? 'public' : 'staff'].newPage()));
             pair.forEach((page, i) => {
                 page.on('pageerror', error => report.errors.push({file, copy: i, message: error.message}));
@@ -176,21 +178,21 @@ async function navigate(pair, file, theme, bases) {
                         await Promise.all(pair.map(page => page.locator('.sidebar-action').click()));
                         await pair[0].waitForTimeout(200);
                     }
-                    if (file.endsWith('ambulances.html')) {
+                    if (/ambulances\.(html|php)$/.test(file)) {
                         await Promise.all(pair.map(page => page.locator('#new-ambulance').click()));
                         await capturePair(pair, name + '-dialog', report.interactions);
                         await Promise.all(pair.map(page => page.locator('#cancel-ambulance').click()));
                     }
-                    if (file.endsWith('accounts.html') || file.endsWith('documents.html')) {
-                        if (file.endsWith('documents.html'))
+                    if (/(accounts|documents)\.(html|php)$/.test(file)) {
+                        if (/documents\.(html|php)$/.test(file))
                             await Promise.all(pair.map(page => page.locator('#listView').click()));
-                        const selector = file.endsWith('accounts.html') ? '#account-state-button' : '#documentTypeButton';
+                        const selector = /accounts\.(html|php)$/.test(file) ? '#account-state-button' : '#documentTypeButton';
                         if (await pair[0].locator(selector).count()) {
                             await Promise.all(pair.map(page => page.locator(selector).first().click()));
                             await capturePair(pair, name + '-dropdown', report.interactions);
                         }
                     }
-                    if (file.endsWith('trace-view.html')) {
+                    if (/trace-view\.(html|php)$/.test(file)) {
                         for (const [button, dialog] of [['#edit-transfer', '#edit-dialog'], ['#update-status', '#status-dialog']]) {
                             await Promise.all(pair.map(async page => {
                                 await page.locator(button).click(); await page.locator(dialog + '[open]').waitFor();
@@ -199,14 +201,14 @@ async function navigate(pair, file, theme, bases) {
                             await Promise.all(pair.map(page => page.locator(dialog + ' [data-close-dialog]').first().click()));
                         }
                     }
-                    if (file.endsWith('survey-view.html')) {
+                    if (/survey-view\.(html|php)$/.test(file)) {
                         await Promise.all(pair.map(async page => {
                             await page.locator('[data-share-survey]').first().click(); await page.locator('.survey-links-dialog[open]').waitFor();
                         }));
                         await capturePair(pair, name + '-share', report.interactions);
                         await Promise.all(pair.map(page => page.locator('[data-close-links]').click()));
                     }
-                    if (file.endsWith('survey-new.html')) {
+                    if (/survey-new\.(html|php)$/.test(file)) {
                         await Promise.all(pair.map(async page => {
                             await page.locator('#read-form').click(); await page.locator('#builder-form-dialog[open]').waitFor();
                         }));

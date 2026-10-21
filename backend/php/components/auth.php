@@ -28,9 +28,9 @@ function auth_page_open(string $titleKey, string $title, string $src, string $as
 <?php else: ?>
   <script src="<?= $src ?>api-connection/auth-session.js?v=20261019-light" defer></script>
 <?php endif; ?>
-  <link rel="stylesheet" href="<?= $src ?>css/theme.css?v=ui-repairs">
-  <link rel="stylesheet" href="<?= $src ?>css/dropdowns.css?v=ui-repairs">
-  <link rel="stylesheet" href="<?= $src ?>css/responsive.css?v=ui-repairs">
+  <link rel="stylesheet" href="<?= $src ?>css/theme.css?v=ui-review-2">
+  <link rel="stylesheet" href="<?= $src ?>css/dropdowns.css?v=ui-review-2">
+  <link rel="stylesheet" href="<?= $src ?>css/responsive.css?v=ui-review-2">
   <script src="<?= $src ?>js/dropdowns.js?v=ui-repairs" defer></script>
 </head>
 <body>

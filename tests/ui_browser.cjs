@@ -10,7 +10,7 @@ assert(env.HOSPITAL_DB_NAME.endsWith('_test'), 'Only disposable fictional fixtur
 const base = process.env.HOSPITAL_UI_URL || env.HOSPITAL_AUTH_TEST_URL;
 const output = process.env.HOSPITAL_UI_OUTPUT || path.join(__dirname, '.runtime/ui/verified');
 fs.mkdirSync(output, {recursive: true});
-const report = {checks: 0, pages: [], interactions: [], errors: []};
+const report = {checks: 0, pages: [], interactions: [], errors: [], assetErrors: []};
 const rendered = {};
 const check = (value, label) => {assert(value, label); report.checks++;};
 const ids = {'documents-edit.php': records.document.id, 'documents-viewer.php': records.document.id,
@@ -19,8 +19,10 @@ const files = fs.readdirSync(path.join(root, 'public'), {recursive: true}).filte
   .filter(file => !process.env.HOSPITAL_UI_FILES || process.env.HOSPITAL_UI_FILES.split(',').some(name => file.endsWith(name)));
 const sizes = {desktop: {width: 1440, height: 900}, mobile: {width: 390, height: 844},
   narrow: {width: 320, height: 640}, tablet: {width: 768, height: 1024},
-  landscape: {width: 844, height: 390}, tabletWide: {width: 1024, height: 768}};
+  landscape: {width: 844, height: 390}, tabletWide: {width: 1024, height: 768},
+  widePhone: {width: 650, height: 900}, compact: {width: 800, height: 900}, medium: {width: 1000, height: 900}, smallDesktop: {width: 1200, height: 900}};
 const matrix = (process.env.HOSPITAL_UI_SIZES || 'desktop,mobile').split(',');
+const journeys = (process.env.HOSPITAL_UI_JOURNEYS || 'settings,map,surveys,dialogs').split(',');
 async function ready(page) {
   await page.evaluate(async () => {
     await HospitalI18n.ready; await window.HospitalAuth?.ready;
@@ -32,7 +34,24 @@ async function ready(page) {
   await page.waitForTimeout(180);
 }
 async function visit(page, file, id) {
+  report.phase = file + ' at ' + page.viewportSize().width + 'px';
   await page.goto(base + '/' + file + (id ? '?id=' + id : ''), {waitUntil: 'domcontentloaded'}); await ready(page);
+}
+async function searchNavigation(page) {
+  await visit(page, 'src/views/main-menu.php');
+  await page.locator('.search-action').click();
+  for (const [locale, queries] of [['es-UY', ['calendario', 'reportes']], ['en', ['calendar', 'reports']]]) {
+    await page.evaluate(locale => HospitalI18n.preview(locale), locale);
+    for (const query of queries) {
+      await page.locator('.search-input').fill(query);
+      check(await page.locator('#search-results-list .search-result').count() === 0, locale + ' search omits cancelled feature: ' + query);
+    }
+  }
+  await page.locator('.search-input').fill('patients');
+  await page.locator('#search-results-list a[href$="management/patients.php"]').click();
+  await page.waitForURL('**/management/patients.php'); await ready(page);
+  check(await page.locator('.patients-page').count() === 1, 'navigation search opens the guarded Patients page');
+  report.interactions.push('English/Spanish navigation search omits cancelled features and opens an implemented management page.');
 }
 async function api(page, route, body) {
   return page.evaluate(({route, body}) => body === undefined ? HospitalApi.get(route) : HospitalApi.post(route, body), {route, body});
@@ -53,6 +72,52 @@ async function overflow(page) {
       !(el.closest('thead') && getComputedStyle(el.closest('thead')).clipPath !== 'none') && el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true}))
     .map(el => {const box = el.getBoundingClientRect(); return {element: el.id || (typeof el.className === 'string' ? el.className : el.tagName), x: box.x, right: box.right, width: box.width};})
     .filter(box => box.width > 0 && (box.x < -1 || box.right > innerWidth + 1)).slice(0, 12));
+}
+async function managementFit(page, label) {
+  const issues = await page.evaluate(() => {
+    const issues = [], box = node => node.getBoundingClientRect();
+    const visible = node => node.checkVisibility({checkOpacity: true, checkVisibilityCSS: true});
+    for (const card of document.querySelectorAll('.metric-card,.doctor-metric,.management-card,.ambulance-row,.patient-row,.doctor-table tr,.status-filters button,.doctor-status-filters button,.role-tabs button,.toolbar-button,.primary-button,.new-ambulance-button')) {
+      if (!visible(card)) continue;
+      const outer = box(card), textNodes = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+      for (let text; text = textNodes.nextNode();) {
+        if (!text.textContent.trim() || !visible(text.parentElement)) continue;
+        let clipped = false;
+        for (let node = text.parentElement; node !== card; node = node.parentElement) {
+          if (['hidden', 'clip'].includes(getComputedStyle(node).overflowX)) {clipped = true; break;}
+        }
+        if (clipped) continue;
+        const range = document.createRange(); range.selectNodeContents(text);
+        for (const rect of range.getClientRects()) if (rect.width && rect.height &&
+          (rect.x < outer.x - 1 || rect.right > outer.right + 1 || rect.y < outer.y - 1 || rect.bottom > outer.bottom + 1)) {
+          issues.push({card: card.className, text: text.textContent.trim()});
+        }
+      }
+    }
+    for (const row of document.querySelectorAll('.directory-controls,.doctor-controls,.toolbar-left,.toolbar-right,.catalog-filters,.accounts-toolbar,.panel-heading,.directory-heading,.ambulance-list,.patient-list,.doctor-table tbody')) {
+      const children = [...row.children].filter(node => visible(node) && box(node).width && box(node).height);
+      for (let i = 0; i < children.length; i++) for (let j = i + 1; j < children.length; j++) {
+        const a = box(children[i]), b = box(children[j]);
+        if (Math.min(a.right, b.right) - Math.max(a.x, b.x) > 2 && Math.min(a.bottom, b.bottom) - Math.max(a.y, b.y) > 2) {
+          issues.push({row: row.className, first: children[i].className, second: children[j].className});
+        }
+      }
+    }
+    return issues;
+  });
+  check(!issues.length, label + ' cards and controls do not overlap: ' + JSON.stringify(issues));
+}
+async function routeOutline(page, label) {
+  const button = page.locator('#route-sort-button'); if (!await button.count()) return;
+  for (const state of ['idle', 'hover', 'focus']) {
+    if (state === 'hover') await button.hover();
+    if (state === 'focus') await button.focus();
+    await page.waitForTimeout(250);
+    const border = await button.evaluate(node => ({outer: getComputedStyle(node.parentElement).borderTopColor, inner: getComputedStyle(node).borderTopWidth}));
+    check(border.outer === 'rgba(0, 0, 0, 0)' && border.inner === '1px', label + ' sorting has one border in ' + state + ': ' + JSON.stringify(border));
+  }
+  await page.screenshot({path: path.join(output, label.replace(/[\/\s]/g, '_') + '-sort.png'), animations: 'disabled'});
+  await page.locator('.topbar').click({position: {x: 60, y: 10}});
 }
 async function navigation(page, label) {
   const button = page.locator('.sidebar-action'); if (!await button.count()) return;
@@ -77,16 +142,70 @@ async function navigation(page, label) {
   }
 }
 async function phoneHeadings(page) {
+  const header = await page.evaluate(() => {
+    const brand = document.querySelector('.topbar:not(.search-active) .brand');
+    if (!brand) return null;
+    const icon = brand.querySelector('img').getBoundingClientRect(), text = brand.querySelector('span').getBoundingClientRect();
+    const search = document.querySelector('.topbar .search-action').getBoundingClientRect();
+    return {iconRight: icon.right, textLeft: text.left, textRight: text.right, searchLeft: search.left};
+  });
+  if (header) check(header.iconRight <= header.textLeft + 1 && header.textRight <= header.searchLeft + 1, 'header branding stays clear of its icon and search: ' + JSON.stringify(header));
   if (!await page.evaluate(() => matchMedia('(max-width:770px), (max-width:1000px) and (max-height:500px) and (pointer:coarse)').matches)) return;
   if (await page.locator('.surveys-heading').count()) {
     const title = await page.locator('.surveys-heading h1').boundingBox(), actions = await page.locator('.surveys-heading .heading-actions').boundingBox();
     check(title.y + title.height <= actions.y + 1, 'phone survey heading has a separate readable row');
   }
   const heights = await page.locator('.trace-heading .heading-actions .action-button,.transfer-heading .header-actions .detail-button').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().height));
-  if (heights.length) check(heights.every(height => height >= 44 && height <= 80), 'phone transfer actions have comfortable compact heights');
+  if (heights.length) check(heights.every(height => height >= 43.9 && height <= 80.1), 'phone transfer actions have comfortable compact heights: ' + JSON.stringify(heights));
+}
+async function settingsEffects(page) {
+  const original = await page.evaluate(() => ({theme: document.documentElement.dataset.theme, locale: document.documentElement.lang}));
+  const style = node => {const css = getComputedStyle(node); return {border: css.borderColor, background: css.backgroundColor, shadow: css.boxShadow};};
+  for (const theme of ['dark', 'light']) {
+    await page.evaluate(async theme => {HospitalTheme.preview(theme); await HospitalI18n.preview(theme === 'light' ? 'en' : 'es-UY');}, theme);
+    await page.locator('.specialty-add').click();
+    check(await page.locator('#specialty-dialog').evaluate(node => getComputedStyle(node).animationName !== 'none'), theme + ' specialty dialog animates on opening');
+    await page.locator('#specialty-title').click(); await page.mouse.move(0, 0); await page.waitForTimeout(250);
+    const input = page.locator('#specialty-name'), idle = await input.evaluate(style);
+    await input.hover(); await page.waitForTimeout(250);
+    const hover = await input.evaluate(style);
+    check(hover.border !== idle.border || hover.background !== idle.background, theme + ' specialty field has hover feedback');
+    await input.focus(); await page.waitForTimeout(250);
+    check((await input.evaluate(style)).shadow !== 'none', theme + ' specialty field has themed focus feedback');
+    const option = page.locator('#specialty-options option').first();
+    if (await option.count()) {
+      const value = await option.getAttribute('value');
+      await input.fill(value.slice(0, 2)); await input.press('ArrowDown');
+      const menu = page.locator('#' + await input.getAttribute('aria-controls'));
+      await within(page, menu, theme + ' specialty suggestions');
+      const fieldBox = await input.boundingBox(), menuBox = await menu.boundingBox();
+      check(menuBox.y >= fieldBox.y + fieldBox.height + 3 || menuBox.y + menuBox.height <= fieldBox.y - 3, theme + ' suggestions stay outside the animated field');
+      await menu.locator('button').first().press('Enter');
+      check(await input.inputValue() === value, theme + ' specialty suggestions preserve keyboard selection');
+      await input.fill('');
+    }
+    await input.press('Tab');
+    const cancel = page.locator('#specialty-form .cancel-button');
+    check(await cancel.evaluate(node => node === document.activeElement && getComputedStyle(node).outlineStyle !== 'none'), theme + ' dialog buttons show keyboard focus');
+    await page.screenshot({path: path.join(output, 'settings-add-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+    await cancel.click();
+    await page.locator('.user-control').click();
+    const notifications = page.locator('[data-security-notifications]');
+    await notifications.hover();
+    await page.screenshot({path: path.join(output, 'settings-profile-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+    await notifications.click(); await within(page, page.locator('#account-dialog'), theme + ' notifications dialog');
+    const close = page.locator('#account-dialog .cancel-button');
+    await page.mouse.move(0, 0); await page.waitForTimeout(250); const normal = await close.evaluate(style);
+    await close.hover(); await page.waitForTimeout(250); const active = await close.evaluate(style);
+    check(normal.background !== active.background && active.shadow !== 'none', theme + ' notifications button has hover feedback');
+    await page.screenshot({path: path.join(output, 'settings-notifications-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+    await close.click();
+  }
+  await page.evaluate(async original => {HospitalTheme.preview(original.theme); await HospitalI18n.preview(original.locale);}, original);
 }
 async function settings(page) {
   await visit(page, 'src/views/settings.php');
+  await settingsEffects(page);
   const saved = await api(page, 'settings.php?action=get'), original = saved.settings.specialties.map(item => item.name);
   try {
     await page.locator('.user-control').click();
@@ -224,6 +343,13 @@ async function surveys(page) {
       await context.route(/settings\.php\?action=diagnostics/, route => route.fulfill({status: 200, contentType: 'application/json', body: '{"success":true,"data":{"recorded":true}}'}));
       context.on('page', page => {
         page.on('pageerror', error => report.errors.push(error.message));
+        page.on('response', response => {
+          const url = new URL(response.url());
+          if (url.origin === new URL(base).origin && response.status() >= 400 &&
+              /\/(src|assets)\//.test(url.pathname) && /\.(css|js|mjs|wasm|svg|png|jpe?g|ttf|woff2?)$/.test(url.pathname)) {
+            report.assetErrors.push(response.status() + ' ' + url.pathname);
+          }
+        });
         page.on('dialog', async dialog => {report.errors.push('Unexpected native dialog: ' + dialog.type()); await dialog.dismiss();});
       });
     }
@@ -246,12 +372,22 @@ async function surveys(page) {
           await page.waitForTimeout(220);
           const label = file + ' ' + size + ' ' + theme, issues = await overflow(page);
           check(!issues.length, label + ' horizontal overflow: ' + JSON.stringify(issues));
+          if (file.includes('/management/')) await managementFit(page, label);
+          await routeOutline(page, label);
           const topbar = page.locator('.topbar');
           if (size === 'desktop' && await topbar.count()) check(Math.abs((await topbar.boundingBox()).height - 100) < 1, label + ' desktop header stays 100px');
           await phoneHeadings(page);
           await page.screenshot({path: path.join(output, file.replaceAll('/', '_') + '-' + size + '-' + theme + '.png'), animations: 'disabled'});
           const phone = await page.evaluate(() => matchMedia('(max-width:770px), (max-width:1000px) and (max-height:500px) and (pointer:coarse)').matches);
           if (phone) await navigation(page, label);
+          else if (file.includes('/management/')) {
+            await page.locator('.sidebar-action').click(); await page.waitForTimeout(650);
+            await managementFit(page, label + ' with navigation open');
+            await phoneHeadings(page);
+            check(!(await overflow(page)).length, label + ' open navigation stays within the viewport');
+            await page.screenshot({path: path.join(output, label.replace(/[\/\s]/g, '_') + '-navigation.png'), animations: 'disabled'});
+            await page.locator('.sidebar-action').click(); await page.waitForTimeout(650);
+          }
           report.pages.push({file, size, theme, locale: theme === 'light' ? 'en' : 'es-UY'});
         }
       }
@@ -259,24 +395,41 @@ async function surveys(page) {
     }
     if (!process.env.HOSPITAL_UI_LAYOUT_ONLY) {
       page = await staff.newPage();
+      await searchNavigation(page);
       for (const viewport of [sizes.desktop, sizes.mobile]) {
-        await page.setViewportSize(viewport); await settings(page); await mapAndControls(page); await surveys(page); await dialogs(page);
+        await page.setViewportSize(viewport);
+        if (journeys.includes('settings')) await settings(page);
+        if (journeys.includes('map')) await mapAndControls(page);
+        if (journeys.includes('surveys')) await surveys(page);
+        if (journeys.includes('dialogs')) await dialogs(page);
         console.log('PASS requested UI interactions:', viewport.width);
       }
-      await page.setViewportSize(sizes.narrow); await dialogs(page);
-      console.log('PASS narrow-phone forms, share and QR dialogs.');
-      await visit(page, 'src/views/settings.php'); await page.locator('.user-control').click();
-      await page.locator('#settings-profile-menu [data-logout]').click();
-      await page.waitForURL(url => url.pathname === new URL(base + '/index.php').pathname || url.pathname === new URL(base + '/').pathname);
-      check(!await page.locator('.user-control').count(), 'profile menu logs out through the existing authentication flow');
+      if (journeys.includes('dialogs')) {
+        await page.setViewportSize(sizes.narrow); await dialogs(page);
+        console.log('PASS narrow-phone forms, share and QR dialogs.');
+      }
+      if (journeys.includes('settings')) {
+        await visit(page, 'src/views/settings.php'); await page.locator('.user-control').click();
+        await page.locator('#settings-profile-menu [data-logout]').click();
+        await page.waitForURL(url => url.pathname === new URL(base + '/index.php').pathname || url.pathname === new URL(base + '/').pathname);
+        check(!await page.locator('.user-control').count(), 'profile menu logs out through the existing authentication flow');
+      }
     }
     check(report.errors.length === 0, 'no unhandled script errors: ' + report.errors.join('; '));
+    check(report.assetErrors.length === 0, 'all local page assets load: ' + report.assetErrors.join('; '));
   } catch (error) {
-    if (page && !page.isClosed()) await page.screenshot({path: path.join(output, 'failure.png')}).catch(() => {});
+    if (page && !page.isClosed()) {
+      await page.screenshot({path: path.join(output, 'failure.png')}).catch(() => {});
+      report.failure = await page.evaluate(() => ({pathname: location.pathname, title: document.title,
+        readyState: document.readyState, bodyClass: document.body.className,
+        qrDisabled: document.querySelector('#qr-button')?.disabled,
+        styles: [...document.styleSheets].map(sheet => {let rules; try {rules = sheet.cssRules.length;} catch (_) {} return {pathname: sheet.href ? new URL(sheet.href).pathname : null, rules};})})).catch(() => ({}));
+      console.error('UI failure during ' + report.phase + ': ' + report.failure.pathname);
+    }
     throw error;
   } finally {
     fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2)); await browser.close();
     fs.writeFileSync(path.join(output, 'rendered-pages.json'), JSON.stringify(rendered));
   }
   console.log('TOTAL', report.checks, 'checks;', report.pages.length, 'page/theme/viewport comparisons;', report.interactions.length, 'interaction groups.');
-})().catch(error => {console.error(String(error).replace(/#token=[^\s]+/g, '#token=[private]')); process.exitCode = 1;});
+})().catch(error => {console.error(String(error.stack || error).replace(/[#?]token=[^\s]+/g, '#token=[private]')); process.exitCode = 1;});

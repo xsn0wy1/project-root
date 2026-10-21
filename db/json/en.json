@@ -1511,7 +1511,7 @@
   "validation.step": "Enter a valid value.",
   "validation.format": "Check this field's format.",
   "errors.el_servicio_no_esta_disponible_revisa_la_configuracion_o_intenta_nuevamente": "The service is unavailable. Check the configuration or try again.",
-  "errors.completa_la_configuracion_local_siguiendo_docs_xampp_setup_md": "Complete the local configuration by following docs/xampp-setup.md.",
+  "errors.completa_la_configuracion_local_siguiendo_docs_xampp_setup_md": "Complete the local configuration by following README.md.",
   "errors.demasiados_intentos_espera_unos_minutos": "Too many attempts. Wait a few minutes.",
   "errors.la_sesion_del_formulario_vencio_volve_a_intentarlo": "The form session has expired. Try again.",
   "errors.metodo_no_permitido": "Method not allowed.",

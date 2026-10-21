@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/bootstrap.php';
 
-/** Shared guard for PHP views and the remaining legacy HTML views. */
+/** Shared guard for staff PHP views. */
 function require_staff_page(string $view): void
 {
     global $db, $config;
@@ -14,7 +14,7 @@ function require_staff_page(string $view): void
         exit;
     }
 
-    $page = preg_replace('/\.(?:html|php)$/', '', $view);
+    $page = preg_replace('/\.php$/', '', $view);
     $permissions = [
         'management/patients' => 'records_manager', 'management/doctors' => 'records_manager',
         'management/ambulances' => 'dispatcher', 'management/personnel' => 'dispatcher',

@@ -100,6 +100,10 @@ async function formJourney(browser, storageState) {
    if(theme==='light'){
     await page.locator('.sidebar-action').click();
     check(await page.locator('.app-shell').evaluate(el=>el.classList.contains('menu-open')),'QR also works with expanded navigation');
+    if(mobile){
+     await page.keyboard.press('Escape');
+     check(await page.locator('.app-shell').evaluate(el=>!el.classList.contains('menu-open')),'phone drawer dismisses before accessing document actions');
+    }
    }
    check(await page.evaluate(()=>HospitalI18n.locale===document.documentElement.lang&&(HospitalTheme.current==='dark'||HospitalTheme.current==='light')),'hydrated locale/theme');
    // Observe the input to the real encoder while still drawing its actual modules.

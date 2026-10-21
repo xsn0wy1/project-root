@@ -16,7 +16,8 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-RUNTIME=ROOT/'tests/.runtime/password-recovery'
+RUNTIME=Path(os.environ.get('HOSPITAL_RECOVERY_TEST_DIR', str(ROOT/'tests/.runtime/password-recovery'))).resolve()
+RUNTIME.relative_to(ROOT/'tests/.runtime')
 PHP=os.environ.get('HOSPITAL_TEST_PHP','/Applications/XAMPP/xamppfiles/bin/php')
 NODE=os.environ.get('HOSPITAL_TEST_NODE',str(Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node'))
 env=dict(os.environ)

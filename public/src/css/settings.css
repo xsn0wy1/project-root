@@ -939,6 +939,15 @@ transition:
 
 /* Controls needed for persisted profile settings; preserve the existing layout. */
 .settings-dialog {
+    --dialog-control: #182244;
+    --dialog-hover: rgba(171, 186, 234, .12);
+    --dialog-focus: #1c294b;
+    --dialog-accent: #abbaea;
+    --dialog-glow: rgba(122, 145, 220, .13);
+    --dialog-danger: #ff9eae;
+    --dialog-danger-line: rgba(244, 63, 94, .4);
+    --dialog-danger-bg: rgba(244, 63, 94, .12);
+    --dialog-danger-hover: rgba(244, 63, 94, .2);
     width: min(480px, calc(100vw - 32px));
     max-height: calc(100dvh - 32px);
     padding: 0;
@@ -948,7 +957,9 @@ transition:
     color: #eee;
     font: inherit;
 }
+.settings-dialog[open] { animation: settings-dialog-enter .24s cubic-bezier(.2,.8,.2,1) both; }
 .settings-dialog::backdrop { background: rgba(0, 0, 0, .55); }
+.settings-dialog[open]::backdrop { animation: settings-backdrop-enter .2s ease-out both; }
 .settings-dialog form { display: flex; flex-direction: column; }
 .settings-dialog .dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px; }
 .settings-dialog h2 { margin: 0; font-size: 1.2rem; line-height: 1.4; }
@@ -957,29 +968,48 @@ transition:
 .settings-dialog-body p { margin: 0; overflow-wrap: anywhere; }
 .settings-dialog input { width: 100%; min-width: 0; height: 44px; }
 .settings-dialog input, .settings-dialog-actions button {
-    font: inherit; color: inherit; background: #182244;
+    font: inherit; color: inherit; background: var(--dialog-control);
     border: 1px solid rgba(150, 163, 209, .4); border-radius: 10px; padding: 10px 14px;
 }
 .settings-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding: 22px 24px; }
-.settings-dialog button { cursor: pointer; font: inherit; }
-.settings-dialog .icon-button { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: 9px; background: transparent; }
-.settings-dialog .icon-button img { width: 18px; height: 18px; }
+.settings-dialog button { cursor: pointer; font: inherit; font-weight: 600; }
+.settings-dialog :is(input,button) { transition: transform .22s cubic-bezier(.2,.8,.2,1), background-color .22s ease, border-color .22s ease, box-shadow .22s ease, filter .22s ease; }
+.settings-dialog input { outline: none; }
+.settings-dialog input:hover:not(:disabled) { border-color: var(--dialog-accent); background-color: var(--dialog-hover); }
+.settings-dialog input:focus:not(:disabled) { border-color: var(--dialog-accent); background-color: var(--dialog-focus); box-shadow: 0 0 0 4px var(--dialog-glow); transform: translateY(-1px); }
+.settings-dialog-actions button:is(:hover,:focus-visible):not(:disabled) { transform: translateY(-2px); border-color: var(--dialog-accent); box-shadow: 0 6px 16px var(--dialog-glow); }
+.settings-dialog-actions .cancel-button:is(:hover,:focus-visible):not(:disabled) { background-color: var(--dialog-hover); }
+.settings-dialog button:focus-visible { outline: 2px solid var(--dialog-accent); outline-offset: 2px; }
+.settings-dialog button:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: none; }
+.settings-dialog .icon-button { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 1px solid transparent; border-radius: 9px; background: transparent; }
+.settings-dialog .icon-button:is(:hover,:focus-visible):not(:disabled) { transform: translateY(-1px); border-color: var(--dialog-danger-line); background-color: var(--dialog-danger-bg); box-shadow: 0 4px 12px var(--dialog-glow); }
+.settings-dialog .icon-button:active:not(:disabled) { transform: scale(.98); }
+.settings-dialog .icon-button img { width: 18px; height: 18px; filter: brightness(0) invert(1); }
 .settings-dialog-actions .save-button { border-color: #6689ef; background: #4b6dde url('../../assets/special-bg.png') center / cover; color: #fff; }
-.settings-dialog-actions .delete-button { border-color: rgba(244,63,94,.4); background: rgba(244,63,94,.12); color: #ff9eae; }
+.settings-dialog-actions .delete-button { border-color: var(--dialog-danger-line); background: var(--dialog-danger-bg); color: var(--dialog-danger); }
+.settings-dialog-actions .delete-button:is(:hover,:focus-visible):not(:disabled) { border-color: var(--dialog-danger); background-color: var(--dialog-danger-hover); }
 .settings-dialog-actions button:hover:not(:disabled) { filter: brightness(1.12); }
 #security-notifications { max-height: min(340px, 55dvh); overflow-y: auto; list-style: none; }
 #security-notifications li { padding: 12px 0; border-bottom: 1px solid rgba(150,163,209,.2); }
 .settings-profile-wrapper.profile-wrapper { position: relative; right: auto; bottom: auto; flex: none; align-items: flex-end; gap: 0; z-index: 35; }
 .settings-profile-wrapper .profile-menu { position: absolute; top: calc(100% + 8px); right: 0; width: min(270px, calc(100vw - 48px)); padding: 8px; gap: 3px; align-items: stretch; border-radius: 15px; transform-origin: top right; transform: translateY(-6px) scale(.97); }
 .settings-profile-wrapper.profile-active .profile-menu { transform: none; }
-.settings-profile-wrapper .profile-menu-item { display: flex; justify-content: flex-start; align-items: center; gap: 12px; min-height: 44px; height: auto; padding: 10px; border-radius: 9px; color: inherit; font: inherit; font-size: .85rem; text-align: left; }
-.settings-profile-wrapper .profile-menu-item:hover { transform: none; background: rgba(171,186,234,.12); }
+.settings-profile-wrapper .profile-menu-item { display: flex; justify-content: flex-start; align-items: center; gap: 12px; min-height: 44px; height: auto; padding: 10px; border-radius: 9px; color: inherit; font: inherit; font-size: .85rem; text-align: left; transition: transform .2s ease, background-color .2s ease; }
+.settings-profile-wrapper .profile-menu-item:is(:hover,:focus-visible) { transform: translateX(2px); background: rgba(171,186,234,.12); }
+.settings-profile-wrapper .profile-menu-item:focus-visible { outline: 2px solid #abbaea; outline-offset: -2px; }
+.settings-profile-wrapper .profile-menu-item:active { transform: scale(.98); }
 .settings-profile-wrapper .profile-menu-item img { width: 22px; height: 22px; flex: none; }
 .settings-profile-wrapper .profile-menu-divider { width: auto; margin: 3px 10px; }
 html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog-actions .save-button { border-color: #6689ef; background: #4b6dde url('../../assets/special-bg-light.jpg') center / cover; color: #fff; }
-html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog-actions .delete-button { border-color: rgba(173,49,76,.3); background: rgba(173,49,76,.08); color: #a92f4c; }
-html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog .icon-button { background: transparent; border: 0; }
 html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog .icon-button img { filter: var(--light-icon-filter); }
+html[data-theme="light"] .settings-profile-wrapper .profile-menu-item:is(:hover,:focus-visible) { background: rgba(89,110,167,.12); }
+html[data-theme="light"] .settings-profile-wrapper .profile-menu-item:focus-visible { outline-color: var(--light-accent); }
+@keyframes settings-dialog-enter { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes settings-backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+    .settings-dialog[open], .settings-dialog[open]::backdrop { animation-duration: .01ms; }
+    .settings-dialog :is(input,button), .settings-profile-wrapper .profile-menu-item { transition-duration: .01ms; }
+}
 .upload-box[data-has-photo] { background-size: contain; background-position: center; background-repeat: no-repeat; }
 .upload-box[data-has-photo] > span { visibility: hidden; }
 .user-avatar img[data-profile-photo] { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; filter: none; }

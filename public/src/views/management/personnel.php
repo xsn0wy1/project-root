@@ -6,7 +6,7 @@ staff_page_open([
     'module' => 'personnel',
     'title_key' => 'personnel.personal_hospital_de_clinicas',
     'title' => 'Personal | Hospital de Clínicas',
-    'stylesheet' => 'management/personnel.css?v=20261014-database',
+    'stylesheet' => 'management/catalogs.css?v=stage6',
     'background' => false,
     'described_nav' => false,
     'script' => 'management/personnel.js?v=20261020-pilot',

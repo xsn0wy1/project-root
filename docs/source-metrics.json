@@ -10,21 +10,21 @@
     "repeated_8_line_extra_occurrences": 1424
   },
   "after": {
-    "files": 266,
-    "bytes": 12451207,
-    "code_files": 170,
-    "code_bytes": 2161947,
+    "files": 264,
+    "bytes": 12474001,
+    "code_files": 168,
+    "code_bytes": 2184741,
     "pages": 25,
-    "repeated_8_line_groups": 854,
-    "repeated_8_line_extra_occurrences": 886
+    "repeated_8_line_groups": 489,
+    "repeated_8_line_extra_occurrences": 517
   },
   "delta": {
-    "files": -92,
-    "bytes": -101096,
-    "code_files": -92,
-    "code_bytes": -101096,
+    "files": -94,
+    "bytes": -78302,
+    "code_files": -94,
+    "code_bytes": -78302,
     "pages": 0,
-    "repeated_8_line_groups": -300,
-    "repeated_8_line_extra_occurrences": -538
+    "repeated_8_line_groups": -665,
+    "repeated_8_line_extra_occurrences": -907
   }
 }

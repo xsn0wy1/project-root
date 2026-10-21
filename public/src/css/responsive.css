@@ -1,6 +1,51 @@
 /* Phone layouts share the existing colors, typography and controls. Desktop stays in each page's stylesheet. */
 .mobile-nav-backdrop[hidden] { display: none; }
 
+/* Summary space also shrinks when desktop navigation opens. */
+:is(.summary-row,.doctor-summary-row) { container: management-summary / inline-size; }
+:root .app-shell .topbar { container: staff-header / inline-size; }
+:is(.ambulances-page,.patients-page) .hero-panel, .doctors-content,
+.personnel-layout, .destinations-layout, .routes-layout { container: management-content / inline-size; }
+@container management-summary (max-width: 1100px) {
+  :is(.metrics,.doctor-metrics) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  :is(.metric-card,.doctor-metric) { height: auto; min-height: 84px; }
+  :is(.metric-card,.doctor-metric) :is(span,small) { white-space: normal; overflow-wrap: anywhere; }
+}
+@container staff-header (max-width: 650px) {
+  :root .app-shell .brand { min-width: 0; max-width: calc(100% - 60px); font-size: 1.05rem; gap: 10px; }
+  :root .app-shell .brand img { width: 38px; height: 38px; }
+  :root .app-shell .brand span { min-width: 0; white-space: normal; }
+}
+@container management-content (max-width: 1100px) {
+  :root .app-shell .doctor-controls { grid-template-columns: minmax(0,1fr) 210px; }
+  :root .app-shell .doctor-status-filters { grid-column: 1 / -1; height: auto; min-height: 38px; flex-wrap: wrap; }
+  :root .app-shell .doctor-status-filters .filter-button { flex: 1 1 auto; white-space: normal; }
+}
+@container management-content (max-width: 850px) {
+  :root .app-shell :is(.routes-workspace,.personnel-grid,.destinations-grid,.personnel-toolbar,.destinations-toolbar) { grid-template-columns: minmax(0,1fr); }
+  :root .app-shell :is(.routes-content,.route-list) { flex: none; }
+  :root .app-shell .route-detail { max-height: none; }
+  :root .app-shell :is(.panel-heading,.directory-heading,.accounts-toolbar) { flex-wrap: wrap; gap: 12px; }
+  :root .app-shell .accounts-toolbar .route-search { flex: 1 1 100%; max-width: none; }
+  :root .app-shell :is(.directory-controls,.doctor-controls) { display: flex; flex-wrap: wrap; gap: 12px; }
+  :root .app-shell :is(.ambulance-search,.patient-search,.doctor-search) { flex: 1 1 100%; width: 100%; min-width: 0; }
+  :root .app-shell :is(.status-filters,.doctor-filters,.doctor-status-filters) { min-width: 0; max-width: 100%; height: auto; flex-wrap: wrap; }
+  :root .app-shell .filter-button { flex: 1 1 auto; white-space: normal; overflow-wrap: anywhere; min-height: 36px; }
+  :root .app-shell .toolbar-left :is(.role-tabs,.status-filters) { min-width: 0; max-width: calc(100% - 75px); margin-left: auto; }
+}
+@container management-content (max-width: 760px) {
+  :root .app-shell :is(.summary-row,.doctor-summary-row) { grid-template-columns: 48px minmax(0,1fr); gap: 12px; }
+  :root .app-shell :is(.ambulance-list,.patient-list) { display: flex; flex-direction: column; gap: 12px; }
+  :root .app-shell :is(.ambulance-row,.patient-row) { grid-template-columns: minmax(0,1fr) 44px; gap: 12px; min-height: 100px; height: auto; max-height: none; flex: none; }
+  :root .app-shell :is(.ambulance-row,.patient-row) > :not(.row-action) { grid-column: 1; }
+  :root .app-shell :is(.ambulance-row,.patient-row) .row-action { grid-column: 2; grid-row: 1 / span 4; }
+  :root .app-shell .doctor-table tbody { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  :root .app-shell .doctor-table tr { grid-template-columns: minmax(0,1fr) 55px; grid-template-rows: auto; height: auto; min-height: 0; flex: none; gap: 0; border: 1px solid var(--doctor-line); border-radius: 14px; overflow: hidden; }
+  :root .app-shell .doctor-table td { grid-column: 1; border: 0; border-radius: 0; padding: 10px 12px; min-height: 44px; }
+  :root .app-shell .doctor-table td:last-child { grid-column: 2; grid-row: 1 / span 4; padding: 6px; border: 0; border-radius: 0; }
+  :root .app-shell .doctor-table :is(strong,b,small) { white-space: normal; font-size: 13px; line-height: 1.5; }
+}
+
 @media (max-width: 1100px) {
   body.ambulances-page, body.doctors-page { min-width: 0; }
   .ambulances-page .ambulance-row { grid-template-columns: minmax(120px,1.1fr) minmax(0,1.4fr) minmax(0,.8fr) auto 32px; }
@@ -66,20 +111,13 @@
   :root .app-shell :is(.directory-controls,.doctor-controls) { display: flex; }
   :root .app-shell :is(.ambulance-search,.doctor-search,.patient-search) { width: 100%; min-height: 44px; flex: 1 1 100%; }
   :root .app-shell .status-filters { min-width: 0; max-width: 100%; height: auto; display: flex; flex-wrap: wrap; overflow: visible; }
-  :root .app-shell .filter-button { white-space: normal; min-width: 44px; }
+  :root .app-shell .filter-button { white-space: normal; min-width: 44px; min-height: 44px; }
   :root .app-shell .segmented-controls { max-width: 100%; flex-wrap: wrap; overflow: visible; }
   :root .app-shell :is(.ambulance-list,.patient-list,.doctor-table,.doctor-table tbody) { height: auto; min-height: 0; max-height: none; overflow: visible; }
   :root .app-shell .ambulance-list { display: flex; flex-direction: column; gap: 12px; }
   :root .app-shell :is(.ambulance-row,.patient-row) { min-height: 100px; height: auto; max-height: none; padding: 12px; }
-  :root .app-shell .ambulance-row { grid-template-columns: minmax(0,1fr) 44px; gap: 12px; flex: none; }
-  :root .app-shell .ambulance-row > :not(.row-action) { grid-column: 1; }
-  :root .app-shell .ambulance-row .row-action { grid-column: 2; grid-row: 1 / span 4; }
+  :root .app-shell .ambulance-row { flex: none; }
   :root .app-shell .ambulance-row :is(strong,b,small) { font-size: 13px; white-space: normal; line-height: 1.5; }
-  :root .app-shell .doctor-table tbody { display: flex; flex-direction: column; gap: 12px; }
-  :root .app-shell .doctor-table tr { grid-template-columns: minmax(0,1fr) 55px; grid-template-rows: auto; height: auto; min-height: 0; gap: 0; border: 1px solid var(--doctor-line); border-radius: 14px; overflow: hidden; }
-  :root .app-shell .doctor-table td { grid-column: 1; border: 0; border-radius: 0; padding: 10px 12px; min-height: 44px; }
-  :root .app-shell .doctor-table td:last-child { grid-column: 2; grid-row: 1 / span 4; padding: 6px; border: 0; border-radius: 0; }
-  :root .app-shell .doctor-table :is(strong,b,small) { white-space: normal; font-size: 13px; line-height: 1.5; }
   :root .app-shell .doctor-detail { position: fixed; inset: 12px; width: auto; max-height: calc(100dvh - 24px); z-index: 100; }
   :root .app-shell .detail-scrim { position: fixed; z-index: 99; border-radius: 0; }
   :root .app-shell :is(.doctor-metrics,.doctor-directory,.doctor-workspace,.doctor-table-container) { flex: none; }

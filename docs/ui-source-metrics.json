@@ -11,18 +11,18 @@
   },
   "after": {
     "files": 267,
-    "bytes": 12483024,
+    "bytes": 12490054,
     "code_files": 171,
-    "code_bytes": 2193764,
+    "code_bytes": 2200794,
     "pages": 25,
     "repeated_8_line_groups": 854,
     "repeated_8_line_extra_occurrences": 886
   },
   "delta": {
     "files": 1,
-    "bytes": 31817,
+    "bytes": 38847,
     "code_files": 1,
-    "code_bytes": 31817,
+    "code_bytes": 38847,
     "pages": 0,
     "repeated_8_line_groups": 0,
     "repeated_8_line_extra_occurrences": 0

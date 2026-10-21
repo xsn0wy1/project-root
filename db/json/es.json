@@ -1511,7 +1511,7 @@
   "validation.step": "Ingresá un valor válido.",
   "validation.format": "Revisá el formato de este campo.",
   "errors.el_servicio_no_esta_disponible_revisa_la_configuracion_o_intenta_nuevamente": "El servicio no está disponible. Revisá la configuración o intentá nuevamente.",
-  "errors.completa_la_configuracion_local_siguiendo_docs_xampp_setup_md": "Completá la configuración local siguiendo docs/xampp-setup.md.",
+  "errors.completa_la_configuracion_local_siguiendo_docs_xampp_setup_md": "Completá la configuración local siguiendo README.md.",
   "errors.demasiados_intentos_espera_unos_minutos": "Demasiados intentos. Esperá unos minutos.",
   "errors.la_sesion_del_formulario_vencio_volve_a_intentarlo": "La sesión del formulario venció. Volvé a intentarlo.",
   "errors.metodo_no_permitido": "Método no permitido.",

@@ -1,0 +1,61 @@
+{
+  "styles": [
+    {
+      "from": [
+        "public/src/css/management/personnel.css",
+        "public/src/css/management/destinations.css"
+      ],
+      "to": "public/src/css/management/catalogs.css",
+      "identical_rules_shared": 159,
+      "notes": "Page-specific selectors preserve cascade and specificity; relative asset paths stay in the same directory."
+    },
+    {
+      "from": "public/src/css/surveys/survey-integration.css",
+      "to": "public/src/css/surveys/survey.css",
+      "consumers": [
+        "survey.php",
+        "survey-new.php",
+        "survey-view.php"
+      ],
+      "notes": "Sharing-dialog styles are common to all staff survey views. Existing theme/DOM hooks are retained."
+    }
+  ],
+  "removed": [
+    {
+      "path": "backend/api/v1/page.php",
+      "reason": "No HTML view consumers remain. PHP views execute their own shared permission guard; obsolete HTML/API routes return 404."
+    }
+  ],
+  "loads_removed": [
+    {
+      "page": "public/src/views/settings.php",
+      "stylesheet": "public/src/css/documents/documents.css",
+      "reason": "Shared dropdown styles already supply its controls. Visual geometry/styles match without the unrelated Documents stylesheet."
+    }
+  ],
+  "consumers_updated": [
+    "backend/php/components/shell.php",
+    "backend/php/core/page.php",
+    "backend/php/dev-router.php",
+    "public/.htaccess",
+    "public/src/views/management/personnel.php",
+    "public/src/views/management/destinations.php",
+    "public/src/views/settings.php",
+    "public/src/views/surveys/survey.php",
+    "public/src/views/surveys/survey-new.php",
+    "public/src/views/surveys/survey-view.php"
+  ],
+  "flow_repairs": [
+    "Remove cancelled Reports/Calendar suggestions from shared navigation search.",
+    "Direct unconfigured installations to current README setup instructions, preserving the bilingual key."
+  ],
+  "verification_helpers_added": [
+    "tests/verify_project.py",
+    "tests/install_integration.py"
+  ],
+  "notes": [
+    "Existing focused test suites are orchestrated, not replaced by a second test framework.",
+    "Migration tests now exercise every current migration after simulating the actual legacy schema.",
+    "No application framework, build step, schema migration, vendor change or submission archive is introduced."
+  ]
+}

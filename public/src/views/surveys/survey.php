@@ -8,7 +8,7 @@ staff_page_open([
     'theme_styles' => 'main-menu survey survey-integration documents',
     'title_key' => 'survey.encuestas_hospital_de_clinicas',
     'title' => 'Encuestas | Hospital de Clínicas',
-    'stylesheets' => ['documents/documents.css?v=20261012-documents', 'surveys/survey.css?v=20261020-dropdown', 'surveys/survey-integration.css?v=20261015-backend'],
+    'stylesheets' => ['documents/documents.css?v=20261012-documents', 'surveys/survey.css?v=stage6'],
     'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:wght@400;500;600;700&display=swap',
     'body_class' => 'surveys-page',
     'background' => false,

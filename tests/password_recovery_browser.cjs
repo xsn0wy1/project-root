@@ -1,7 +1,7 @@
 /* Real local PHP/SQL recovery flow with the CLI-only offline email transport. */
 'use strict';
 const assert=require('assert'),fs=require('fs'),path=require('path'),{spawnSync}=require('child_process'),{chromium}=require('playwright');
-const root=path.resolve(__dirname,'..'),runtime=path.join(__dirname,'.runtime/password-recovery');
+const root=path.resolve(__dirname,'..'),runtime=process.env.HOSPITAL_RECOVERY_TEST_DIR||path.join(__dirname,'.runtime/password-recovery');
 const fixture=JSON.parse(fs.readFileSync(path.join(runtime,'browser.json')));
 Object.assign(process.env,fixture.env);
 assert(/^hospital_recovery_[a-f0-9]{8}_test$/.test(process.env.HOSPITAL_DB_NAME));

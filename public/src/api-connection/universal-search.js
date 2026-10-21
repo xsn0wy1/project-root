@@ -173,20 +173,6 @@
                 get terms() { return window.HospitalI18n.t("universal_search.ajustes_perfil_cuenta_contrasena_tema"); }
             },
             {
-                title: window.HospitalI18n.t("shared.reportes"),
-                get section() { return window.HospitalI18n.t("universal_search.analisis"); },
-                get detail() { return window.HospitalI18n.t("universal_search.seccion_en_desarrollo"); },
-                icon: '../../assets/Icons/analytics-icon.svg',
-                get terms() { return window.HospitalI18n.t("universal_search.analitica_estadisticas_informes"); }
-            },
-            {
-                title: window.HospitalI18n.t("shared.calendario"),
-                section: window.HospitalI18n.t("shared.agenda"),
-                get detail() { return window.HospitalI18n.t("universal_search.seccion_en_desarrollo"); },
-                icon: '../../assets/Icons/calendar-icon.svg',
-                get terms() { return window.HospitalI18n.t("universal_search.eventos_citas_agenda_fechas"); }
-            },
-            {
                 get title() { return window.HospitalI18n.t("main_menu.inicio"); },
                 section: window.HospitalI18n.t("shared.principal"),
                 get detail() { return window.HospitalI18n.t("universal_search.volver_al_menu_principal"); },

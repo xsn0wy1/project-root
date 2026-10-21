@@ -26,12 +26,13 @@ for key in es:
   assert a and b,key
   assert set(re.findall(r'\{[a-zA-Z][a-zA-Z0-9_]*\}',a))==set(re.findall(r'\{[a-zA-Z][a-zA-Z0-9_]*\}',b)),key
 class Page(HTMLParser):
- def __init__(self):super().__init__(convert_charrefs=True);self.stack=[];self.text=[];self.attrs=[];self.scripts=[];self.ids=[]
+ def __init__(self):super().__init__(convert_charrefs=True);self.stack=[];self.text=[];self.attrs=[];self.scripts=[];self.styles=[];self.ids=[]
  def handle_starttag(self,tag,attrs):
   attrs=dict(attrs)
   if self.stack:assert not self.stack[-1][1].get('data-i18n'), 'Text binding would remove a nested control: '+str(self.stack[-1])
   if 'id' in attrs:self.ids.append(attrs['id'])
   if tag=='script' and attrs.get('src'):self.scripts.append(attrs['src'])
+  if tag=='link' and attrs.get('rel')=='stylesheet' and attrs.get('href'):self.styles.append(attrs['href'])
   if tag=='option' and attrs.get('data-i18n'):assert 'value' in attrs,'Translated options require stable values'
   for name,value in attrs.items():
    if name.startswith('data-i18n') and not name.endswith('-params'):assert value in es,(name,value)
@@ -52,7 +53,7 @@ for path in files:
   assert relative in rendered,'Provide --rendered-pages from an authenticated baseline capture: '+relative
  page=Page();page.feed(rendered[relative] if path.suffix=='.php' else path.read_text())
  assert 'i18n.js' in next(src for src in page.scripts if 'theme.js' not in src),path
- for src in page.scripts:
+ for src in page.scripts+page.styles:
   if not src.startswith(('http:','https:')):assert (path.parent/src.split('?')[0]).resolve().is_file(),(path,src)
  if baseline:
   before=Page();before.feed(baseline[relative if relative in baseline else relative.replace('.php','.html')])

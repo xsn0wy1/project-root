@@ -1,0 +1,232 @@
+{
+  "checkpoint": "UI repairs before Stage 6",
+  "date": "2026-10-21",
+  "status": "complete; paused for user review",
+  "implemented": [
+    "Shared phone styles across all 25 pages: overlay hamburger drawer, keyboard focus/dismissal, stacked fields/cards, wrapped filters/actions and bounded dialogs/dropdowns; desktop staff header remains 100px.",
+    "Specialty chips have no delete cross. Clicking names the specialty in a themed confirmation; cancellation or failed saves retain the profile and input.",
+    "Settings profile opens an anchored menu with Security notifications and Logout. Light switch colors and dark dialog close-icon contrast are readable.",
+    "Map search, filters and layers are mutually exclusive; active/ARIA states and focus follow visibility. Query survives switching until explicit reset. Attribution no longer prints escaped translation markup.",
+    "Enhanced native selects stay invisible even when disabled; route sorting adopts its existing wrapper. Patient sex and route sort each show one control and one chevron.",
+    "Survey directory removes Close survey while the full detail/results page retains it. Public participant language selection remains accessible on phones."
+  ],
+  "responsive_review": {
+    "all_pages": 25,
+    "desktop_phone_theme_language_views": 100,
+    "additional_representative_pages": 15,
+    "additional_views": 120,
+    "final_targeted_refresh_views": 48,
+    "final_narrow_header_views": 16,
+    "unique_page_size_theme_views": 242,
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "languages": [
+      "Spanish (default)",
+      "English"
+    ],
+    "viewports": [
+      "1440x900",
+      "390x844",
+      "320x640",
+      "768x1024",
+      "844x390 (touch landscape)",
+      "1024x768"
+    ],
+    "navigation": "Overlay does not squeeze page content; scrollable links, outside/Escape dismissal, inert background, focus trap and return focus verified.",
+    "unintended_horizontal_overflow": "None in accepted page/form/list states; document and map internal scrolling retained.",
+    "unhandled_script_errors": 0,
+    "screenshots": "Private under tests/.runtime/ui/; reviewed page contact sheets and refreshed headings, drawers, Settings menus/dialogs/switches and document QR captures.",
+    "desktop_comparison": {
+      "theme": "dark",
+      "exact_page_pixel_matches": 20,
+      "pages": 25,
+      "other_differences": "Requested dropdown/survey-action repairs, asynchronous form hydration and live map tiles/panning/attribution. Header and page geometry checked separately."
+    },
+    "final_settings_dialog_captures": 12,
+    "scope": "Initial checkpoint evidence. The follow-up below supersedes management states at matching widths."
+  },
+  "verification": {
+    "settings_integration_checks": 51,
+    "dropdown_control_checks": 40,
+    "dropdown_real_journeys": 2,
+    "transfer_survey_workflow_checks": 53,
+    "completed_ui_suite_checks": 221,
+    "completed_ui_interaction_groups": 9,
+    "narrow_header_suite_checks": 163,
+    "journeys": [
+      "Specialty add/cancel/confirm and failed-save retention; profile keyboard/menu/notifications/logout.",
+      "Repeated map search/filter/layer switching, query persistence/reset, keyboard shortcuts and enhanced field values/disabled states.",
+      "Management editors and reachable save actions, equal-width doctor fields, document staff share and patient QR, full transfer-list filters.",
+      "Survey closing only in full details; existing real transfer/survey workflow suite covers drafts, failure/retry, shared worker progress, publication, invitations, anonymous answers and results at root/mounted URLs."
+    ],
+    "syntax": {
+      "php": 89,
+      "application_js": 35,
+      "browser_js": 12,
+      "python": 23
+    },
+    "i18n": {
+      "bilingual_keys": 1847,
+      "rendered_pages": 25,
+      "literal_key_references": 1124,
+      "status": "passed"
+    },
+    "private_path_404_checks": 10,
+    "anonymous_staff_page_redirects": 42,
+    "anonymous_participant_page_responses": 2,
+    "preflight": "healthy"
+  },
+  "integrity": {
+    "original_source_files_unchanged": 607,
+    "artwork_vendor_files_unchanged": 308,
+    "dictionaries_intentionally_changed": [
+      "settings.value",
+      "settings.confirmar_quitar_especializacion"
+    ]
+  },
+  "contracts": {
+    "api_changes": false,
+    "schema_changes": false,
+    "original_private_data_config_changes": false,
+    "global_apache_changes": false
+  },
+  "metrics": {
+    "checkpoint_delta": {
+      "files": 1,
+      "bytes": 38847,
+      "code_files": 1,
+      "code_bytes": 38847,
+      "pages": 0,
+      "repeated_8_line_groups": 0,
+      "repeated_8_line_extra_occurrences": 0
+    },
+    "cumulative_delta": {
+      "files": -91,
+      "bytes": -62249,
+      "code_files": -91,
+      "code_bytes": -62249,
+      "pages": 0,
+      "repeated_8_line_groups": -300,
+      "repeated_8_line_extra_occurrences": -538
+    },
+    "application_files_after": 267,
+    "code_bytes_after": 2200794,
+    "interpretation": "The full UI checkpoint adds one shared responsive stylesheet and 38,847 first-party bytes versus Stage 5. The follow-up adds 6,098 bytes and no files. Menu logic and container rules remain shared; the overlapping duplication indicator is unchanged. Cumulatively 91 fewer files and 62,249 fewer bytes than the original, excluding vendor/generated artifacts."
+  },
+  "cleanup": {
+    "temporary_databases_removed": 1,
+    "temporary_accounts_removed": 2,
+    "verified_absent": true,
+    "fictional_demo_and_stage5_browser_fixtures_preserved": true,
+    "simulation_worker": "stopped after workflow verification"
+  },
+  "limitations": [
+    "External email delivery remains unverified without provider configuration.",
+    "External map tile availability varies; existing fallback behavior remains.",
+    "Automated phone checks use Chromium touch emulation, rather than physical-device browser testing."
+  ],
+  "evidence": {
+    "baseline": "tests/.runtime/ui/before-visual",
+    "all_pages": "tests/.runtime/ui/verified",
+    "additional_widths": "tests/.runtime/ui/responsive-extra-final",
+    "targeted_pages": "tests/.runtime/ui/final (five complete page sets before a fractional-pixel assertion); completed (final Transfer set and full journeys)",
+    "narrow_headers": "tests/.runtime/ui/header-verified",
+    "settings_dialogs": "tests/.runtime/ui/settings-visual",
+    "workflows": "tests/.runtime/ui/workflows-accepted.log",
+    "dropdowns": "tests/.runtime/stage5/browser/dropdown-report.json",
+    "accepted_layout_index": "tests/.runtime/ui/accepted-layouts.json"
+  },
+  "next": "Wait for user review. Stage 6 consolidation, integrated demonstration, fresh-install verification and clean submission packaging remain separate.",
+  "initial_checkpoint_metrics": {
+    "checkpoint_delta": {
+      "files": 1,
+      "bytes": 32749,
+      "code_files": 1,
+      "code_bytes": 32749,
+      "pages": 0,
+      "repeated_8_line_groups": 0,
+      "repeated_8_line_extra_occurrences": 0
+    },
+    "cumulative_delta": {
+      "files": -91,
+      "bytes": -68347,
+      "code_files": -91,
+      "code_bytes": -68347,
+      "pages": 0,
+      "repeated_8_line_groups": -300,
+      "repeated_8_line_extra_occurrences": -538
+    },
+    "application_files_after": 267,
+    "code_bytes_after": 2194696,
+    "interpretation": "The UI checkpoint adds one shared responsive stylesheet and 32,749 first-party bytes. Drawer/profile logic and phone rules are shared rather than copied per page. The overlapping duplication indicator is unchanged; no reduction is claimed for this checkpoint. Cumulatively 91 fewer files and 68,347 fewer bytes than the original, excluding vendor/generated artifacts."
+  },
+  "review_followup": {
+    "date": "2026-10-21",
+    "status": "complete; paused for user review",
+    "repairs": [
+      "Specialty and Security notifications dialogs: themed field hover/focus, animated button hover/focus/press, dialog/backdrop opening and reduced-motion support. Profile menu items also provide hover/focus/press feedback.",
+      "Route sort wrapper stays transparent in idle/hover/focus, including light-theme rules; its shared trigger owns the border.",
+      "Available-width management reflow covers summaries, compact header/search spacing, filters, panels and populated list rows. Natural row height and contained list scrolling avoid compression. Phone filters retain 44px targets; desktop staff headers remain 100px."
+    ],
+    "regression_method": "Check text rectangles inside cards/buttons/rows, neighboring row/control intersections, viewport overflow, header branding/search separation and both navigation states. Intentionally clipped ellipsis labels retain existing behavior.",
+    "management_pages": 8,
+    "page_size_theme_views": 96,
+    "desktop_navigation_open_views": 64,
+    "phone_drawer_cases": 32,
+    "widths": [
+      320,
+      650,
+      800,
+      1000,
+      1200,
+      1440
+    ],
+    "themes_and_languages": [
+      "dark Spanish",
+      "light English"
+    ],
+    "settings_browser_checks": 87,
+    "settings_page_views": 4,
+    "settings_interaction_groups": 2,
+    "settings_journeys": "Hover/focus/opening feedback, suggestion placement and keyboard selection, profile/notifications/logout, specialty addition/cancellation/confirmed removal and retained input after real API failures.",
+    "route_suite_checks": 128,
+    "route_border_state_checks": 36,
+    "phone_filter_refresh_checks": 218,
+    "phone_filter_refresh_views": 20,
+    "unhandled_script_errors": 0,
+    "static_checks": {
+      "php_files": 4,
+      "browser_test_js": 1,
+      "original_files_unchanged": 607,
+      "artwork_vendor_files_unchanged": 308
+    },
+    "i18n": {
+      "bilingual_keys": 1847,
+      "rendered_page_bindings_assets": 25,
+      "literal_references": 1124,
+      "status": "passed"
+    },
+    "manual_inspection": [
+      "Compact populated Ambulances/Doctors with navigation open, summaries, filters and contained rows.",
+      "Compact Routes with navigation open/closed and its single border.",
+      "Dark phone specialty dialog and light desktop Security notifications dialog."
+    ],
+    "schema_api_changes": false,
+    "application_javascript_changes": false,
+    "new_test_databases": 0,
+    "metrics": {
+      "files": 0,
+      "bytes": 6098,
+      "code_files": 0,
+      "code_bytes": 6098,
+      "pages": 0,
+      "repeated_8_line_groups": 0,
+      "repeated_8_line_extra_occurrences": 0
+    },
+    "evidence_root": "tests/.runtime/ui/review-followup (ignored/private)",
+    "accepted_case_index": "tests/.runtime/ui/review-followup/accepted-layouts.json",
+    "evidence_notes": "Accepted case index combines complete management page sets from completed/, remaining/ and routes-final/, refreshed by touch-final/. Earlier incomplete/failing runs are diagnostic evidence only. Final Settings results are in settings-final/."
+  }
+}

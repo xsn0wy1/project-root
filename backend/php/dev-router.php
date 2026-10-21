@@ -25,10 +25,6 @@ if (str_starts_with($path, '/api/v1/')) {
     }
     require $file; return;
 }
-if ($path !== '/src/views/surveys/user-view/survey-user.php' && preg_match('#^/src/views/(?!register-restore/)(.+\.html)$#', $path, $match)) {
-    $_GET['view'] = $match[1];
-    require dirname(__DIR__) . '/api/v1/page.php'; return;
-}
 $root = realpath(dirname(__DIR__, 2) . '/public');
 $file = realpath($root . $path);
 $types = ['json' => 'application/json; charset=utf-8', 'html' => 'text/html; charset=utf-8', 'js' => 'application/javascript; charset=utf-8', 'mjs' => 'application/javascript; charset=utf-8', 'css' => 'text/css; charset=utf-8', 'wasm' => 'application/wasm', 'bcmap' => 'application/octet-stream', 'ttf' => 'font/ttf', 'pfb' => 'application/octet-stream',

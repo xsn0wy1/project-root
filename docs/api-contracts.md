@@ -41,7 +41,7 @@ Quick-search suggestions use the current session's explicit roles: patient/docto
 
 Admin list objects contain `id`, `username`, `email`, `national_id`, `status`, `created_at`. Role values are `admin`, `records_manager`, `dispatcher`, `staff`. Registration never accepts a role; approval grants the explicit administrator-selected role. Disabling the last active admin returns `409 LAST_ADMIN`. Administrative identity writes recheck the actor inside the serialized transaction.
 
-All 21 staff PHP views call `backend/php/core/page.php` before rendering shared includes. Their `.php` URLs preserve the corresponding staff/records/dispatch gates; the original HTML pages are removed. Anonymous requests redirect with 303 to the configured login URL. Login/register/recovery PHP and the isolated participant survey are public shells; staff views are guarded. The remaining legacy HTML routing entry point has no active page consumers and is scheduled for final cleanup.
+All 21 staff PHP views call `backend/php/core/page.php` before rendering shared includes. Their `.php` URLs preserve the corresponding staff/records/dispatch gates; the original HTML pages and obsolete HTML-routing API are removed. Anonymous requests redirect with 303 to the configured login URL. Login/register/recovery PHP and the isolated participant survey are public shells; staff views are guarded. Retired HTML and HTML-routing API URLs return 404.
 
 ## Current-user payload
 

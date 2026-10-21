@@ -10,10 +10,11 @@ PHP=os.environ.get('HOSPITAL_TEST_PHP','/Applications/XAMPP/xamppfiles/bin/php')
 assert os.environ.get('HOSPITAL_DB_NAME','').endswith('_test')
 name='hospital_upgrade_'+secrets.token_hex(5)+'_test'
 old=(ROOT/'db/sql/schema.sql').read_text()
-for table in ['facilities','specialties','staff_specialties','stored_files','user_notifications','user_diagnostics','patients','document_categories','documents','document_versions','staff_roles','ambulances','route_templates','route_stops','route_map_cache','transfers','transfer_crew','resource_reservations','transfer_events','transfer_drafts','simulation_runs','simulation_state','transfer_positions','transfer_latest_positions','doctor_profiles','personnel_profiles','departments','patient_contacts','patient_encounters','patient_appointments']:
+for table in ['facilities','specialties','staff_specialties','stored_files','user_notifications','user_diagnostics','patients','document_categories','documents','document_versions','staff_roles','ambulances','route_templates','route_stops','route_map_cache','transfers','transfer_crew','resource_reservations','transfer_events','transfer_drafts','simulation_runs','simulation_state','transfer_positions','transfer_latest_positions','doctor_profiles','personnel_profiles','departments','patient_contacts','patient_encounters','patient_appointments','surveys','survey_items','survey_links','survey_responses','survey_answers','password_reset_tokens','document_access_links']:
     old,count=re.subn(r'CREATE TABLE IF NOT EXISTS '+table+r' \([\s\S]*?\) ENGINE=InnoDB;\n','',old)
     assert count==1,table
 old=re.sub(r"INSERT INTO document_categories[\s\S]*?;\n", '', old)
+old=re.sub(r"INSERT INTO facilities[\s\S]*?;\n", '', old)
 old=re.sub(r"INSERT IGNORE INTO simulation_state[^;]*;\n", '', old)
 old=re.sub(r'^.*(?:email_verified_at|default_facility_id|avatar_file_id|fk_settings_facility|fk_settings_avatar).*\n','',old,flags=re.M)
 old=old.replace('CREATE DATABASE IF NOT EXISTS hospital ', 'CREATE DATABASE '+name+' ').replace('USE hospital;', 'USE '+name+';')
@@ -46,11 +47,12 @@ try {
     $db->exec("INSERT INTO schema_migrations (version) VALUES ('008_personnel')");
     $db->exec("INSERT INTO schema_migrations (version) VALUES ('009_destinations')");
     $db->exec("INSERT INTO schema_migrations (version) VALUES ('010_routes')");
+    $db->exec("INSERT INTO schema_migrations (version) VALUES ('011_surveys'),('012_password_recovery'),('013_document_access_links'),('014_settings_centers')");
     Hospital\Migrations::apply($db,$name);
     $after=$db->query('SELECT u.id,u.username,u.email,u.password_hash,u.staff_id,s.full_name,p.security_notifications FROM users u JOIN staff s ON s.id=u.staff_id JOIN user_settings p ON p.user_id=u.id')->fetchAll();
     if ($before!==$after) throw new RuntimeException('Existing account data changed.');
-    $settings=$users->settings($id);
-    if ($settings['avatar_url']!==null || $settings['default_facility_id']!==null || $settings['specialties']!==[]) throw new RuntimeException('Optional fields are not empty.');
+    $settings=$db->query('SELECT avatar_file_id,default_facility_id FROM user_settings WHERE user_id='.$id)->fetch();
+    if ($settings['avatar_file_id']!==null || $settings['default_facility_id']!==null || (int)$db->query('SELECT COUNT(*) FROM staff_specialties')->fetchColumn()) throw new RuntimeException('Optional fields are not empty.');
     $key=str_repeat('a',64); $hash=str_repeat('b',64);
     $stmt=$db->prepare("INSERT INTO stored_files (owner_user_id,storage_key,mime_type,byte_size,sha256) VALUES (?,?,'image/png',10,?)"); $stmt->execute([$id,$key,$hash]);
     $file=$db->lastInsertId(); $db->exec('UPDATE user_settings SET avatar_file_id='.$file.' WHERE user_id='.$id);
@@ -59,7 +61,7 @@ try {
     $db->exec("ALTER TABLE stored_files ADD COLUMN purpose VARCHAR(16) NOT NULL DEFAULT 'avatar'");
     Hospital\Migrations::apply($db,$name);
     $avatar=$db->query('SELECT storage_key,sha256,purpose,scan_status FROM stored_files WHERE id='.$file)->fetch();
-    if ($avatar!==['storage_key'=>$key,'sha256'=>$hash,'purpose'=>'avatar','scan_status'=>'image_normalized'] || $users->settings($id)['avatar_url']===null) throw new RuntimeException('Existing avatar changed during document upgrade.');
+    if ($avatar!==['storage_key'=>$key,'sha256'=>$hash,'purpose'=>'avatar','scan_status'=>'image_normalized'] || (string)$db->query('SELECT avatar_file_id FROM user_settings WHERE user_id='.$id)->fetchColumn()!==(string)$file) throw new RuntimeException('Existing avatar changed during document upgrade.');
     Hospital\Migrations::apply($db,$name);
     if ((int)$db->query("SELECT COUNT(*) FROM schema_migrations WHERE version='002_settings'")->fetchColumn()!==1) throw new RuntimeException('Migration not idempotent.');
     if ((int)$db->query("SELECT COUNT(*) FROM schema_migrations WHERE version='003_documents'")->fetchColumn()!==1 || (int)$db->query('SELECT COUNT(*) FROM document_categories')->fetchColumn()!==3) throw new RuntimeException('Document migration/catalog not idempotent.');
@@ -72,7 +74,7 @@ try {
     $db->exec("DELETE FROM schema_migrations WHERE version='004_transfers'");
     $db->exec("ALTER TABLE facilities ADD COLUMN address VARCHAR(255) NOT NULL DEFAULT ''");
     Hospital\Migrations::apply($db,$name);
-    if($existing!==$db->query('SELECT d.*,v.stored_file_id,f.storage_key,f.sha256 FROM documents d JOIN document_versions v ON v.document_id=d.id JOIN stored_files f ON f.id=v.stored_file_id')->fetchAll() || $users->settings($id)['default_facility_id']!==(string)$facility) throw new RuntimeException('Transfer migration changed existing document or settings relationships.');
+    if($existing!==$db->query('SELECT d.*,v.stored_file_id,f.storage_key,f.sha256 FROM documents d JOIN document_versions v ON v.document_id=d.id JOIN stored_files f ON f.id=v.stored_file_id')->fetchAll() || users_settings($db,$id)['default_facility_id']!==(string)$facility) throw new RuntimeException('Transfer migration changed existing document or settings relationships.');
     Hospital\Migrations::apply($db,$name);
     if((int)$db->query("SELECT COUNT(*) FROM schema_migrations WHERE version='004_transfers'")->fetchColumn()!==1 || (int)$db->query('SELECT COUNT(*) FROM simulation_state')->fetchColumn()!==1) throw new RuntimeException('Transfer migration is not idempotent.');
     if((int)$db->query('SELECT COUNT(*) FROM transfers')->fetchColumn() || (int)$db->query('SELECT COUNT(*) FROM ambulances')->fetchColumn() || (int)$db->query('SELECT COUNT(*) FROM route_templates')->fetchColumn()) throw new RuntimeException('Unexpected seeded transfer data.');
@@ -109,6 +111,17 @@ try {
     $db->exec("DELETE FROM schema_migrations WHERE version='010_routes'");
     Hospital\Migrations::apply($db,$name);Hospital\Migrations::apply($db,$name);
     if ($before!==$db->query('SELECT id,code,geometry,distance_meters,duration_seconds,version FROM route_templates')->fetchAll() || $db->query('SELECT origin_name FROM route_templates LIMIT 1')->fetchColumn()!=='Centro de migración ficticio' || $db->query('SELECT name FROM route_stops LIMIT 1')->fetchColumn()!=='Destino de migración ficticio') throw new RuntimeException('Route upgrade changed existing paths or did not backfill itinerary snapshots.');
+    $identity=$db->query('SELECT id,username,email,password_hash,staff_id,status FROM users')->fetchAll();
+    $db->exec("DELETE FROM schema_migrations WHERE version IN ('011_surveys','012_password_recovery','013_document_access_links','014_settings_centers')");
+    Hospital\Migrations::apply($db,$name);Hospital\Migrations::apply($db,$name);
+    if ($identity!==$db->query('SELECT id,username,email,password_hash,staff_id,status FROM users')->fetchAll() || $existing!==$db->query('SELECT d.*,v.stored_file_id,f.storage_key,f.sha256 FROM documents d JOIN document_versions v ON v.document_id=d.id JOIN stored_files f ON f.id=v.stored_file_id')->fetchAll()) throw new RuntimeException('Final migrations changed existing identities or immutable document references.');
+    if ((int)$db->query('SELECT COUNT(*) FROM surveys')->fetchColumn() || (int)$db->query('SELECT COUNT(*) FROM document_access_links')->fetchColumn()) throw new RuntimeException('Final migrations fabricated surveys or access capabilities.');
+    foreach (['011_surveys','012_password_recovery','013_document_access_links','014_settings_centers'] as $version) {
+        $stmt=$db->prepare('SELECT COUNT(*) FROM schema_migrations WHERE version=?');$stmt->execute([$version]);
+        if ((int)$stmt->fetchColumn()!==1) throw new RuntimeException('Final migration version duplicated.');
+    }
+    echo "PASS schema 010 upgrades surveys, recovery, document links and centers without changing identities or file references.\n";
+    echo "PASS final migrations are idempotent and create no surveys or access capabilities.\n";
     echo "PASS schema 009 upgrades optional route templates/stops, preserving legacy IDs, geometry and estimates.\n";
     echo "PASS schema 008 upgrades optional destinations while preserving centers and existing references.\n";
     echo "PASS schema 007 upgrades personnel profiles without changing existing crew identities/responsibilities.\n";

@@ -43,7 +43,7 @@ function staff_page_head(array $page): void
   <script src="<?= $src ?>js/main-menu.js?v=ui-repairs" defer></script>
 <?php endif; ?>
 <?php if ($page['search'] ?? true): ?>
-  <script src="<?= $src ?>api-connection/universal-search.js?v=20261019-role-shortcuts" defer></script>
+  <script src="<?= $src ?>api-connection/universal-search.js?v=stage6" defer></script>
 <?php endif; ?>
   <script src="<?= $src ?>js/ui.js?v=ui-repairs" defer></script>
 <?php if (!empty($page['script'])): ?>
@@ -52,9 +52,9 @@ function staff_page_head(array $page): void
 <?php foreach ($page['extra_scripts'] ?? [] as $script): ?>
   <script src="<?= page_escape(is_array($script) ? $script['src'] : $script) ?>"<?= is_array($script) ? ' integrity="' . page_escape($script['integrity']) . '" crossorigin="anonymous"' : '' ?> defer></script>
 <?php endforeach; ?>
-  <link rel="stylesheet" href="<?= $src ?>css/theme.css?v=ui-repairs">
-  <link rel="stylesheet" href="<?= $src ?>css/dropdowns.css?v=ui-repairs">
-  <link rel="stylesheet" href="<?= $src ?>css/responsive.css?v=ui-repairs">
+  <link rel="stylesheet" href="<?= $src ?>css/theme.css?v=ui-review-2">
+  <link rel="stylesheet" href="<?= $src ?>css/dropdowns.css?v=ui-review-2">
+  <link rel="stylesheet" href="<?= $src ?>css/responsive.css?v=ui-review-2">
   <script src="<?= $src ?>js/dropdowns.js?v=ui-repairs" defer></script>
 </head>
 <body<?= ($page['body_class'] ?? ($module === 'management' ? '' : $module . '-page')) === '' ? '' : ' class="' . page_escape($page['body_class'] ?? $module . '-page') . '"' ?>>

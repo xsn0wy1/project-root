@@ -21,9 +21,9 @@ header('X-Content-Type-Options: nosniff');
   <script src="../../../api-connection/i18n.js?v=20261019-i18n" defer></script>
   <script src="../../../js/ui.js?v=ui-repairs" defer></script>
   <script src="survey-user.js?v=stage5" defer></script>
-  <link rel="stylesheet" href="../../../css/theme.css?v=ui-repairs">
-  <link rel="stylesheet" href="../../../css/dropdowns.css?v=ui-repairs">
-  <link rel="stylesheet" href="../../../css/responsive.css?v=ui-repairs">
+  <link rel="stylesheet" href="../../../css/theme.css?v=ui-review-2">
+  <link rel="stylesheet" href="../../../css/dropdowns.css?v=ui-review-2">
+  <link rel="stylesheet" href="../../../css/responsive.css?v=ui-review-2">
   <script src="../../../js/dropdowns.js?v=ui-repairs" defer></script>
 </head>
 <body>

@@ -197,10 +197,14 @@ html[data-theme="light"][data-theme-styles~="settings"] .theme-option img { filt
 html[data-theme="light"][data-theme-styles~="settings"] .theme-option.active { color: var(--light-text); }
 html[data-theme="light"][data-theme-styles~="settings"] .reset-password { border: 1px solid rgba(88, 108, 151, 0.3); color: var(--light-button-text); background-color: #e1e9fa; background-image: var(--light-button-image); box-shadow: 0 12px 24px rgba(44, 61, 104, 0.06); text-shadow: var(--light-button-text-shadow); --light-icon-filter: brightness(0) invert(1); --light-text: var(--light-button-text); }
 html[data-theme="light"][data-theme-styles~="settings"] .reset-password:hover { border-color: rgba(88, 108, 151, 0.465); box-shadow: 0 16px 30px rgba(44, 61, 104, 0.085); }
-html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog { border: 1px solid rgba(88, 108, 151, 0.3); background: var(--light-canvas); color: var(--light-text); }
+html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog {
+  border: 1px solid rgba(88, 108, 151, 0.3); background: var(--light-canvas); color: var(--light-text);
+  --dialog-control: #f5f8ff; --dialog-hover: #eaf0fb; --dialog-focus: #fff;
+  --dialog-accent: #586ca7; --dialog-glow: rgba(44,61,104,.08);
+  --dialog-danger: #a92f4c; --dialog-danger-line: rgba(173,49,76,.3);
+  --dialog-danger-bg: rgba(173,49,76,.08); --dialog-danger-hover: rgba(173,49,76,.15);
+}
 html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog::backdrop { background: rgba(245, 248, 255, 0.55); }
-html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog input,
-html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog button { background: #f5f8ff; border: 1px solid rgba(88, 108, 151, 0.3); }
 
 /* documents */
 html[data-theme="light"][data-theme-styles~="documents"] .document-surface { border: 1px solid rgba(88, 108, 151, 0.16); box-shadow: 0 20px 50px rgba(44, 61, 104, 0.02); }
@@ -455,10 +459,10 @@ html[data-theme="light"][data-theme-styles~="routes"] .primary-button:hover { bo
 html[data-theme="light"][data-theme-styles~="routes"] .danger-button:hover { border-color: rgba(163, 52, 80, 0.45); background: rgba(246, 231, 236, 0.14); }
 html[data-theme="light"][data-theme-styles~="routes"] .add-stop-button:not(:disabled):hover { background: rgba(89, 110, 167, 0.12); }
 html[data-theme="light"][data-theme-styles~="routes"] .route-search:hover,
-html[data-theme="light"][data-theme-styles~="routes"] .sort-control:hover,
+html[data-theme="light"][data-theme-styles~="routes"] .sort-control:not(.hospital-field-select):hover,
 html[data-theme="light"][data-theme-styles~="routes"] .form-section :is(input, select, textarea):hover { border-color: rgba(88, 108, 151, 0.323); background-color: rgba(245, 248, 255, 0.56); }
 html[data-theme="light"][data-theme-styles~="routes"] .route-search:focus-within,
-html[data-theme="light"][data-theme-styles~="routes"] .sort-control:focus-within,
+html[data-theme="light"][data-theme-styles~="routes"] .sort-control:not(.hospital-field-select):focus-within,
 html[data-theme="light"][data-theme-styles~="routes"] .form-section :is(input, select, textarea):focus { border-color: rgba(88, 108, 151, 0.48); background-color: rgba(89, 110, 167, 0.025); box-shadow: 0 0 0 4px rgba(44, 61, 104, 0.02); }
 
 /* accounts */
