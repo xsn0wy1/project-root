@@ -1,0 +1,1564 @@
+{
+  "version": 1,
+  "method": "First-party public/backend/db only; vendor, generated data and private config excluded. CSSOM style rules (keyframes separate), ordered declarations and matching at-rule contexts; split selector lists. Color literals include hex/functions and CSS named colors including transparent; currentColor is excluded. JS uses Acorn 8.15.0; long spans include closures. Inline attributes and cache-busters are source occurrences, including templates. Duplicate windows overlap and are not removable-line counts.",
+  "current": {
+    "application": {
+      "files": 266,
+      "bytes": 12599680,
+      "code_files": 170,
+      "code_bytes": 2310420,
+      "repeated_8_line_groups": 601,
+      "repeated_8_line_extra_occurrences": 664
+    },
+    "css": {
+      "files": 26,
+      "bytes": 696173,
+      "rules": 5787,
+      "grouping_rules": 166,
+      "keyframe_rules": 23,
+      "theme_bytes": 191486,
+      "theme_rules": 1166,
+      "theme_grouping_rules": 8,
+      "hardcoded_colors": 3292,
+      "explicit_colors": 2991,
+      "named_colors": 301,
+      "var_uses": 1556,
+      "cross_sheet_duplicates": {
+        "groups": 110,
+        "extra_occurrences": 134
+      },
+      "page_sheet_duplicates": {
+        "groups": 109,
+        "extra_occurrences": 133
+      },
+      "theme_unscoped_duplicates": {
+        "groups": 92,
+        "extra_occurrences": 98
+      },
+      "per_file": [
+        {
+          "file": "public/src/css/documents/documents-upload.css",
+          "bytes": 13381,
+          "rules": 106,
+          "hardcoded_colors": 63,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/documents/documents-viewer.css",
+          "bytes": 16065,
+          "rules": 161,
+          "hardcoded_colors": 91,
+          "var_uses": 16
+        },
+        {
+          "file": "public/src/css/documents/documents.css",
+          "bytes": 17916,
+          "rules": 123,
+          "hardcoded_colors": 110,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/dropdowns.css",
+          "bytes": 4933,
+          "rules": 37,
+          "hardcoded_colors": 34,
+          "var_uses": 4
+        },
+        {
+          "file": "public/src/css/login-register/auth-interactions.css",
+          "bytes": 2787,
+          "rules": 21,
+          "hardcoded_colors": 12,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/login-register/log-reg.css",
+          "bytes": 3035,
+          "rules": 17,
+          "hardcoded_colors": 21,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/login-register/pass-restore.css",
+          "bytes": 2214,
+          "rules": 12,
+          "hardcoded_colors": 17,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/main-menu.css",
+          "bytes": 21543,
+          "rules": 141,
+          "hardcoded_colors": 84,
+          "var_uses": 3
+        },
+        {
+          "file": "public/src/css/management/accounts.css",
+          "bytes": 2791,
+          "rules": 26,
+          "hardcoded_colors": 3,
+          "var_uses": 8
+        },
+        {
+          "file": "public/src/css/management/ambulances.css",
+          "bytes": 21892,
+          "rules": 163,
+          "hardcoded_colors": 117,
+          "var_uses": 60
+        },
+        {
+          "file": "public/src/css/management/catalogs.css",
+          "bytes": 33375,
+          "rules": 242,
+          "hardcoded_colors": 141,
+          "var_uses": 48
+        },
+        {
+          "file": "public/src/css/management/doctors.css",
+          "bytes": 20263,
+          "rules": 170,
+          "hardcoded_colors": 95,
+          "var_uses": 69
+        },
+        {
+          "file": "public/src/css/management/management.css",
+          "bytes": 6391,
+          "rules": 39,
+          "hardcoded_colors": 21,
+          "var_uses": 15
+        },
+        {
+          "file": "public/src/css/management/patients.css",
+          "bytes": 23710,
+          "rules": 199,
+          "hardcoded_colors": 118,
+          "var_uses": 62
+        },
+        {
+          "file": "public/src/css/management/routes.css",
+          "bytes": 29354,
+          "rules": 279,
+          "hardcoded_colors": 109,
+          "var_uses": 95
+        },
+        {
+          "file": "public/src/css/responsive.css",
+          "bytes": 22142,
+          "rules": 208,
+          "hardcoded_colors": 5,
+          "var_uses": 4
+        },
+        {
+          "file": "public/src/css/settings.css",
+          "bytes": 26233,
+          "rules": 191,
+          "hardcoded_colors": 111,
+          "var_uses": 23
+        },
+        {
+          "file": "public/src/css/surveys/survey-new.css",
+          "bytes": 42981,
+          "rules": 525,
+          "hardcoded_colors": 100,
+          "var_uses": 71
+        },
+        {
+          "file": "public/src/css/surveys/survey-view.css",
+          "bytes": 27655,
+          "rules": 319,
+          "hardcoded_colors": 62,
+          "var_uses": 53
+        },
+        {
+          "file": "public/src/css/surveys/survey.css",
+          "bytes": 36765,
+          "rules": 385,
+          "hardcoded_colors": 116,
+          "var_uses": 69
+        },
+        {
+          "file": "public/src/css/theme.css",
+          "bytes": 191486,
+          "rules": 1166,
+          "hardcoded_colors": 1278,
+          "var_uses": 777
+        },
+        {
+          "file": "public/src/css/traces/trace-map.css",
+          "bytes": 30427,
+          "rules": 319,
+          "hardcoded_colors": 167,
+          "var_uses": 36
+        },
+        {
+          "file": "public/src/css/traces/trace-new.css",
+          "bytes": 14826,
+          "rules": 102,
+          "hardcoded_colors": 69,
+          "var_uses": 33
+        },
+        {
+          "file": "public/src/css/traces/trace-view.css",
+          "bytes": 24273,
+          "rules": 262,
+          "hardcoded_colors": 87,
+          "var_uses": 32
+        },
+        {
+          "file": "public/src/css/traces/trace.css",
+          "bytes": 23525,
+          "rules": 180,
+          "hardcoded_colors": 115,
+          "var_uses": 18
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.css",
+          "bytes": 36210,
+          "rules": 394,
+          "hardcoded_colors": 146,
+          "var_uses": 60
+        }
+      ]
+    },
+    "js": {
+      "files": 35,
+      "bytes": 597520,
+      "nonblank_lines": 14311,
+      "lines_over_140": 184,
+      "lines_over_250": 98,
+      "helper_definitions": {
+        "setBusy": 10,
+        "report": 10,
+        "icon": 9,
+        "toast": 5,
+        "escape": 2,
+        "escapeHtml": 1,
+        "renderPagination": 3,
+        "upsert": 4,
+        "fromApi": 4
+      },
+      "helper_total": 48,
+      "helper_bindings": {
+        "setBusy": 1,
+        "report": 7,
+        "icon": 12,
+        "toast": 1,
+        "escape": 6,
+        "escapeHtml": 6,
+        "renderPagination": 0,
+        "upsert": 1,
+        "fromApi": 4
+      },
+      "getters": 218,
+      "translation_getters": 177,
+      "html_references": 80,
+      "nested_ternaries": 35,
+      "nested_decision_chains": 0,
+      "functions_over_60": [
+        {
+          "file": "public/src/api-connection/api-client.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 144,
+          "lines": 144
+        },
+        {
+          "file": "public/src/api-connection/api-client.js",
+          "name": "request",
+          "line": 49,
+          "end_line": 112,
+          "lines": 64
+        },
+        {
+          "file": "public/src/api-connection/auth-session.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 206,
+          "lines": 206
+        },
+        {
+          "file": "public/src/api-connection/auth-session.js",
+          "name": "render",
+          "line": 42,
+          "end_line": 103,
+          "lines": 62
+        },
+        {
+          "file": "public/src/api-connection/i18n.js",
+          "name": "(closure)",
+          "line": 2,
+          "end_line": 347,
+          "lines": 346
+        },
+        {
+          "file": "public/src/api-connection/i18n.js",
+          "name": "apply",
+          "line": 129,
+          "end_line": 205,
+          "lines": 77
+        },
+        {
+          "file": "public/src/api-connection/theme.js",
+          "name": "(closure)",
+          "line": 2,
+          "end_line": 94,
+          "lines": 93
+        },
+        {
+          "file": "public/src/api-connection/universal-search.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 574,
+          "lines": 574
+        },
+        {
+          "file": "public/src/api-connection/universal-search.js",
+          "name": "(closure)",
+          "line": 5,
+          "end_line": 573,
+          "lines": 569
+        },
+        {
+          "file": "public/src/api-connection/universal-search.js",
+          "name": "renderResults",
+          "line": 409,
+          "end_line": 479,
+          "lines": 71
+        },
+        {
+          "file": "public/src/js/documents/document-form.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 237,
+          "lines": 237
+        },
+        {
+          "file": "public/src/js/documents/documents-viewer.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 758,
+          "lines": 758
+        },
+        {
+          "file": "public/src/js/documents/documents-viewer.js",
+          "name": "renderPage",
+          "line": 157,
+          "end_line": 235,
+          "lines": 79
+        },
+        {
+          "file": "public/src/js/documents/documents-viewer.js",
+          "name": "openFile",
+          "line": 322,
+          "end_line": 416,
+          "lines": 95
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 611,
+          "lines": 611
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "render",
+          "line": 117,
+          "end_line": 189,
+          "lines": 73
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "updateSelection",
+          "line": 191,
+          "end_line": 267,
+          "lines": 77
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "setupFilter",
+          "line": 396,
+          "end_line": 457,
+          "lines": 62
+        },
+        {
+          "file": "public/src/js/dropdowns.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 447,
+          "lines": 447
+        },
+        {
+          "file": "public/src/js/dropdowns.js",
+          "name": "enhance",
+          "line": 122,
+          "end_line": 259,
+          "lines": 138
+        },
+        {
+          "file": "public/src/js/dropdowns.js",
+          "name": "enhanceSuggestions",
+          "line": 298,
+          "end_line": 378,
+          "lines": 81
+        },
+        {
+          "file": "public/src/js/login-register/recovery.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 77,
+          "lines": 77
+        },
+        {
+          "file": "public/src/js/login-register/register.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 75,
+          "lines": 75
+        },
+        {
+          "file": "public/src/js/management/accounts.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 307,
+          "lines": 307
+        },
+        {
+          "file": "public/src/js/management/accounts.js",
+          "name": "render",
+          "line": 57,
+          "end_line": 126,
+          "lines": 70
+        },
+        {
+          "file": "public/src/js/management/ambulances.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 469,
+          "lines": 469
+        },
+        {
+          "file": "public/src/js/management/ambulances.js",
+          "name": "render",
+          "line": 110,
+          "end_line": 173,
+          "lines": 64
+        },
+        {
+          "file": "public/src/js/management/destinations.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 595,
+          "lines": 595
+        },
+        {
+          "file": "public/src/js/management/destinations.js",
+          "name": "(closure)",
+          "line": 432,
+          "end_line": 495,
+          "lines": 64
+        },
+        {
+          "file": "public/src/js/management/doctors.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 701,
+          "lines": 701
+        },
+        {
+          "file": "public/src/js/management/doctors.js",
+          "name": "(closure)",
+          "line": 562,
+          "end_line": 626,
+          "lines": 65
+        },
+        {
+          "file": "public/src/js/management/patients.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 672,
+          "lines": 672
+        },
+        {
+          "file": "public/src/js/management/patients.js",
+          "name": "openForm",
+          "line": 403,
+          "end_line": 487,
+          "lines": 85
+        },
+        {
+          "file": "public/src/js/management/personnel.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 515,
+          "lines": 515
+        },
+        {
+          "file": "public/src/js/management/routes.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 711,
+          "lines": 711
+        },
+        {
+          "file": "public/src/js/management/routes.js",
+          "name": "(closure)",
+          "line": 504,
+          "end_line": 607,
+          "lines": 104
+        },
+        {
+          "file": "public/src/js/settings.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 517,
+          "lines": 517
+        },
+        {
+          "file": "public/src/js/settings.js",
+          "name": "render",
+          "line": 73,
+          "end_line": 153,
+          "lines": 81
+        },
+        {
+          "file": "public/src/js/settings.js",
+          "name": "showSessions",
+          "line": 290,
+          "end_line": 358,
+          "lines": 69
+        },
+        {
+          "file": "public/src/js/surveys/survey-api.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 143,
+          "lines": 143
+        },
+        {
+          "file": "public/src/js/surveys/survey-api.js",
+          "name": "share",
+          "line": 47,
+          "end_line": 141,
+          "lines": 95
+        },
+        {
+          "file": "public/src/js/surveys/survey-new.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 960,
+          "lines": 960
+        },
+        {
+          "file": "public/src/js/surveys/survey-new.js",
+          "name": "(closure)",
+          "line": 741,
+          "end_line": 959,
+          "lines": 219
+        },
+        {
+          "file": "public/src/js/surveys/survey-templates.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 125,
+          "lines": 125
+        },
+        {
+          "file": "public/src/js/surveys/survey-templates.js",
+          "name": "get",
+          "line": 4,
+          "end_line": 123,
+          "lines": 120
+        },
+        {
+          "file": "public/src/js/surveys/survey-view.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 1141,
+          "lines": 1141
+        },
+        {
+          "file": "public/src/js/surveys/survey-view.js",
+          "name": "renderHeader",
+          "line": 430,
+          "end_line": 537,
+          "lines": 108
+        },
+        {
+          "file": "public/src/js/surveys/survey-view.js",
+          "name": "(closure)",
+          "line": 956,
+          "end_line": 1140,
+          "lines": 185
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 621,
+          "lines": 621
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "setupFilterDropdown",
+          "line": 167,
+          "end_line": 242,
+          "lines": 76
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "render",
+          "line": 385,
+          "end_line": 448,
+          "lines": 64
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "(closure)",
+          "line": 483,
+          "end_line": 620,
+          "lines": 138
+        },
+        {
+          "file": "public/src/js/traces/trace-api.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 179,
+          "lines": 179
+        },
+        {
+          "file": "public/src/js/traces/trace-map-shared.js",
+          "name": "(closure)",
+          "line": 2,
+          "end_line": 115,
+          "lines": 114
+        },
+        {
+          "file": "public/src/js/traces/trace-map-shared.js",
+          "name": "createBasemap",
+          "line": 23,
+          "end_line": 90,
+          "lines": 68
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "(closure)",
+          "line": 7,
+          "end_line": 1015,
+          "lines": 1009
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "initializeMap",
+          "line": 381,
+          "end_line": 477,
+          "lines": 97
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "ensureLayers",
+          "line": 494,
+          "end_line": 576,
+          "lines": 83
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "poll",
+          "line": 623,
+          "end_line": 690,
+          "lines": 68
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "bindEvents",
+          "line": 790,
+          "end_line": 957,
+          "lines": 168
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 596,
+          "lines": 596
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "render",
+          "line": 49,
+          "end_line": 176,
+          "lines": 128
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "renderMap",
+          "line": 177,
+          "end_line": 256,
+          "lines": 80
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "(closure)",
+          "line": 311,
+          "end_line": 387,
+          "lines": 77
+        },
+        {
+          "file": "public/src/js/traces/trace.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 536,
+          "lines": 536
+        },
+        {
+          "file": "public/src/js/ui.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 212,
+          "lines": 212
+        },
+        {
+          "file": "public/src/js/ui.js",
+          "name": "bindNavigation",
+          "line": 26,
+          "end_line": 118,
+          "lines": 93
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 781,
+          "lines": 781
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.js",
+          "name": "renderQuestion",
+          "line": 425,
+          "end_line": 502,
+          "lines": 78
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.js",
+          "name": "(closure)",
+          "line": 607,
+          "end_line": 780,
+          "lines": 174
+        }
+      ],
+      "function_count": 2274
+    },
+    "views": {
+      "inline_style_attributes": 215,
+      "i18n_inline_style_wrappers": 174,
+      "i18n_style_templates": 1,
+      "cache_buster_strings": 28,
+      "view_cache_buster_strings": 27
+    }
+  },
+  "baseline": {
+    "application": {
+      "files": 266,
+      "bytes": 12599680,
+      "code_files": 170,
+      "code_bytes": 2310420,
+      "repeated_8_line_groups": 601,
+      "repeated_8_line_extra_occurrences": 664
+    },
+    "css": {
+      "files": 26,
+      "bytes": 696173,
+      "rules": 5787,
+      "grouping_rules": 166,
+      "keyframe_rules": 23,
+      "theme_bytes": 191486,
+      "theme_rules": 1166,
+      "theme_grouping_rules": 8,
+      "hardcoded_colors": 3292,
+      "explicit_colors": 2991,
+      "named_colors": 301,
+      "var_uses": 1556,
+      "cross_sheet_duplicates": {
+        "groups": 110,
+        "extra_occurrences": 134
+      },
+      "page_sheet_duplicates": {
+        "groups": 109,
+        "extra_occurrences": 133
+      },
+      "theme_unscoped_duplicates": {
+        "groups": 92,
+        "extra_occurrences": 98
+      },
+      "per_file": [
+        {
+          "file": "public/src/css/documents/documents-upload.css",
+          "bytes": 13381,
+          "rules": 106,
+          "hardcoded_colors": 63,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/documents/documents-viewer.css",
+          "bytes": 16065,
+          "rules": 161,
+          "hardcoded_colors": 91,
+          "var_uses": 16
+        },
+        {
+          "file": "public/src/css/documents/documents.css",
+          "bytes": 17916,
+          "rules": 123,
+          "hardcoded_colors": 110,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/dropdowns.css",
+          "bytes": 4933,
+          "rules": 37,
+          "hardcoded_colors": 34,
+          "var_uses": 4
+        },
+        {
+          "file": "public/src/css/login-register/auth-interactions.css",
+          "bytes": 2787,
+          "rules": 21,
+          "hardcoded_colors": 12,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/login-register/log-reg.css",
+          "bytes": 3035,
+          "rules": 17,
+          "hardcoded_colors": 21,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/login-register/pass-restore.css",
+          "bytes": 2214,
+          "rules": 12,
+          "hardcoded_colors": 17,
+          "var_uses": 0
+        },
+        {
+          "file": "public/src/css/main-menu.css",
+          "bytes": 21543,
+          "rules": 141,
+          "hardcoded_colors": 84,
+          "var_uses": 3
+        },
+        {
+          "file": "public/src/css/management/accounts.css",
+          "bytes": 2791,
+          "rules": 26,
+          "hardcoded_colors": 3,
+          "var_uses": 8
+        },
+        {
+          "file": "public/src/css/management/ambulances.css",
+          "bytes": 21892,
+          "rules": 163,
+          "hardcoded_colors": 117,
+          "var_uses": 60
+        },
+        {
+          "file": "public/src/css/management/catalogs.css",
+          "bytes": 33375,
+          "rules": 242,
+          "hardcoded_colors": 141,
+          "var_uses": 48
+        },
+        {
+          "file": "public/src/css/management/doctors.css",
+          "bytes": 20263,
+          "rules": 170,
+          "hardcoded_colors": 95,
+          "var_uses": 69
+        },
+        {
+          "file": "public/src/css/management/management.css",
+          "bytes": 6391,
+          "rules": 39,
+          "hardcoded_colors": 21,
+          "var_uses": 15
+        },
+        {
+          "file": "public/src/css/management/patients.css",
+          "bytes": 23710,
+          "rules": 199,
+          "hardcoded_colors": 118,
+          "var_uses": 62
+        },
+        {
+          "file": "public/src/css/management/routes.css",
+          "bytes": 29354,
+          "rules": 279,
+          "hardcoded_colors": 109,
+          "var_uses": 95
+        },
+        {
+          "file": "public/src/css/responsive.css",
+          "bytes": 22142,
+          "rules": 208,
+          "hardcoded_colors": 5,
+          "var_uses": 4
+        },
+        {
+          "file": "public/src/css/settings.css",
+          "bytes": 26233,
+          "rules": 191,
+          "hardcoded_colors": 111,
+          "var_uses": 23
+        },
+        {
+          "file": "public/src/css/surveys/survey-new.css",
+          "bytes": 42981,
+          "rules": 525,
+          "hardcoded_colors": 100,
+          "var_uses": 71
+        },
+        {
+          "file": "public/src/css/surveys/survey-view.css",
+          "bytes": 27655,
+          "rules": 319,
+          "hardcoded_colors": 62,
+          "var_uses": 53
+        },
+        {
+          "file": "public/src/css/surveys/survey.css",
+          "bytes": 36765,
+          "rules": 385,
+          "hardcoded_colors": 116,
+          "var_uses": 69
+        },
+        {
+          "file": "public/src/css/theme.css",
+          "bytes": 191486,
+          "rules": 1166,
+          "hardcoded_colors": 1278,
+          "var_uses": 777
+        },
+        {
+          "file": "public/src/css/traces/trace-map.css",
+          "bytes": 30427,
+          "rules": 319,
+          "hardcoded_colors": 167,
+          "var_uses": 36
+        },
+        {
+          "file": "public/src/css/traces/trace-new.css",
+          "bytes": 14826,
+          "rules": 102,
+          "hardcoded_colors": 69,
+          "var_uses": 33
+        },
+        {
+          "file": "public/src/css/traces/trace-view.css",
+          "bytes": 24273,
+          "rules": 262,
+          "hardcoded_colors": 87,
+          "var_uses": 32
+        },
+        {
+          "file": "public/src/css/traces/trace.css",
+          "bytes": 23525,
+          "rules": 180,
+          "hardcoded_colors": 115,
+          "var_uses": 18
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.css",
+          "bytes": 36210,
+          "rules": 394,
+          "hardcoded_colors": 146,
+          "var_uses": 60
+        }
+      ]
+    },
+    "js": {
+      "files": 35,
+      "bytes": 597520,
+      "nonblank_lines": 14311,
+      "lines_over_140": 184,
+      "lines_over_250": 98,
+      "helper_definitions": {
+        "setBusy": 10,
+        "report": 10,
+        "icon": 9,
+        "toast": 5,
+        "escape": 2,
+        "escapeHtml": 1,
+        "renderPagination": 3,
+        "upsert": 4,
+        "fromApi": 4
+      },
+      "helper_total": 48,
+      "helper_bindings": {
+        "setBusy": 1,
+        "report": 7,
+        "icon": 12,
+        "toast": 1,
+        "escape": 6,
+        "escapeHtml": 6,
+        "renderPagination": 0,
+        "upsert": 1,
+        "fromApi": 4
+      },
+      "getters": 218,
+      "translation_getters": 177,
+      "html_references": 80,
+      "nested_ternaries": 35,
+      "nested_decision_chains": 0,
+      "functions_over_60": [
+        {
+          "file": "public/src/api-connection/api-client.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 144,
+          "lines": 144
+        },
+        {
+          "file": "public/src/api-connection/api-client.js",
+          "name": "request",
+          "line": 49,
+          "end_line": 112,
+          "lines": 64
+        },
+        {
+          "file": "public/src/api-connection/auth-session.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 206,
+          "lines": 206
+        },
+        {
+          "file": "public/src/api-connection/auth-session.js",
+          "name": "render",
+          "line": 42,
+          "end_line": 103,
+          "lines": 62
+        },
+        {
+          "file": "public/src/api-connection/i18n.js",
+          "name": "(closure)",
+          "line": 2,
+          "end_line": 347,
+          "lines": 346
+        },
+        {
+          "file": "public/src/api-connection/i18n.js",
+          "name": "apply",
+          "line": 129,
+          "end_line": 205,
+          "lines": 77
+        },
+        {
+          "file": "public/src/api-connection/theme.js",
+          "name": "(closure)",
+          "line": 2,
+          "end_line": 94,
+          "lines": 93
+        },
+        {
+          "file": "public/src/api-connection/universal-search.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 574,
+          "lines": 574
+        },
+        {
+          "file": "public/src/api-connection/universal-search.js",
+          "name": "(closure)",
+          "line": 5,
+          "end_line": 573,
+          "lines": 569
+        },
+        {
+          "file": "public/src/api-connection/universal-search.js",
+          "name": "renderResults",
+          "line": 409,
+          "end_line": 479,
+          "lines": 71
+        },
+        {
+          "file": "public/src/js/documents/document-form.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 237,
+          "lines": 237
+        },
+        {
+          "file": "public/src/js/documents/documents-viewer.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 758,
+          "lines": 758
+        },
+        {
+          "file": "public/src/js/documents/documents-viewer.js",
+          "name": "renderPage",
+          "line": 157,
+          "end_line": 235,
+          "lines": 79
+        },
+        {
+          "file": "public/src/js/documents/documents-viewer.js",
+          "name": "openFile",
+          "line": 322,
+          "end_line": 416,
+          "lines": 95
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 611,
+          "lines": 611
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "render",
+          "line": 117,
+          "end_line": 189,
+          "lines": 73
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "updateSelection",
+          "line": 191,
+          "end_line": 267,
+          "lines": 77
+        },
+        {
+          "file": "public/src/js/documents/documents.js",
+          "name": "setupFilter",
+          "line": 396,
+          "end_line": 457,
+          "lines": 62
+        },
+        {
+          "file": "public/src/js/dropdowns.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 447,
+          "lines": 447
+        },
+        {
+          "file": "public/src/js/dropdowns.js",
+          "name": "enhance",
+          "line": 122,
+          "end_line": 259,
+          "lines": 138
+        },
+        {
+          "file": "public/src/js/dropdowns.js",
+          "name": "enhanceSuggestions",
+          "line": 298,
+          "end_line": 378,
+          "lines": 81
+        },
+        {
+          "file": "public/src/js/login-register/recovery.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 77,
+          "lines": 77
+        },
+        {
+          "file": "public/src/js/login-register/register.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 75,
+          "lines": 75
+        },
+        {
+          "file": "public/src/js/management/accounts.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 307,
+          "lines": 307
+        },
+        {
+          "file": "public/src/js/management/accounts.js",
+          "name": "render",
+          "line": 57,
+          "end_line": 126,
+          "lines": 70
+        },
+        {
+          "file": "public/src/js/management/ambulances.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 469,
+          "lines": 469
+        },
+        {
+          "file": "public/src/js/management/ambulances.js",
+          "name": "render",
+          "line": 110,
+          "end_line": 173,
+          "lines": 64
+        },
+        {
+          "file": "public/src/js/management/destinations.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 595,
+          "lines": 595
+        },
+        {
+          "file": "public/src/js/management/destinations.js",
+          "name": "(closure)",
+          "line": 432,
+          "end_line": 495,
+          "lines": 64
+        },
+        {
+          "file": "public/src/js/management/doctors.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 701,
+          "lines": 701
+        },
+        {
+          "file": "public/src/js/management/doctors.js",
+          "name": "(closure)",
+          "line": 562,
+          "end_line": 626,
+          "lines": 65
+        },
+        {
+          "file": "public/src/js/management/patients.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 672,
+          "lines": 672
+        },
+        {
+          "file": "public/src/js/management/patients.js",
+          "name": "openForm",
+          "line": 403,
+          "end_line": 487,
+          "lines": 85
+        },
+        {
+          "file": "public/src/js/management/personnel.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 515,
+          "lines": 515
+        },
+        {
+          "file": "public/src/js/management/routes.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 711,
+          "lines": 711
+        },
+        {
+          "file": "public/src/js/management/routes.js",
+          "name": "(closure)",
+          "line": 504,
+          "end_line": 607,
+          "lines": 104
+        },
+        {
+          "file": "public/src/js/settings.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 517,
+          "lines": 517
+        },
+        {
+          "file": "public/src/js/settings.js",
+          "name": "render",
+          "line": 73,
+          "end_line": 153,
+          "lines": 81
+        },
+        {
+          "file": "public/src/js/settings.js",
+          "name": "showSessions",
+          "line": 290,
+          "end_line": 358,
+          "lines": 69
+        },
+        {
+          "file": "public/src/js/surveys/survey-api.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 143,
+          "lines": 143
+        },
+        {
+          "file": "public/src/js/surveys/survey-api.js",
+          "name": "share",
+          "line": 47,
+          "end_line": 141,
+          "lines": 95
+        },
+        {
+          "file": "public/src/js/surveys/survey-new.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 960,
+          "lines": 960
+        },
+        {
+          "file": "public/src/js/surveys/survey-new.js",
+          "name": "(closure)",
+          "line": 741,
+          "end_line": 959,
+          "lines": 219
+        },
+        {
+          "file": "public/src/js/surveys/survey-templates.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 125,
+          "lines": 125
+        },
+        {
+          "file": "public/src/js/surveys/survey-templates.js",
+          "name": "get",
+          "line": 4,
+          "end_line": 123,
+          "lines": 120
+        },
+        {
+          "file": "public/src/js/surveys/survey-view.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 1141,
+          "lines": 1141
+        },
+        {
+          "file": "public/src/js/surveys/survey-view.js",
+          "name": "renderHeader",
+          "line": 430,
+          "end_line": 537,
+          "lines": 108
+        },
+        {
+          "file": "public/src/js/surveys/survey-view.js",
+          "name": "(closure)",
+          "line": 956,
+          "end_line": 1140,
+          "lines": 185
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 621,
+          "lines": 621
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "setupFilterDropdown",
+          "line": 167,
+          "end_line": 242,
+          "lines": 76
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "render",
+          "line": 385,
+          "end_line": 448,
+          "lines": 64
+        },
+        {
+          "file": "public/src/js/surveys/survey.js",
+          "name": "(closure)",
+          "line": 483,
+          "end_line": 620,
+          "lines": 138
+        },
+        {
+          "file": "public/src/js/traces/trace-api.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 179,
+          "lines": 179
+        },
+        {
+          "file": "public/src/js/traces/trace-map-shared.js",
+          "name": "(closure)",
+          "line": 2,
+          "end_line": 115,
+          "lines": 114
+        },
+        {
+          "file": "public/src/js/traces/trace-map-shared.js",
+          "name": "createBasemap",
+          "line": 23,
+          "end_line": 90,
+          "lines": 68
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "(closure)",
+          "line": 7,
+          "end_line": 1015,
+          "lines": 1009
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "initializeMap",
+          "line": 381,
+          "end_line": 477,
+          "lines": 97
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "ensureLayers",
+          "line": 494,
+          "end_line": 576,
+          "lines": 83
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "poll",
+          "line": 623,
+          "end_line": 690,
+          "lines": 68
+        },
+        {
+          "file": "public/src/js/traces/trace-map.js",
+          "name": "bindEvents",
+          "line": 790,
+          "end_line": 957,
+          "lines": 168
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 596,
+          "lines": 596
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "render",
+          "line": 49,
+          "end_line": 176,
+          "lines": 128
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "renderMap",
+          "line": 177,
+          "end_line": 256,
+          "lines": 80
+        },
+        {
+          "file": "public/src/js/traces/trace-view.js",
+          "name": "(closure)",
+          "line": 311,
+          "end_line": 387,
+          "lines": 77
+        },
+        {
+          "file": "public/src/js/traces/trace.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 536,
+          "lines": 536
+        },
+        {
+          "file": "public/src/js/ui.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 212,
+          "lines": 212
+        },
+        {
+          "file": "public/src/js/ui.js",
+          "name": "bindNavigation",
+          "line": 26,
+          "end_line": 118,
+          "lines": 93
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.js",
+          "name": "(closure)",
+          "line": 1,
+          "end_line": 781,
+          "lines": 781
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.js",
+          "name": "renderQuestion",
+          "line": 425,
+          "end_line": 502,
+          "lines": 78
+        },
+        {
+          "file": "public/src/views/surveys/user-view/survey-user.js",
+          "name": "(closure)",
+          "line": 607,
+          "end_line": 780,
+          "lines": 174
+        }
+      ],
+      "function_count": 2274
+    },
+    "views": {
+      "inline_style_attributes": 215,
+      "i18n_inline_style_wrappers": 174,
+      "i18n_style_templates": 1,
+      "cache_buster_strings": 28,
+      "view_cache_buster_strings": 27
+    }
+  },
+  "delta": {
+    "application": {
+      "files": 0,
+      "bytes": 0,
+      "code_files": 0,
+      "code_bytes": 0,
+      "repeated_8_line_groups": 0,
+      "repeated_8_line_extra_occurrences": 0
+    },
+    "css": {
+      "files": 0,
+      "bytes": 0,
+      "rules": 0,
+      "grouping_rules": 0,
+      "keyframe_rules": 0,
+      "theme_bytes": 0,
+      "theme_rules": 0,
+      "theme_grouping_rules": 0,
+      "hardcoded_colors": 0,
+      "explicit_colors": 0,
+      "named_colors": 0,
+      "var_uses": 0
+    },
+    "js": {
+      "files": 0,
+      "bytes": 0,
+      "nonblank_lines": 0,
+      "lines_over_140": 0,
+      "lines_over_250": 0,
+      "helper_total": 0,
+      "getters": 0,
+      "translation_getters": 0,
+      "html_references": 0,
+      "nested_ternaries": 0,
+      "nested_decision_chains": 0,
+      "function_count": 0
+    },
+    "views": {
+      "inline_style_attributes": 0,
+      "i18n_inline_style_wrappers": 0,
+      "i18n_style_templates": 0,
+      "cache_buster_strings": 0,
+      "view_cache_buster_strings": 0
+    }
+  },
+  "js_line_attribution": {
+    "formatting_only_nonblank_line_delta": 0,
+    "changed_ast_nonblank_line_delta": 0,
+    "method": "AST-equal files are formatting-only; changed-AST file deltas can include formatting and behavior together."
+  }
+}

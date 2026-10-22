@@ -280,6 +280,18 @@ First-party files remain **266**. Code/dictionaries grow **2,216,784 → 2,310,4
 
 Live provider delivery is deferred per user direction; local recovery checks use mocks. Full clean-install/final integrity verification remains for Checkpoint 4 alongside justified style consolidation. Normal/original private configuration/data and global Apache settings were not changed.
 
+## Frontend simplification — Phase 0 (complete; paused for review)
+
+The user started a separate frontend simplification plan at baseline `f0f1c7f`, replacing the earlier Checkpoint 4 ordering for this chat. Only Phase 0 is complete; database/domain PHP/API contracts and application presentation remain frozen. All **266 first-party application files retain their bytes**, with **90 equal PHP token streams and 35 equal JS ASTs**.
+
+The existing visual suite now records complete computed-property fingerprints for all elements, hidden elements and generated pseudo-elements. **300 page views and 336 open states** cover all 25 pages, both themes/languages, desktop, 390px and 320px. **All 636 comparisons have zero computed-style differences and 0% pixel difference**, against the 0.041% limit. Missing local assets and unhandled/new console errors are absent. API/font/image readiness, equal browser origins and deterministic vendor tiles keep environmental timing/data out of the comparison without relaxing its limits.
+
+All seven required browser suites pass: **534 assertions plus 50 theme page/viewport cases**, alongside **203 focused SQL/API checks**, 98 readability boundary checks and translation coverage of **1,816 keys, 25 fresh page bindings/assets and 1,111 literal references**. Recovery uses local mocks; hosting inbox verification remains deferred as directed. Existing test waits/route assertions were corrected, and the existing module runner can run fleet UI verification before cleaning its dedicated empty fixture.
+
+`tests/frontend_metrics.cjs` records every requested metric. Before/after values are identical: **696,173 CSS bytes / 5,787 style rules**, `theme.css` **191,486 bytes**, **2,991 explicit colors / 1,556 var() uses**, **109 cross-page-sheet duplicate groups**, **14,311 nonblank JS lines**, 48 actual candidate-helper definitions, 218 getters, **zero direct nested ternary chains**, 70 function spans over 60 lines and 215 inline style source attributes. PHP/HTML has 174 inline-styled i18n wrappers plus one JS template; the plan's approximate counts are reconciled in the report. Formatting-driven application line growth is zero; no reduction is claimed for this gate phase.
+
+See `frontend-phase0.md`, `frontend-phase0.json`, `frontend-phase0-metrics.json` and reusable commands in `frontend-gates.md`. The accepted plan is saved as `frontend-simplification-plan.md`. Raw evidence remains under ignored `tests/.runtime/frontend/phase0/`. Phase-created schemas/accounts/storage are gone, eleven test ports are closed and demonstration port 8091 returns HTTP 200. A pre-existing Stage 5 fixture was identified and preserved. Isolated preflight is healthy. Original private data/configuration, normal configuration and global Apache settings were not changed; no archive was produced.
+
 ## Next checkpoint
 
-Await user review of Checkpoint 3. Checkpoint 4 consolidates only proven equivalent styles and completes final installation/integrity checks. No submission archive is planned, and the next checkpoint does not start automatically.
+Await user review of frontend Phase 0. Phase 1 does not start automatically. No application or color change is approved by this gate work. The strict custom-property comparison needs an explicit allowance decision before the Phase 2 token pilot.
