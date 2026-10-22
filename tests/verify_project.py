@@ -38,7 +38,7 @@ def cleanup(env):
     subprocess.run([PHP, '-r', code], cwd=ROOT, env=env, check=True, capture_output=True)
 
 
-def run_module(module, directory, port, contracts=False):
+def run_module(module, directory, port, contracts=False, fleet_browser=False):
     directory.mkdir(parents=True)
     suffix = secrets.token_hex(4)
     env = clean_environment()
@@ -97,6 +97,17 @@ def run_module(module, directory, port, contracts=False):
         output = (directory/'checks.log').read_text()
         result.update(status='passed' if checked.returncode == 0 else 'failed',
                       checks=len(re.findall(r'^PASS\b', output, re.M)), exit_code=checked.returncode)
+        if module == 'ambulances' and fleet_browser and checked.returncode == 0:
+            node = os.environ.get('HOSPITAL_TEST_NODE', str(Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node'))
+            env.setdefault('NODE_PATH', str(Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules'))
+            with (directory/'browser.log').open('w') as log:
+                browser = subprocess.run([node, 'tests/ambulances_browser.cjs'], cwd=ROOT, env=env,
+                                         stdout=log, stderr=log, timeout=300)
+            browser_output = (directory/'browser.log').read_text()
+            result['browser'] = dict(status='passed' if browser.returncode == 0 else 'failed',
+                                     checks=len(re.findall(r'^PASS\b', browser_output, re.M)), exit_code=browser.returncode)
+            if browser.returncode:
+                result.update(status='failed', exit_code=browser.returncode)
     except Exception as error:
         result['error'] = type(error).__name__+': '+str(error)
     finally:
@@ -119,17 +130,20 @@ def main():
     parser.add_argument('--output', type=Path)
     parser.add_argument('--port', type=int, default=8113)
     parser.add_argument('--contracts', action='store_true', help='Inventory sanitized API outcomes using the existing Client.')
+    parser.add_argument('--fleet-browser', action='store_true', help='Run the existing fleet UI journey before cleaning its disposable module fixture.')
     args = parser.parse_args()
     modules = args.modules.split(',')
     if not modules or set(modules)-set(MODULES):
         parser.error('Choose existing module names: '+','.join(MODULES))
+    if args.fleet_browser and 'ambulances' not in modules:
+        parser.error('--fleet-browser requires the ambulances module.')
     output = (args.output or ROOT/'tests/.runtime/verification'/secrets.token_hex(4)).resolve()
     output.relative_to(ROOT/'tests/.runtime')
     output.mkdir(parents=True, exist_ok=True)
     results = []
     for module in modules:
         print('Checking '+module+' with a separate disposable database...', flush=True)
-        result = run_module(module, output/(module+'-'+secrets.token_hex(3)), args.port, args.contracts)
+        result = run_module(module, output/(module+'-'+secrets.token_hex(3)), args.port, args.contracts, args.fleet_browser)
         results.append(result)
         (output/'report.json').write_text(json.dumps(results, indent=2)+'\n')
         print(module+': '+result['status']+'; '+str(result['checks'])+' checks; fixture cleaned.', flush=True)

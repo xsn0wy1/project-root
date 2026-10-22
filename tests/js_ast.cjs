@@ -16,18 +16,26 @@ function normalize(value) {
   return value;
 }
 
-const sources = JSON.parse(fs.readFileSync(0, 'utf8'));
-const result = {};
-for (const [name, source] of Object.entries(sources)) {
+function fingerprint(source) {
   const tree = acorn.parse(source, {ecmaVersion: 2022, sourceType: 'script'});
-  if (!process.argv.includes('--inventory')) {
-    result[name] = crypto.createHash('sha256').update(JSON.stringify(normalize(tree))).digest('hex');
-    continue;
-  }
-  const functions = [], ternaries = [], decisionChains = [];
+  return crypto.createHash('sha256').update(JSON.stringify(normalize(tree))).digest('hex');
+}
+
+function inventory(source) {
+  const tree = acorn.parse(source, {ecmaVersion: 2022, sourceType: 'script'});
+  const functions = [], ternaries = [], decisionChains = [], bindings = [];
+  let getters = 0, translationGetters = 0, htmlReferences = 0;
   const line = offset => source.slice(0, offset).split('\n').length;
   function walk(node, label = '', conditional = null) {
     if (!node || typeof node !== 'object') return;
+    if (['Property', 'MethodDefinition'].includes(node.type) && node.kind === 'get') {
+      getters++;
+      const callee = node.value?.body?.body?.[0]?.argument?.callee;
+      if (callee?.name === 't' || callee?.property?.name === 't') translationGetters++;
+    }
+    if (node.type === 'VariableDeclarator' && node.id?.type === 'Identifier') bindings.push({name: node.id.name,
+      type: node.init?.type || 'uninitialized', line: line(node.start)});
+    if (node.type === 'MemberExpression' && ['innerHTML', 'setHTML'].includes(node.property?.name)) htmlReferences++;
     if (/^(FunctionExpression|FunctionDeclaration|ArrowFunctionExpression)$/.test(node.type)) {
       const first = line(node.start), last = line(node.end);
       functions.push({name: node.id?.name || label || '(closure)', line: first, end_line: last, lines: last - first + 1});
@@ -41,14 +49,24 @@ for (const [name, source] of Object.entries(sources)) {
         parent_start: conditional.start, parent_end: conditional.end, source: source.slice(conditional.start, conditional.end)});
       conditional = node;
     }
-    const childLabel = node.type === 'VariableDeclarator' ? node.id?.name :
-      node.type === 'Property' || node.type === 'MethodDefinition' ? node.key?.name : label;
-    for (const value of Object.values(node)) {
+    for (const [key, value] of Object.entries(node)) {
+      let childLabel = '';
+      if (node.type === 'VariableDeclarator' && key === 'init') childLabel = node.id?.name;
+      if (['Property', 'MethodDefinition'].includes(node.type) && key === 'value') childLabel = node.key?.name;
+      if (node.type === 'AssignmentExpression' && key === 'right') childLabel = node.left?.name || node.left?.property?.name;
       if (Array.isArray(value)) value.forEach(child => walk(child, childLabel, conditional));
       else if (value?.type) walk(value, childLabel, conditional);
     }
   }
   walk(tree);
-  result[name] = {functions, nested_ternaries: ternaries, decision_chains: decisionChains};
+  return {functions, nested_ternaries: ternaries, decision_chains: decisionChains, getters,
+    translation_getters: translationGetters, html_references: htmlReferences, bindings};
 }
-process.stdout.write(JSON.stringify(result));
+
+module.exports = {fingerprint, inventory};
+if (require.main === module) {
+  const sources = JSON.parse(fs.readFileSync(0, 'utf8'));
+  const result = Object.fromEntries(Object.entries(sources).map(([name, source]) =>
+    [name, process.argv.includes('--inventory') ? inventory(source) : fingerprint(source)]));
+  process.stdout.write(JSON.stringify(result));
+}

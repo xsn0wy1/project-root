@@ -1,7 +1,7 @@
 /* Focused appearance checks; requires the disposable environment prepared under tests/.runtime/theme. */
 'use strict';
 const fs=require('fs'), path=require('path'), assert=require('assert');
-const runtime=path.join(__dirname,'.runtime/theme');
+const runtime=process.env.HOSPITAL_THEME_TEST_DIR || path.join(__dirname,'.runtime/theme');
 Object.assign(process.env,JSON.parse(fs.readFileSync(path.join(runtime,'env.json'))));
 assert(process.env.HOSPITAL_DB_NAME.endsWith('_test'));
 const {chromium}=require('playwright');
@@ -10,7 +10,7 @@ const base=process.env.HOSPITAL_AUTH_TEST_URL;
 const pages=fs.readdirSync(path.join(__dirname,'../public'),{recursive:true}).filter(f=>/\.(html|php)$/.test(f)&&(!process.env.THEME_FILES||process.env.THEME_FILES.split(',').some(name=>f.endsWith(name)))).sort();
 const queries={ 'documents-viewer.php':records.document.id,'documents-edit.php':records.document.id,'trace-view.php':records.transfer.id,'survey-view.php':records.survey.id,'survey-new.php':records.survey.id };
 function url(file){const id=queries[path.basename(file)]; return base+'/'+file+(id?'?id='+id:'')+(file.endsWith('survey-user.php')?'#token='+records.token:'');}
-async function ready(p){await p.evaluate(async()=>{await window.HospitalI18n?.ready;await window.HospitalAuth?.ready;}); await p.waitForLoadState('networkidle',{timeout:8000}).catch(()=>{}); await p.evaluate(()=>document.fonts.ready); await p.waitForTimeout(140);}
+async function ready(p){await p.evaluate(async()=>{await window.HospitalI18n?.ready;await window.HospitalAuth?.ready;if(window.HospitalAuth?.current)await HospitalAuth.refresh(true);}); await p.waitForLoadState('networkidle',{timeout:8000}).catch(()=>{}); await p.evaluate(()=>document.fonts.ready); await p.addStyleTag({content:'*,*::before,*::after{animation-delay:0s!important;animation-duration:0s!important;transition:none!important}'}); await p.waitForTimeout(140);}
 async function geometry(p){return p.evaluate(()=>Object.fromEntries(['.tarjeta','.app-shell','.topbar','.sidebar','.hero-panel','.bg-panel','.patient-header','.patient-survey','.patient-layout'].map(s=>{const e=document.querySelector(s);if(!e)return [s,null];const b=e.getBoundingClientRect(),c=getComputedStyle(e);return [s,{x:b.x,y:b.y,w:b.width,h:b.height,blur:c.backdropFilter,radius:c.borderRadius}];})));}
 (async()=>{
  const baseline=process.argv.includes('--baseline'), browser=await chromium.launch({channel:'chrome',headless:true});
@@ -31,7 +31,7 @@ async function geometry(p){return p.evaluate(()=>Object.fromEntries(['.tarjeta',
  const shapes=baseline&&fs.existsSync(path.join(runtime,'baseline.json'))?JSON.parse(fs.readFileSync(path.join(runtime,'baseline.json'))):{}, errors=[];let count=0;
  for(const file of pages){const publicPage=file==='index.php'||file.includes('register-restore')||file.endsWith('survey-user.php');const context=publicPage?anon:staff;const p=await context.newPage();p.on('pageerror',e=>errors.push(file+': '+e.message));
   for(const [size,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
-   await p.setViewportSize(viewport);await p.goto(url(file));await ready(p);
+   await p.setViewportSize(viewport);const response=await p.goto(url(file));if(response)assert.equal(response.status(),200,file+' response');await ready(p);assert.equal(new URL(p.url()).pathname,new URL(url(file)).pathname,file+' unexpected redirect');
    const name=file.replaceAll('/','_').replace('.html','')+'-'+size;
    const theme=baseline?'dark':'light';
    if(!baseline){await p.evaluate(()=>HospitalTheme.preview('light'));await p.waitForTimeout(320);assert.equal(await p.locator('html').getAttribute('data-theme'),'light');}

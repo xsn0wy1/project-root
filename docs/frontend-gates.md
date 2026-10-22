@@ -59,6 +59,8 @@ node tests/readability_checks.cjs
 
 Behavior changes run the existing `i18n_browser.cjs`, `theme_browser.cjs`, `dropdowns_browser.cjs`, `ambulances_browser.cjs`, `transfers_surveys_browser.cjs`, `document_links_browser.cjs` and `password_recovery_browser.cjs`. Reuse the disposable fixture instructions in README. The last two are provisioned and cleaned by their corresponding Python integration runners with `--browser`; recovery uses local mock delivery. Live provider/inbox verification is deferred until hosting.
 
+The fleet integration checks require an empty schema and an administrator without implicit clinical/dispatcher permissions. Keep them separate from populated all-page fixtures. `python3 tests/verify_project.py --modules ambulances --fleet-browser --output tests/.runtime/frontend/next/fleet` runs the existing fleet integration and browser journey together before the usual automatic cleanup.
+
 `theme_browser.cjs` accepts `HOSPITAL_THEME_TEST_DIR`, matching its existing environment helper. It freezes decorative motion during geometry comparisons, verifies actual routes/statuses and renews its own disposable session. The i18n suite waits for the current consolidated update endpoints and completed registration navigation.
 
 ## Metrics (WP-0.3)

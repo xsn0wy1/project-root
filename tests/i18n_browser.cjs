@@ -96,7 +96,8 @@ const {
     check((await input.inputValue()) === 'Borrador sin traducir', file + ' preserves unsaved input when switching');
     await p.evaluate(() => HospitalI18n.apply('en'));
     await input.fill(value);
-    const response = p.waitForResponse(res => res.url().includes('/update.php') && res.request().method() === 'POST');
+    const domain = file.split('/').pop().replace('.php', '');
+    const response = p.waitForResponse(res => res.url().includes('/' + domain + '.php?action=update') && res.request().method() === 'POST');
     await p.locator(form + ' [type=submit]').click();
     const res = await response;
     check(res.status() === 200, file + ' saves canonical enum values in English');
@@ -185,6 +186,8 @@ const {
   await patient.goto(base + '/index.php?lang=en');
   await patient.evaluate(() => HospitalI18n.ready);
   await patient.locator('a[href*="register.php"]').click();
+  await patient.waitForURL('**/register.php?lang=en');
+  await patient.waitForFunction(() => Boolean(window.HospitalI18n));
   await patient.evaluate(() => HospitalI18n.ready);
   check(patient.url().includes('lang=en') && (await patient.locator('h1').innerText()) === 'Registration', 'explicit English links carry language through public navigation');
   await patient.goto(base + '/index.php?lang=invalid');
