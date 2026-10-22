@@ -8,6 +8,7 @@ const path = require('path');
 const assert = require('assert/strict');
 const {chromium} = require('playwright');
 const {PNG} = require('pngjs');
+const computedStyles = require('./computed_styles.cjs');
 const root = path.join(__dirname, '..');
 const runtime = process.env.BASELINE_ENV_DIR || path.join(__dirname, '.runtime/stage1');
 const reference = process.env.BASELINE_REFERENCE_DIR || path.join(__dirname, '.runtime/stage1/reference');
@@ -15,6 +16,15 @@ const referencePhp = fs.existsSync(path.join(reference, 'public/index.php'));
 const output = process.env.BASELINE_OUTPUT_DIR ? path.resolve(process.env.BASELINE_OUTPUT_DIR) : runtime;
 const env = JSON.parse(fs.readFileSync(path.join(runtime, 'env.json')));
 const selectedFiles = (process.env.BASELINE_FILES || '').split(',').filter(Boolean);
+const fullStyles = process.env.BASELINE_COMPUTED_STYLES === '1';
+const sizes = {desktop: {width: 1440, height: 900}, mobile: {width: 390, height: 844}, narrow: {width: 320, height: 640}};
+const matrix = (process.env.BASELINE_SIZES || (fullStyles ? 'desktop,mobile,narrow' : 'desktop,mobile')).split(',');
+const locales = process.env.BASELINE_LOCALES ? process.env.BASELINE_LOCALES.split(',') : fullStyles ? ['es-UY', 'en'] : [null];
+const pixelLimit = Number(process.env.BASELINE_PIXEL_LIMIT || (fullStyles ? '0.041' : '0.1'));
+assert(matrix.every(size => sizes[size]), 'Unknown baseline viewport');
+assert(locales.every(locale => locale === null || ['es-UY', 'en'].includes(locale)), 'Unknown baseline language');
+assert(Number.isFinite(pixelLimit) && pixelLimit >= 0, 'Invalid pixel limit');
+assert(!fullStyles || (process.env.BASELINE_DROPDOWN_CHANGE !== '1' && process.env.BASELINE_LINK_CHANGE !== '1'), 'Full-style gate does not permit intentional UI masks');
 const phpViews = new Set(['ambulances', 'patients', 'doctors', 'personnel', 'destinations', 'routes', 'management', 'accounts']);
 const records = JSON.parse(fs.readFileSync(path.join(runtime, 'records.json')));
 const pages = fs.readdirSync(path.join(reference, 'public'), {recursive: true})
@@ -29,6 +39,7 @@ const selectedPages = pages.filter(file => !selectedFiles.length || selectedFile
 const report = process.argv.includes('--resume') && fs.existsSync(reportPath)
     ? JSON.parse(fs.readFileSync(reportPath))
     : {pages: selectedPages.length, comparisons: [], interactions: [], errors: [], consoleErrors: []};
+const pendingApi = new WeakMap();
 
 function currentPath(file) {
     if (['documents','traces','surveys'].some(area => file.startsWith('src/views/' + area + '/'))) return file.replace(/\.html$/, '.php');
@@ -47,6 +58,27 @@ async function ready(page) {
     await page.waitForLoadState('networkidle', {timeout: 2000}).catch(() => {});
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(250);
+    if (fullStyles && pendingApi.has(page)) {
+        const deadline = Date.now() + 30000;
+        while (pendingApi.get(page).size) {
+            assert(Date.now() < deadline, 'Pending API requests did not settle');
+            await page.waitForTimeout(50);
+        }
+        await page.waitForTimeout(100);
+    }
+    if (fullStyles) await page.evaluate(async () => {
+        const backgrounds = new Set();
+        for (const node of document.querySelectorAll('*')) if (node.checkVisibility()) for (const pseudo of ['', '::before', '::after']) {
+            const value = getComputedStyle(node, pseudo || null).backgroundImage;
+            for (const match of value.matchAll(/url\("([^"]+)"\)/g)) backgrounds.add(match[1]);
+        }
+        const images = [...backgrounds].map(async source => {const image = new Image(); image.src = source; await image.decode();});
+        images.push(...[...document.images].filter(image => image.currentSrc && image.checkVisibility() && !image.closest('.leaflet-tile-pane')).map(image => image.decode()));
+        let timer;
+        try {
+            await Promise.race([Promise.all(images), new Promise((_, reject) => {timer = setTimeout(() => reject(new Error('Visible images did not decode')), 30000);})]);
+        } finally {clearTimeout(timer);}
+    });
 }
 async function geometry(page) {
     return page.evaluate(selectors => Object.fromEntries(selectors.map(selector => {
@@ -82,6 +114,16 @@ function pixelDifference(a, b, regions = []) {
     return Math.round(100000*changed/(left.width*left.height))/1000;
 }
 async function capturePair(pair, name, captures) {
+    if (process.env.BASELINE_TRACE_PROGRESS === '1') console.log('Preparing ' + name);
+    if (fullStyles) {
+        await Promise.all(pair.map(ready));
+        if (process.env.BASELINE_TRACE_PROGRESS === '1') console.log('Reading styles for ' + name);
+        const snapshots = await Promise.all(pair.map(computedStyles.snapshot));
+        const comparison = computedStyles.compare(...snapshots);
+        for (let i = 0; i < snapshots.length; i++) computedStyles.save(path.join(output, 'computed-styles', (i ? 'current-' : 'reference-') + name + '.json.gz'), snapshots[i]);
+        report.computedStyles ??= [];
+        report.computedStyles.push({name, ...comparison});
+    }
     const shapes = await Promise.all(pair.map(geometry));
     compareGeometry(shapes[0], shapes[1], name);
     const buffers = await Promise.all(pair.map((page, i) => page.screenshot({
@@ -95,7 +137,7 @@ async function capturePair(pair, name, captures) {
         result.intentionalDropdownRegions = regions;
         result.withoutDropdownsChangedPixelsPercent = pixelDifference(...buffers, regions);
     }
-    if (result.changedPixelsPercent > 0.1 && await pair[0].locator('.leaflet-tile-pane').count()) {
+    if (result.changedPixelsPercent > pixelLimit && await pair[0].locator('.leaflet-tile-pane').count()) {
         // Live provider tiles can fail or fade at different times. Keep full captures,
         // then compare the complete interface/route overlays without those remote pixels.
         await Promise.all(pair.map(page => page.locator('.leaflet-tile-pane').evaluateAll(elements => {
@@ -111,8 +153,11 @@ async function capturePair(pair, name, captures) {
     }
     captures.push(result);
 }
-async function navigate(pair, file, theme, bases) {
+async function navigate(pair, file, theme, bases, locale) {
     await Promise.all(pair.map(async (page, i) => {
+        if (fullStyles) await page.evaluate(async () => {
+            if (window.HospitalAuth?.current) await HospitalApi.post('auth.php?action=heartbeat');
+        });
         // Use the map's existing motion preference so Leaflet pans settle identically.
         if (/trace-map\.(html|php)$/.test(file)) await page.emulateMedia({reducedMotion: 'reduce'});
         const target = i ? currentPath(file) : file;
@@ -125,21 +170,54 @@ async function navigate(pair, file, theme, bases) {
             report.renderedPages['public/' + target] = await response.text();
         }
         await ready(page);
-        await page.evaluate(theme => HospitalTheme.preview(theme), theme);
+        await page.evaluate(async ({theme, locale}) => {
+            HospitalTheme.preview(theme);
+            if (locale) await HospitalI18n.preview(locale);
+        }, {theme, locale});
         // Freeze decorative CSS animations, retaining both their selectors and static computed style.
-        await page.addStyleTag({content: '*,*::before,*::after{animation-delay:0s!important;animation-duration:0s!important;transition:none!important;caret-color:transparent!important}'});
+        await page.addStyleTag({content: '*,*::before,*::after{animation-delay:0s!important;animation-duration:0s!important;transition:none!important}'});
         await page.waitForTimeout(200);
     }));
 }
 (async () => {
     fs.mkdirSync(path.join(output, 'screenshots'), {recursive: true});
+    if (fullStyles) fs.mkdirSync(path.join(output, 'computed-styles'), {recursive: true});
     const browser = await chromium.launch({channel: 'chrome', headless: true});
     try {
-        const bases = [process.env.BASELINE_REFERENCE_URL || 'http://127.0.0.1:8092', process.env.BASELINE_CURRENT_URL || 'http://127.0.0.1:8091'];
+        const currentBase = process.env.BASELINE_CURRENT_URL || 'http://127.0.0.1:8091';
+        const proxy = process.env.BASELINE_REFERENCE_PROXY_URL;
+        const bases = [proxy ? currentBase : process.env.BASELINE_REFERENCE_URL || 'http://127.0.0.1:8092', currentBase];
         const contexts = [];
-        for (const base of bases) {
+        const requestedMatrix = {sizes: matrix, locales, themes: ['dark', 'light'], pixelLimit, fullStyles};
+        if (process.argv.includes('--resume') && report.matrix) assert.deepEqual(report.matrix, requestedMatrix, 'Resume matrix changed');
+        report.matrix = requestedMatrix;
+        report.browser = browser.version();
+        report.externalTileFixture = fullStyles;
+        for (const [copy, base] of bases.entries()) {
             const staff = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             const publicContext = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
+            if (proxy && copy === 0) for (const context of [staff, publicContext]) {
+                // Present both copies at one browser origin, so real QR/link data stays equal.
+                await context.route(base + '/**', async route => {
+                    const response = await route.fetch({url: route.request().url().replace(base, proxy), maxRedirects: 0});
+                    await route.fulfill({response});
+                });
+            }
+            if (fullStyles) for (const context of [staff, publicContext]) {
+                const tile = new PNG({width: 1, height: 1}); tile.data.fill(0);
+                await context.route(url => /(^|\.)(tile\.openstreetmap\.org|basemaps\.cartocdn\.com)$/.test(url.hostname),
+                    route => route.fulfill({status: 200, contentType: 'image/png', body: PNG.sync.write(tile)}));
+            }
+            if (fullStyles) for (const context of [staff, publicContext]) {
+                // Fix only wall time; timers and ordinary UI logic keep running.
+                await context.addInitScript(() => {
+                    const NativeDate = Date, fixed = NativeDate.parse('2026-10-22T15:00:00Z');
+                    window.Date = class extends NativeDate {
+                        constructor(...args) {super(...(args.length ? args : [fixed]));}
+                        static now() {return fixed;}
+                    };
+                });
+            }
             if (process.env.BASELINE_LOCAL_FONTS === '1') {
                 const fonts = path.join(root, 'public/assets/vendor/fonts');
                 const sources = JSON.parse(fs.readFileSync(path.join(fonts, 'sources.json')));
@@ -168,28 +246,49 @@ async function navigate(pair, file, theme, bases) {
         }
         for (const file of selectedPages) {
             const prefix = file.replaceAll('/', '_').replace('.html', '') + '-';
-            const belongs = row => ['desktop-', 'mobile-'].some(size => row.name.startsWith(prefix + size));
-            if (!selectedFiles.length && report.comparisons.filter(belongs).length === 4) continue;
+            const belongs = row => matrix.some(size => row.name.startsWith(prefix + size + '-'));
+            const savedStyles = (report.computedStyles || []).filter(belongs);
+            const savedPixels = [...report.comparisons, ...report.interactions].filter(belongs);
+            const externalFailures = (report.externalFailures || []).some(row => row.file === file);
+            if (process.argv.includes('--resume') && report.comparisons.filter(belongs).length === matrix.length * locales.length * 2 &&
+                !externalFailures && savedPixels.every(row => (row.withoutLiveTilesChangedPixelsPercent ?? row.withoutDropdownsChangedPixelsPercent ?? row.changedPixelsPercent) <= pixelLimit) &&
+                (!fullStyles || (savedStyles.length && savedStyles.every(row => row.differences === 0)))) continue;
             report.comparisons = report.comparisons.filter(row => !belongs(row));
             report.interactions = report.interactions.filter(row => !belongs(row));
+            if (report.computedStyles) report.computedStyles = report.computedStyles.filter(row => !belongs(row));
+            report.consoleErrors = report.consoleErrors.filter(row => row.file !== file);
+            if (report.externalFailures) report.externalFailures = report.externalFailures.filter(row => row.file !== file);
             const isPublic = /^index\.(html|php)$/.test(file) || file.includes('register-restore/') || /survey-user\.(html|php)$/.test(file);
             const pair = await Promise.all(contexts.map(context => context[isPublic ? 'public' : 'staff'].newPage()));
             pair.forEach((page, i) => {
+                if (fullStyles) {
+                    const pending = new Set();
+                    pendingApi.set(page, pending);
+                    page.on('request', request => {if (new URL(request.url()).origin === new URL(bases[i]).origin && request.url().includes('/api/v1/')) pending.add(request);});
+                    page.on('requestfinished', request => pending.delete(request));
+                    page.on('requestfailed', request => pending.delete(request));
+                }
                 page.on('pageerror', error => report.errors.push({file, copy: i, message: error.message}));
                 page.on('console', message => {if (message.type() === 'error') report.consoleErrors.push({file, copy: i, message: message.text().slice(0, 200)});});
                 page.on('response', response => {
                     const url = new URL(response.url());
+                    if (url.origin === new URL(bases[i]).origin && response.status() >= 400 &&
+                        /\/(src|assets)\//.test(url.pathname) && /\.(css|js|mjs|wasm|svg|png|jpe?g|ttf|woff2?)$/.test(url.pathname)) {
+                        report.assetErrors ??= [];
+                        report.assetErrors.push({file, copy: i, status: response.status(), path: url.pathname});
+                    }
                     if (response.status() >= 400 && !url.hostname.match(/^(127\.0\.0\.1|localhost)$/)) {
                         report.externalFailures ??= [];
                         report.externalFailures.push({file, copy: i, status: response.status(), url: url.origin + url.pathname});
                     }
                 });
             });
-            for (const [size, viewport] of [['desktop', {width: 1440, height: 900}], ['mobile', {width: 390, height: 844}]]) {
+            for (const size of matrix) {
+                const viewport = sizes[size];
                 await Promise.all(pair.map(page => page.setViewportSize(viewport)));
-                for (const theme of ['dark', 'light']) {
-                    await navigate(pair, file, theme, bases);
-                    const name = file.replaceAll('/', '_').replace('.html', '') + '-' + size + '-' + theme;
+                for (const locale of locales) for (const theme of ['dark', 'light']) {
+                    await navigate(pair, file, theme, bases, locale);
+                    const name = file.replaceAll('/', '_').replace('.html', '') + '-' + size + '-' + theme + (locale ? '-' + locale : '');
                     await capturePair(pair, name, report.comparisons);
                     const toggle = pair[0].locator('.sidebar-action');
                     if (await toggle.count()) {
@@ -240,18 +339,33 @@ async function navigate(pair, file, theme, bases) {
             }
             await Promise.all(pair.map(page => page.close()));
             fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n');
-            console.log('Compared ' + file + ': both themes, desktop/mobile.');
+            console.log('Compared ' + file + ': both themes; ' + matrix.join('/') + '; ' + locales.filter(Boolean).join('/') + '.');
         }
         assert.equal(report.errors.length, 0, JSON.stringify(report.errors));
-        assert.equal(report.comparisons.length, report.pages * 4);
+        assert.equal(report.assetErrors?.length || 0, 0, 'Missing local assets');
+        if (fullStyles) {
+            const errors = new Map();
+            for (const row of report.consoleErrors) {
+                const key = row.file + ':' + row.message.replace(/\brequest_id: [a-f0-9]{24}\b/g, 'request_id: [id]');
+                errors.set(key, (errors.get(key) || 0) + (row.copy ? 1 : -1));
+            }
+            assert([...errors.values()].every(count => count <= 0), 'New console errors in candidate');
+        }
+        assert.equal(report.comparisons.length, report.pages * matrix.length * locales.length * 2);
+        if (fullStyles) {
+            assert.equal(report.computedStyles.length, report.comparisons.length + report.interactions.length);
+            assert.equal(report.computedStyles.reduce((sum, row) => sum + row.differences, 0), 0, 'Computed-style differences; inspect private snapshots/report');
+        }
         for (const row of [...report.comparisons, ...report.interactions])
-            assert((row.withoutLiveTilesChangedPixelsPercent ?? row.withoutDropdownsChangedPixelsPercent ?? row.changedPixelsPercent) < 0.1,
+            assert((row.withoutLiveTilesChangedPixelsPercent ?? row.withoutDropdownsChangedPixelsPercent ?? row.changedPixelsPercent) <= pixelLimit,
                 row.name + ' exceeds the interface pixel tolerance');
     } finally {
         fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n');
         fs.writeFileSync(path.join(output, 'rendered-pages.json'), JSON.stringify(report.renderedPages ?? {}, null, 2) + '\n');
         await browser.close();
     }
-    const differences = report.comparisons.filter(row => row.changedPixelsPercent > 1);
-    console.log(`${report.comparisons.length} page comparisons and ${report.interactions.length} interaction comparisons; geometry/styles match. ${differences.length} pages exceed 1% pixel difference (inspect report).`);
+    const maximum = Math.max(...[...report.comparisons, ...report.interactions].map(row =>
+        row.withoutLiveTilesChangedPixelsPercent ?? row.withoutDropdownsChangedPixelsPercent ?? row.changedPixelsPercent));
+    console.log(`${report.comparisons.length} page comparisons and ${report.interactions.length} interaction comparisons; maximum pixel difference ${maximum}% (limit ${pixelLimit}%).`);
+    if (fullStyles) console.log('Computed-style differences: ' + report.computedStyles.reduce((sum, row) => sum + row.differences, 0));
 })().catch(error => {console.error(error.message); process.exitCode = 1;});

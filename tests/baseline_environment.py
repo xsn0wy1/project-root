@@ -15,10 +15,16 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ROOT / 'tests/.runtime/stage1'
+RUNTIME = Path(os.environ.get('BASELINE_ENV_DIR', str(ROOT / 'tests/.runtime/stage1'))).resolve()
+RUNTIME.relative_to(ROOT / 'tests/.runtime')
 PHP = os.environ.get('HOSPITAL_TEST_PHP', '/Applications/XAMPP/xamppfiles/bin/php')
-SERVERS = [('site', ROOT, 8091, ''), ('reference', RUNTIME / 'reference', 8092, ''),
+SERVERS = [('site', ROOT, 8091, ''), ('reference', Path(os.environ.get('BASELINE_REFERENCE_DIR', str(RUNTIME / 'reference'))),
+            int(os.environ.get('BASELINE_REFERENCE_PORT', '8092')), ''),
            ('mounted', ROOT, 8093, '/hospital')]
+SELECTED = os.environ.get('BASELINE_SERVER_NAMES', 'site,reference,mounted').split(',')
+if set(SELECTED) - {'site', 'reference', 'mounted'}:
+    raise ValueError('Choose site, reference and/or mounted baseline servers.')
+SERVERS = [server for server in SERVERS if server[0] in SELECTED]
 
 
 def private_json(path, value):
@@ -59,13 +65,14 @@ def start():
         pidfile.write_text(str(process.pid))
         for attempt in range(60):
             try:
-                with urllib.request.urlopen(f'http://127.0.0.1:{port}{mount}/' + ('index.html' if name == 'reference' else 'index.php'), timeout=1):
+                index = 'index.php' if (directory / 'public/index.php').exists() else 'index.html'
+                with urllib.request.urlopen(f'http://127.0.0.1:{port}{mount}/' + index, timeout=1):
                     break
             except OSError:
                 if process.poll() is not None or attempt == 59:
                     raise RuntimeError(f'{name} server failed; inspect its private runtime log.')
                 time.sleep(.1)
-    print('Isolated development servers ready: http://127.0.0.1:8091/')
+    print('Isolated development servers ready: ' + ', '.join(f'{name} at http://127.0.0.1:{port}{mount}/' for name, _, port, mount in SERVERS))
 
 
 def stop():

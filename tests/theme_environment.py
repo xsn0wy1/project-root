@@ -2,20 +2,23 @@
 import json,os,secrets,signal,subprocess,sys,shutil,time,urllib.request
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-RUNTIME=ROOT/'tests/.runtime/theme'
+RUNTIME=Path(os.environ.get('HOSPITAL_THEME_TEST_DIR',str(ROOT/'tests/.runtime/theme'))).resolve()
+RUNTIME.relative_to(ROOT/'tests/.runtime')
 PHP=os.environ.get('HOSPITAL_TEST_PHP','/Applications/XAMPP/xamppfiles/bin/php')
+PORT=int(os.environ.get('HOSPITAL_THEME_TEST_PORT','8879'))
 
 def prepare():
  RUNTIME.mkdir(parents=True,exist_ok=True)
  if (RUNTIME/'env.json').exists():raise RuntimeError('A theme test environment already exists; clean it first.')
  env=dict(os.environ)
  env.update(HOSPITAL_DB_NAME='hospital_theme_'+secrets.token_hex(4)+'_test',HOSPITAL_DB_USER='theme_'+secrets.token_hex(4),HOSPITAL_DB_PASSWORD=secrets.token_hex(24),HOSPITAL_DB_SOCKET='/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock',HOSPITAL_APP_KEY=secrets.token_hex(32),HOSPITAL_STORAGE_PATH=str(RUNTIME/'storage'),HOSPITAL_BASE_PATH='',HOSPITAL_SECURE_COOKIES='false',HOSPITAL_BCRYPT_COST='10',HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24),HOSPITAL_AUTH_TEST_URL='http://127.0.0.1:8879',HOSPITAL_TEST_PHP=PHP,HOSPITAL_ROUTE_MAPPING_ENABLED='false',HOSPITAL_I18N_TEST_RECORDS=str(RUNTIME/'records.json'))
+ env.update(HOSPITAL_AUTH_TEST_URL=f'http://127.0.0.1:{PORT}',HOSPITAL_APP_URL=f'http://127.0.0.1:{PORT}/')
  saved={k:v for k,v in env.items() if k.startswith('HOSPITAL_')}
  (RUNTIME/'env.json').write_text(json.dumps(saved));(RUNTIME/'env.json').chmod(0o600)
  for args in [['setup.php','--no-config'],['users.php','create-admin','system_admin','theme@hospital.example','77009999'],['users.php','roles','system_admin','admin,records_manager,dispatcher'],['transfers.php','seed-demo']]:
   subprocess.run([PHP,str(ROOT/'backend/php/cli'/args[0]),*args[1:]],env=env,cwd=ROOT,check=True,stdout=subprocess.DEVNULL)
- for port,mount,prefix in [(8879,'',''),(8880,'/hospital','mounted-')]:
-  serving=dict(env,HOSPITAL_BASE_PATH=mount)
+ for port,mount,prefix in [(PORT,'',''),(PORT+1,'/hospital','mounted-')]:
+  serving=dict(env,HOSPITAL_BASE_PATH=mount,HOSPITAL_APP_URL=f'http://127.0.0.1:{port}{mount}/')
   with (RUNTIME/(prefix+'server.log')).open('w') as log:
    server=subprocess.Popen([PHP,'-S','127.0.0.1:'+str(port),'-t','public','backend/php/dev-router.php'],cwd=ROOT,env=serving,stdout=log,stderr=log,start_new_session=True)
   (RUNTIME/(prefix+'server.pid')).write_text(str(server.pid))
