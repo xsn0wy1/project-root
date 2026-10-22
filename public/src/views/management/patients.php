@@ -6,11 +6,11 @@ staff_page_open([
     'module' => 'patients',
     'title_key' => 'patients.pacientes_hospital_de_clinicas',
     'title' => 'Pacientes | Hospital de Clínicas',
-    'stylesheet' => 'management/patients.css?v=review-cleanup1',
+    'stylesheet' => 'management/patients.css',
     'background' => true,
     'described_nav' => true,
     'font_stylesheet' => 'interface',
-    'script' => 'management/patients.js?v=20261020-pilot',
+    'script' => 'management/patients.js',
 ]);
 ?>
 <?php staff_header('quick'); ?>

@@ -6,11 +6,11 @@ staff_page_open([
     'module' => 'doctors',
     'title_key' => 'doctors.medicos_hospital_de_clinicas',
     'title' => 'Médicos | Hospital de Clínicas',
-    'stylesheet' => 'management/doctors.css?v=20261019-i18n',
+    'stylesheet' => 'management/doctors.css',
     'background' => false,
     'described_nav' => false,
     'font_stylesheet' => 'inclusive-variable',
-    'script' => 'management/doctors.js?v=20261020-pilot',
+    'script' => 'management/doctors.js',
 ]);
 ?>
 <?php staff_header('catalog'); ?>

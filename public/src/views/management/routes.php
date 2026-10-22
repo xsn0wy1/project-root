@@ -6,10 +6,10 @@ staff_page_open([
     'module' => 'routes',
     'title_key' => 'routes.rutas_hospital_de_clinicas',
     'title' => 'Rutas | Hospital de Clínicas',
-    'stylesheet' => 'management/routes.css?v=20261004-controls-design',
+    'stylesheet' => 'management/routes.css',
     'background' => false,
     'described_nav' => false,
-    'script' => 'management/routes.js?v=20261020-pilot',
+    'script' => 'management/routes.js',
 ]);
 ?>
 <div class="routes-layout">

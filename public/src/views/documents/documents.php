@@ -11,11 +11,11 @@ staff_page_open([
     'title_key' => 'main_menu.documentos',
     'title' => 'Documentos',
     'theme_styles' => 'main-menu documents',
-    'stylesheets' => ['documents/documents.css?v=20261012-documents'],
+    'stylesheets' => ['documents/documents.css'],
     'font_stylesheet' => 'documents',
     'nav_section' => 'documents',
     'main_class' => 'app-shell',
-    'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../js/documents/documents.js?v=stage4'],
+    'extra_scripts' => ['../../js/documents/document-api.js', '../../js/documents/documents.js'],
 ]);
 ?>
 <?php staff_header('documents'); ?>

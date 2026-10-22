@@ -41,3 +41,20 @@ A new `public/src/css/base.css` is loaded first on every staff, auth and public 
 | Inline styles / handwritten view versions | 40 / 27 | 40 / 27 |
 
 Verification passes: **636 style/pixel pairs, zero computed-style differences and zero pixel differences**, all seven required browser suites (534 assertions plus 50 theme cases), 203 SQL/API checks, and 25 fresh translation/DOM/asset checks. No missing assets, new console errors or unhandled errors. Structural declarations match the exact final files; all 35 JS ASTs are equal for this package. Formatting-driven JS line growth is zero. No color merging, backend/domain/API change, dependency, build step or archive.
+
+## WP-1.3 — cache-busters
+
+`asset_url($path)` in `shell.php` now appends the single `ASSET_VERSION` value and escapes the completed URL for HTML. All stylesheet/script output uses it, including auth, registration, public surveys and local vendor resources; page configurations contain plain paths. The 27 handwritten view version strings are gone. Existing query parameters retain their separator and HTML escaping. These query-string changes are intentional; stylesheet/JS/image bytes and vendor integrity attributes are unchanged. The one pre-existing image query in plain CSS is retained. The fresh 636-pair replay compares the complete final CSS and URLs against accepted WP-1.1 source (2938b9c), independently confirming the shared-sheet package. One map API-settle timeout was resumed with unchanged source. The translation/DOM coverage tool also verifies the shared version on every local stylesheet/script in all 25 fresh renders.
+
+| Measurement | Before package | After package |
+|---|---:|---:|
+| First-party code bytes | 2,303,408 | 2,302,948 |
+| CSS bytes / style rules | 693,367 / 5,753 | 693,367 / 5,753 |
+| Theme bytes | 191,486 | 191,486 |
+| Hardcoded colors / var() | 3,278 / 1,556 | 3,278 / 1,556 |
+| Page duplicate groups / extras | 66 / 77 | 66 / 77 |
+| JS nonblank lines / helper definitions | 14,311 / 48 | 14,311 / 48 |
+| Getters / nested expressions / long functions | 218 / 35 / 70 | 218 / 35 / 70 |
+| Inline styles / handwritten view versions | 40 / 27 | 40 / 0 |
+
+Verification passes: **636 style/pixel pairs, zero computed-style differences and zero pixel differences**, all seven required browser suites (534 assertions plus 50 theme cases), 203 SQL/API checks, and 25 fresh translation/DOM/asset checks. No missing assets, new console errors or unhandled errors. Structural declarations match the exact final files; all 35 JS ASTs are equal for this package. Formatting-driven JS line growth is zero. No color merging, backend/domain/API change, dependency, build step or archive.

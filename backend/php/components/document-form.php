@@ -11,11 +11,11 @@ staff_page_open([
     'title_key' => $titleKey,
     'title' => $title,
     'theme_styles' => 'main-menu documents documents-upload',
-    'stylesheets' => ['documents/documents.css?v=20261012-documents', 'documents/documents-upload.css?v=20261020-category-dropdown'],
+    'stylesheets' => ['documents/documents.css', 'documents/documents-upload.css'],
     'font_stylesheet' => 'forms',
     'nav_section' => 'document-form',
     'main_class' => 'app-shell document-workspace',
-    'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../js/documents/document-form.js?v=stage4'],
+    'extra_scripts' => ['../../js/documents/document-api.js', '../../js/documents/document-form.js'],
 ]);
 ?>
     <section class="content-card document-content-card">

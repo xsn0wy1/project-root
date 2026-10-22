@@ -188,6 +188,8 @@ async function measure(page, sourceRoot) {
             functions_over_60: functions.filter(fn => fn.lines > 60), function_count: functions.length},
         views: {inline_style_attributes: inline.length, i18n_inline_style_wrappers: viewWrappers,
             i18n_style_templates: wrappers - viewWrappers, cache_buster_strings: cacheBusters.size,
+            asset_version_constants: new Set(views.flatMap(text =>
+                [...text.matchAll(/\bconst ASSET_VERSION\s*=\s*['"]([^'"]+)['"]/g)].map(match => match[1]))).size,
             view_cache_buster_strings: new Set(views.flatMap(text => [...text.matchAll(/\?v=([\w.-]+)/g)].map(match => match[1]))).size}
     };
 }

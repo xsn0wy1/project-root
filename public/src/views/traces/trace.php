@@ -8,13 +8,13 @@ staff_page_open([
     'theme_styles' => 'main-menu trace',
     'title_key' => 'trace.traslados_de_ambulancias',
     'title' => 'Traslados de Ambulancias',
-    'stylesheets' => ['traces/trace.css?v=20261008-view-sizing'],
+    'stylesheets' => ['traces/trace.css'],
     'font_stylesheet' => 'interface',
     'body_class' => '',
     'background' => true,
     'described_nav' => true,
     'nav_section' => 'transfers',
-    'extra_scripts' => ['../../js/traces/trace-api.js?v=stage5', '../../js/traces/trace.js?v=stage5'],
+    'extra_scripts' => ['../../js/traces/trace-api.js', '../../js/traces/trace.js'],
 ]);
 ?>
 

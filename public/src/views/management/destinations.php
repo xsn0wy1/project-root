@@ -6,10 +6,10 @@ staff_page_open([
     'module' => 'destinations',
     'title_key' => 'destinations.destinos_hospital_de_clinicas',
     'title' => 'Destinos | Hospital de Clínicas',
-    'stylesheet' => 'management/catalogs.css?v=catalog-details',
+    'stylesheet' => 'management/catalogs.css',
     'background' => false,
     'described_nav' => false,
-    'script' => 'management/destinations.js?v=catalog-details',
+    'script' => 'management/destinations.js',
 ]);
 ?>
 <div class="destinations-layout">

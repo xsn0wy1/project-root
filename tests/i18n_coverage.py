@@ -3,8 +3,9 @@ from pathlib import Path
 from html.parser import HTMLParser
 from collections import Counter
 import argparse,json,re
+from urllib.parse import urlsplit,parse_qs
 ROOT=Path(__file__).resolve().parents[1]
-parser=argparse.ArgumentParser();parser.add_argument('--baseline',type=Path);parser.add_argument('--rendered-pages',type=Path);parser.add_argument('--allow-added-ids',action='store_true',help='Preserve every baseline ID while permitting explicitly added UI controls.');parser.add_argument('--removed-keys',type=Path,help='Explicitly reviewed removed-key inventory; reject reintroduced keys or references.');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--baseline',type=Path);parser.add_argument('--rendered-pages',type=Path);parser.add_argument('--allow-added-ids',action='store_true',help='Preserve every baseline ID while permitting explicitly added UI controls.');parser.add_argument('--removed-keys',type=Path,help='Explicitly reviewed removed-key inventory; reject reintroduced keys or references.');parser.add_argument('--asset-version',help='Require this shared version on every local script/stylesheet URL.');args=parser.parse_args()
 def load(path):
  def unique(pairs):
   result={}
@@ -47,6 +48,7 @@ class Page(HTMLParser):
 files=[ROOT/'public/index.php',*(ROOT/'public/src/views').rglob('*.html'),*(ROOT/'public/src/views').rglob('*.php')]
 baseline=json.loads(args.baseline.read_text()) if args.baseline else None
 rendered=json.loads(args.rendered_pages.read_text()) if args.rendered_pages else {}
+versioned_assets=0
 for path in files:
  relative=str(path.relative_to(ROOT))
  if path.suffix=='.php':
@@ -54,7 +56,11 @@ for path in files:
  page=Page();page.feed(rendered[relative] if path.suffix=='.php' else path.read_text())
  assert 'i18n.js' in next(src for src in page.scripts if 'theme.js' not in src),path
  for src in page.scripts+page.styles:
-  if not src.startswith(('http:','https:')):assert (path.parent/src.split('?')[0]).resolve().is_file(),(path,src)
+  if not src.startswith(('http:','https:')):
+   assert (path.parent/src.split('?')[0]).resolve().is_file(),(path,src)
+   if args.asset_version:
+    assert parse_qs(urlsplit(src).query).get('v')==[args.asset_version],('Asset version differs',path,src)
+    versioned_assets+=1
  if baseline:
   before=Page();before.feed(baseline[relative if relative in baseline else relative.replace('.php','.html')])
   assert not (Counter(before.text)-Counter(page.text)),('Spanish fallback changed',path,Counter(before.text)-Counter(page.text))
@@ -76,3 +82,5 @@ if args.removed_keys:
   source=path.read_text()
   assert not any(key in source for key in removed),'Removed key still referenced: '+str(path)
 print(f'PASS {len(es)} bilingual keys, interpolation/plural contracts, {len(files)} page bindings/assets, {len(used)} literal key references'+(' and original Spanish fallback/attribute/ID preservation' if baseline else ''))
+
+if args.asset_version:print(f'PASS {versioned_assets} local script/stylesheet URLs use the shared asset version')

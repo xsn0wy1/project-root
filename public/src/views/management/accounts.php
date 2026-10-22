@@ -7,10 +7,10 @@ staff_page_open([
     'title_key' => 'accounts.cuentas_hospital_de_clinicas',
     'title' => 'Cuentas | Hospital de Clínicas',
     'theme_styles' => 'main-menu routes accounts documents',
-    'stylesheets' => ['management/routes.css?v=20261004-controls-design', 'documents/documents.css?v=20261012-documents', 'management/accounts.css?v=20261020-dropdown'],
+    'stylesheets' => ['management/routes.css', 'documents/documents.css', 'management/accounts.css'],
     'body_class' => 'routes-page accounts-page',
     'described_nav' => false,
-    'script' => 'management/accounts.js?v=20261020-dropdown',
+    'script' => 'management/accounts.js',
 ]);
 ?>
 

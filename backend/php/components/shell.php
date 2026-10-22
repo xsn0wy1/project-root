@@ -2,6 +2,8 @@
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/autoload.php';
 
+const ASSET_VERSION = '20261022-frontend';
+
 function page_language(): string
 {
     if (isset($GLOBALS['page_locale'])) return $GLOBALS['page_locale'];
@@ -22,6 +24,13 @@ function page_escape(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+/** HTML-safe asset URL; update this version when publishing changed browser assets. */
+function asset_url(string $path): string
+{
+    $separator = strpos($path, '?') === false ? '?' : '&';
+    return page_escape($path . $separator . 'v=' . ASSET_VERSION);
+}
+
 /** Shared staff head and navigation; each view keeps its content and dialogs. */
 function staff_page_head(array $page): void
 {
@@ -35,7 +44,7 @@ function staff_page_head(array $page): void
 <!DOCTYPE html>
 <html lang="<?= page_language() ?>" data-theme="dark" data-theme-styles="<?= page_escape($page['theme_styles'] ?? 'main-menu ' . $module) ?>">
 <head>
-  <script src="<?= $src ?>api-connection/theme.js?v=20261019-light"></script>
+  <script src="<?= asset_url($src . 'api-connection/theme.js') ?>"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <?php foreach ($page['meta'] ?? [] as $name => $content): ?>
@@ -43,35 +52,35 @@ function staff_page_head(array $page): void
 <?php endforeach; ?>
   <title data-i18n="<?= page_escape($page['title_key']) ?>"><?= page_escape($page['title']) ?></title>
   <link rel="icon" type="image/x-icon" href="<?= $assets ?>hospital-dark.ico">
-  <link rel="stylesheet" href="<?= $src ?>css/base.css">
+  <link rel="stylesheet" href="<?= asset_url($src . 'css/base.css') ?>">
 <?php foreach ($page['vendor_styles'] ?? [] as $style): ?>
-  <link rel="stylesheet" href="<?= page_escape($style['href']) ?>" integrity="<?= page_escape($style['integrity']) ?>" crossorigin="anonymous">
+  <link rel="stylesheet" href="<?= asset_url($style['href']) ?>" integrity="<?= page_escape($style['integrity']) ?>" crossorigin="anonymous">
 <?php endforeach; ?>
-  <link rel="stylesheet" href="<?= $src ?>css/main-menu.css?v=ui-repairs">
+  <link rel="stylesheet" href="<?= asset_url($src . 'css/main-menu.css') ?>">
 <?php foreach ($styles as $style): ?>
-  <link rel="stylesheet" href="<?= $src ?>css/<?= page_escape($style) ?>">
+  <link rel="stylesheet" href="<?= asset_url($src . 'css/' . $style) ?>">
 <?php endforeach; ?>
-  <link rel="stylesheet" href="<?= $assets ?>vendor/fonts/<?= page_escape($font) ?>.css?v=local-1">
-  <script src="<?= $src ?>api-connection/i18n.js?v=20261019-i18n" defer></script>
-  <script src="<?= $src ?>api-connection/api-client.js?v=20261019-i18n" defer></script>
-  <script src="<?= $src ?>api-connection/auth-session.js?v=20261019-light" defer></script>
+  <link rel="stylesheet" href="<?= asset_url($assets . 'vendor/fonts/' . $font . '.css') ?>">
+  <script src="<?= asset_url($src . 'api-connection/i18n.js') ?>" defer></script>
+  <script src="<?= asset_url($src . 'api-connection/api-client.js') ?>" defer></script>
+  <script src="<?= asset_url($src . 'api-connection/auth-session.js') ?>" defer></script>
 <?php if ($page['main_menu'] ?? true): ?>
-  <script src="<?= $src ?>js/main-menu.js?v=ui-repairs" defer></script>
+  <script src="<?= asset_url($src . 'js/main-menu.js') ?>" defer></script>
 <?php endif; ?>
 <?php if ($page['search'] ?? true): ?>
-  <script src="<?= $src ?>api-connection/universal-search.js?v=stage6" defer></script>
+  <script src="<?= asset_url($src . 'api-connection/universal-search.js') ?>" defer></script>
 <?php endif; ?>
-  <script src="<?= $src ?>js/ui.js?v=catalog-details" defer></script>
+  <script src="<?= asset_url($src . 'js/ui.js') ?>" defer></script>
 <?php if (!empty($page['script'])): ?>
-  <script src="<?= $src ?>js/<?= page_escape($page['script']) ?>" defer></script>
+  <script src="<?= asset_url($src . 'js/' . $page['script']) ?>" defer></script>
 <?php endif; ?>
 <?php foreach ($page['extra_scripts'] ?? [] as $script): ?>
-  <script src="<?= page_escape(is_array($script) ? $script['src'] : $script) ?>"<?= is_array($script) ? ' integrity="' . page_escape($script['integrity']) . '" crossorigin="anonymous"' : '' ?> defer></script>
+  <script src="<?= asset_url(is_array($script) ? $script['src'] : $script) ?>"<?= is_array($script) ? ' integrity="' . page_escape($script['integrity']) . '" crossorigin="anonymous"' : '' ?> defer></script>
 <?php endforeach; ?>
-  <link rel="stylesheet" href="<?= $src ?>css/theme.css?v=ui-review-2">
-  <link rel="stylesheet" href="<?= $src ?>css/dropdowns.css?v=ui-review-2">
-  <link rel="stylesheet" href="<?= $src ?>css/responsive.css?v=ui-review-2">
-  <script src="<?= $src ?>js/dropdowns.js?v=ui-repairs" defer></script>
+  <link rel="stylesheet" href="<?= asset_url($src . 'css/theme.css') ?>">
+  <link rel="stylesheet" href="<?= asset_url($src . 'css/dropdowns.css') ?>">
+  <link rel="stylesheet" href="<?= asset_url($src . 'css/responsive.css') ?>">
+  <script src="<?= asset_url($src . 'js/dropdowns.js') ?>" defer></script>
 </head>
 <body<?= ($page['body_class'] ?? ($module === 'management' ? '' : $module . '-page')) === '' ? '' : ' class="' . page_escape($page['body_class'] ?? $module . '-page') . '"' ?>>
 <?php

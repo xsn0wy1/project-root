@@ -6,11 +6,11 @@ staff_page_open([
     'module' => 'ambulances',
     'title_key' => 'ambulances.ambulancias_hospital_de_clinicas',
     'title' => 'Ambulancias | Hospital de Clínicas',
-    'stylesheet' => 'management/ambulances.css?v=20261004-form-design',
+    'stylesheet' => 'management/ambulances.css',
     'background' => true,
     'described_nav' => true,
     'font_stylesheet' => 'interface',
-    'script' => 'management/ambulances.js?v=20261020-pilot',
+    'script' => 'management/ambulances.js',
 ]);
 ?>
 <?php staff_header('quick'); ?>

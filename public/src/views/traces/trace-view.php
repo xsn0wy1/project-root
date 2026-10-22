@@ -9,7 +9,7 @@ staff_page_open([
     'theme_styles' => 'main-menu trace-view',
     'title_key' => 'trace_view.traslado_hospital_de_clinicas',
     'title' => 'Traslado · Hospital de Clínicas',
-    'stylesheets' => ['traces/trace-view.css?v=20261008-route-preview'],
+    'stylesheets' => ['traces/trace-view.css'],
     'vendor_styles' => [['href' => '../../../assets/vendor/leaflet/leaflet.css', 'integrity' => 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=']],
     'font_stylesheet' => 'interface',
     'body_class' => '',
@@ -17,7 +17,7 @@ staff_page_open([
     'background' => true,
     'described_nav' => true,
     'nav_section' => 'transfer-view',
-    'extra_scripts' => ['../../js/traces/trace-api.js?v=stage5', ['src' => '../../../assets/vendor/leaflet/leaflet.js', 'integrity' => 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='], '../../js/traces/trace-map-shared.js?v=ui-repairs', '../../js/traces/trace-view.js?v=stage5'],
+    'extra_scripts' => ['../../js/traces/trace-api.js', ['src' => '../../../assets/vendor/leaflet/leaflet.js', 'integrity' => 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='], '../../js/traces/trace-map-shared.js', '../../js/traces/trace-view.js'],
 ]);
 ?>
 

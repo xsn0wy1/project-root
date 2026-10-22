@@ -207,5 +207,122 @@
       "after_sha256": "e13345f9e6ea7e0dd5ed10fbde4b086bff4a0e1f385d17c94a398b44b516afcd",
       "reason": "Load the new base stylesheet before existing stylesheets on staff, auth and public survey pages."
     }
+  },
+  "wp1.3": {
+    "backend/php/components/auth.php": {
+      "before_sha256": "339467d332b5e78c999ec37caf70296613c6aca98498820adf9a3b2d403a5ab4",
+      "after_sha256": "141f2a249257834cc27e4575c7cff94105966774a20d12d50b5682e87d90a399",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "backend/php/components/document-form.php": {
+      "before_sha256": "f75efdd31aaa7d40f6ed3ab128de876c207ae58a3afe115cfd79ea58ddfe8040",
+      "after_sha256": "d4f1379f53ecda4321c7de8bfda0891f3dbc58e9fe98768199a16f89c2592080",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "backend/php/components/shell.php": {
+      "before_sha256": "0fa2ed906f19f6b2c7026e6122dd2ee22b983634727fd032c9c1e439a667cac6",
+      "after_sha256": "8cdb5fc1e9783d0f81e25b0e13d22f073ac7c8a1751b1606f811de3a4151e63f",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/index.php": {
+      "before_sha256": "8cc13134538a1e86b305b7874acc502a2a0e05d1d3c70110beeb6484827b577f",
+      "after_sha256": "f5cef5d107d87c78f88fcb2f26f760e0682fe8371667c02a0ddbe3d1ec5dffb5",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/documents/documents-viewer.php": {
+      "before_sha256": "1aac950aeb43399b6ed77e04004b56ed66d3f8c4dea268d881dc9db3cb930ff3",
+      "after_sha256": "0178fd763949d485138ca2066248e779769c0a7ef1ac3a67e9c85afc22f51f5f",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/documents/documents.php": {
+      "before_sha256": "ae4e475a0f4a33847729feb597bda386e08beffb5cf8548345309287f32e6a9a",
+      "after_sha256": "36679f8d075f392230dff6a4e592aa2f2dd88a3d5c7a6a23698081f2ece68828",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/accounts.php": {
+      "before_sha256": "ddf956677c195cdf8c3fdbe0e3afda7e660d6703e4992e6146c5ebd25aece4ea",
+      "after_sha256": "996261ad56cbebbf02819e1905a0e96f5ff45b1f38cba875170116f0a3e465e7",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/ambulances.php": {
+      "before_sha256": "7054e48417de88d0c45860ea10fe149445f3be95a94a84507c6160fbf07acc2f",
+      "after_sha256": "0f524c968df79a019adaacb80746b963551941f5af55741698954209f6d026a6",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/destinations.php": {
+      "before_sha256": "d110288835e0d49a85cbba433d69b9359a16bd0816751be826d3535fbb835bab",
+      "after_sha256": "fd095c8f8c7386e23c78ee9d3c88bf558d4f892bd686782f9fb5c34b470e0ecf",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/doctors.php": {
+      "before_sha256": "a0871f56ff22632032ce4598bc0ec822aebf776547b4be92c70c70029b4c3446",
+      "after_sha256": "c702eae8ffca34eaaf0061151c03063a35df103f00fb995e1fc685648b268b0f",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/patients.php": {
+      "before_sha256": "5f599fdae90032638e7df87cdff20d4b371a72ddf2a8d0a84ec7a3960047a92b",
+      "after_sha256": "b6eb034bcab937418da98b10c9d2fd6c2a9338b0c0e096114b014775750a594b",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/personnel.php": {
+      "before_sha256": "b719ddba3f27c5bc51ef8085bda7c5266969533152f820d5e4097b228ec9d76b",
+      "after_sha256": "cf639243075b9e7976444b5809a58a3f60ffbedc44361176d781f82287162754",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/management/routes.php": {
+      "before_sha256": "bdf96980403128bf2055a2090461cd53f040c959719ddb17f2131d59f35ae4aa",
+      "after_sha256": "a586727f3517b5ad8fe9ec7fcf12d8a31007814aea71dc505f516a14cf97e92b",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/register-restore/register.php": {
+      "before_sha256": "be57233ed532adb6d8e5e8ef8b8a4a314b01a1f05b819b4c5b00473f71a7ab41",
+      "after_sha256": "bd03fc998e8e666f4352eb1fa8ef1e8ae5790e9b74ac222f6676ad05fe9f8b93",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/settings.php": {
+      "before_sha256": "7196f6af42583caf9953397ca318b0b9175362a564f26681ac351cb22406437e",
+      "after_sha256": "6990d4d399aa8e44cdfdad39e68bf3f5fca2940d55586f4af4c0edffe6309447",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/surveys/survey-new.php": {
+      "before_sha256": "fa4d06cc4396d9fee00deb31a9a10cca2a88076d68b539bead0559dc600389b9",
+      "after_sha256": "66fcf3445d9b4453ab44c1c34261586fbe12b94aa9339a0fb36ca066536183d7",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/surveys/survey-view.php": {
+      "before_sha256": "716c39ef9a029430cc7ecd66498873ce6a72b17391499fac8e2c97d753d694c7",
+      "after_sha256": "b730828b9957963ef3e98e52df32a965836ef55a55b97a7fc9fc7e60ddba3120",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/surveys/survey.php": {
+      "before_sha256": "28eb0554bdc200224ed588d38d03eb6029cdc696cbede89294c8ede8ea4c3938",
+      "after_sha256": "df2f75689d2714b2c90d5f547ebcc9cc33012bbc77cef44c0eff673fd903765d",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/surveys/user-view/survey-user.php": {
+      "before_sha256": "e13345f9e6ea7e0dd5ed10fbde4b086bff4a0e1f385d17c94a398b44b516afcd",
+      "after_sha256": "aa395312820dcf2f7afe33665252f17a0452e82713e4f6e2ebcb7b513280081b",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/traces/trace-map.php": {
+      "before_sha256": "2fc0f3ddff2b6184f208514e23b0cde39579195c3a2bec330e7c3636dd24c8d7",
+      "after_sha256": "60c7b8ec905635c7d3f79b85182d42ba13f3606064f08e277d3202bc4090032b",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/traces/trace-new.php": {
+      "before_sha256": "ed1c44a7804732eb15f6dea94a5f7e13cbd80862ffc63ed9c456d36e5fa8ef5b",
+      "after_sha256": "cac1ba7d223905b08df87aa54d40ab316cfe1682a7eaea91da9b94ca8ae35cfc",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/traces/trace-view.php": {
+      "before_sha256": "d9fc9b276be2906e45556cff490dd6bdb81f5e64ab34beef0977e07585dd2b8b",
+      "after_sha256": "b9011f36d7914e6a4e2c65bf5a6acb0a8ab843235d30bfec50b562f0d58a278b",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    },
+    "public/src/views/traces/trace.php": {
+      "before_sha256": "3d97a1f874023de6c617f68abadd8fd47e5f8182570439a57d3f4540d865eeee",
+      "after_sha256": "d85157c8b0f97cce5e33bc40fca1b186a8a07aa9f766986fb12575a73727ed93",
+      "reason": "Intentional asset URL change: emit all stylesheet/script URLs through asset_url() and one ASSET_VERSION constant; page configuration paths lose handwritten version queries. Preserve SRI attributes, resource bytes, DOM controls and API links."
+    }
   }
 }

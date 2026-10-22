@@ -8,13 +8,13 @@ staff_page_open([
     'theme_styles' => 'main-menu survey survey-view survey-integration',
     'title_key' => 'survey_view.detalle_de_encuesta_hospital_de_clinicas',
     'title' => 'Detalle de encuesta | Hospital de Clínicas',
-    'stylesheets' => ['surveys/survey.css?v=stage6', 'surveys/survey-view.css?v=20261015-details'],
+    'stylesheets' => ['surveys/survey.css', 'surveys/survey-view.css'],
     'font_stylesheet' => 'inclusive-regular',
     'body_class' => 'surveys-page survey-view-page',
     'background' => false,
     'described_nav' => false,
     'nav_section' => 'surveys',
-    'extra_scripts' => ['../../../assets/vendor/qrcode/qrcode.js', '../../js/surveys/survey-api.js?v=stage5', '../../js/surveys/survey-view.js?v=stage5'],
+    'extra_scripts' => ['../../../assets/vendor/qrcode/qrcode.js', '../../js/surveys/survey-api.js', '../../js/surveys/survey-view.js'],
 ]);
 ?>
 

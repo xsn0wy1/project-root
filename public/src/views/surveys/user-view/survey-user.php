@@ -10,22 +10,22 @@ header('X-Content-Type-Options: nosniff');
 <!DOCTYPE html>
 <html lang="<?= page_language() ?>" data-theme="dark" data-theme-styles="survey-user">
 <head>
-  <script src="../../../api-connection/theme.js?v=20261019-light"></script>
+  <script src="<?= asset_url('../../../api-connection/theme.js') ?>"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="no-referrer">
   <title data-i18n="survey.encuestas_hospital_de_clinicas">Encuestas | Hospital de Clínicas</title>
   <link rel="icon" type="image/x-icon" href="../../../../assets/hospital-gradient.ico">
-  <link rel="stylesheet" href="../../../css/base.css">
-  <link rel="stylesheet" href="../../../../assets/vendor/fonts/inclusive-regular.css?v=local-1">
-  <link rel="stylesheet" href="survey-user.css?v=20261015-icons">
-  <script src="../../../api-connection/i18n.js?v=20261019-i18n" defer></script>
-  <script src="../../../js/ui.js?v=ui-repairs" defer></script>
-  <script src="survey-user.js?v=stage5" defer></script>
-  <link rel="stylesheet" href="../../../css/theme.css?v=ui-review-2">
-  <link rel="stylesheet" href="../../../css/dropdowns.css?v=ui-review-2">
-  <link rel="stylesheet" href="../../../css/responsive.css?v=ui-review-2">
-  <script src="../../../js/dropdowns.js?v=ui-repairs" defer></script>
+  <link rel="stylesheet" href="<?= asset_url('../../../css/base.css') ?>">
+  <link rel="stylesheet" href="<?= asset_url('../../../../assets/vendor/fonts/inclusive-regular.css') ?>">
+  <link rel="stylesheet" href="<?= asset_url('survey-user.css') ?>">
+  <script src="<?= asset_url('../../../api-connection/i18n.js') ?>" defer></script>
+  <script src="<?= asset_url('../../../js/ui.js') ?>" defer></script>
+  <script src="<?= asset_url('survey-user.js') ?>" defer></script>
+  <link rel="stylesheet" href="<?= asset_url('../../../css/theme.css') ?>">
+  <link rel="stylesheet" href="<?= asset_url('../../../css/dropdowns.css') ?>">
+  <link rel="stylesheet" href="<?= asset_url('../../../css/responsive.css') ?>">
+  <script src="<?= asset_url('../../../js/dropdowns.js') ?>" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#patient-form" data-i18n="survey_patient.ir_a_la_encuesta">Ir a la encuesta</a>

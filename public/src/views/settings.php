@@ -7,7 +7,7 @@ staff_page_open([
     'title_key' => 'main_menu.configuracion',
     'title' => 'Configuración',
     'theme_styles' => 'main-menu settings',
-    'stylesheet' => 'settings.css?v=security-review',
+    'stylesheet' => 'settings.css',
     'src_prefix' => '../',
     'assets_prefix' => '../../assets/',
     'body_class' => '',
@@ -16,7 +16,7 @@ staff_page_open([
     'nav_section' => 'settings',
     'font_stylesheet' => 'interface',
     'search' => false,
-    'script' => 'settings.js?v=security-review',
+    'script' => 'settings.js',
 ]);
 ?>
 

@@ -30,7 +30,7 @@ auth_page_open('login.inicio_de_sesion', 'Inicio de Sesion', 'src/', 'assets/', 
     </p>
   </div>
 
-  <script src="src/js/login-register/login.js?v=20261019-i18n"></script>
+  <script src="<?= asset_url('src/js/login-register/login.js') ?>"></script>
 </body>
 
 </html>

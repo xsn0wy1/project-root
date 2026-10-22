@@ -75,7 +75,7 @@ auth_page_open('registration.registro', 'Registro', '../../', '../../../assets/'
         </p>
     </div>
     
-  <script src="../../js/login-register/register.js?v=20261019-light"></script>
+  <script src="<?= asset_url('../../js/login-register/register.js') ?>"></script>
 </body>
 
 </html>

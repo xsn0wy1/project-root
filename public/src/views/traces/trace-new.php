@@ -8,13 +8,13 @@ staff_page_open([
     'theme_styles' => 'main-menu documents trace-new',
     'title_key' => 'trace_new.nuevo_traslado',
     'title' => 'Nuevo Traslado',
-    'stylesheets' => ['documents/documents.css?v=20261012-documents', 'traces/trace-new.css?v=20261020-dropdowns'],
+    'stylesheets' => ['documents/documents.css', 'traces/trace-new.css'],
     'font_stylesheet' => 'forms',
     'body_class' => '',
     'background' => true,
     'described_nav' => true,
     'nav_section' => 'transfer-form',
-    'extra_scripts' => ['../../js/traces/trace-api.js?v=stage5', '../../js/traces/trace.js?v=stage5'],
+    'extra_scripts' => ['../../js/traces/trace-api.js', '../../js/traces/trace.js'],
 ]);
 ?>
 

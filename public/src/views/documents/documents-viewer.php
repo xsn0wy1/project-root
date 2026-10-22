@@ -11,11 +11,11 @@ staff_page_open([
     'title_key' => 'documents_viewer.documento_medico_visor_de_documentos',
     'title' => 'Documento médico · Visor de documentos',
     'theme_styles' => 'main-menu documents-viewer',
-    'stylesheets' => ['documents/documents-viewer.css?v=20261012-documents'],
+    'stylesheets' => ['documents/documents-viewer.css'],
     'font_stylesheet' => 'interface',
     'nav_section' => 'document-viewer',
     'main_class' => 'app-shell document-viewer-shell',
-    'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../../assets/vendor/qrcode/qrcode.js', '../../../assets/vendor/qrcode/qrcode_UTF8.js', '../../js/documents/documents-viewer.js?v=stage4'],
+    'extra_scripts' => ['../../js/documents/document-api.js', '../../../assets/vendor/qrcode/qrcode.js', '../../../assets/vendor/qrcode/qrcode_UTF8.js', '../../js/documents/documents-viewer.js'],
 ]);
 ?>
 <?php staff_header('quick'); ?>

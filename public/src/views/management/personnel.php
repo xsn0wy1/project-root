@@ -6,10 +6,10 @@ staff_page_open([
     'module' => 'personnel',
     'title_key' => 'personnel.personal_hospital_de_clinicas',
     'title' => 'Personal | Hospital de Clínicas',
-    'stylesheet' => 'management/catalogs.css?v=catalog-details',
+    'stylesheet' => 'management/catalogs.css',
     'background' => false,
     'described_nav' => false,
-    'script' => 'management/personnel.js?v=catalog-details',
+    'script' => 'management/personnel.js',
 ]);
 ?>
 <div class="personnel-layout">
