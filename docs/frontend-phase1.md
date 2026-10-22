@@ -1,6 +1,6 @@
 # Frontend simplification — Phase 1
 
-The user approved Phase 0 and requested Phase 1 only. Database/domain code and API contracts remain frozen. This phase has separate work-package commits and pauses before the Phase 2 pilot.
+The user approved Phase 0 and requested Phase 1 only. Database/domain code and API contracts remain frozen. Phase 1 is complete in four work-package commits and is paused before the Phase 2 pilot.
 
 ## WP-1.1 — translation wrappers
 
@@ -58,3 +58,33 @@ Verification passes: **636 style/pixel pairs, zero computed-style differences an
 | Inline styles / handwritten view versions | 40 / 27 | 40 / 0 |
 
 Verification passes: **636 style/pixel pairs, zero computed-style differences and zero pixel differences**, all seven required browser suites (534 assertions plus 50 theme cases), 203 SQL/API checks, and 25 fresh translation/DOM/asset checks. No missing assets, new console errors or unhandled errors. Structural declarations match the exact final files; all 35 JS ASTs are equal for this package. Formatting-driven JS line growth is zero. No color merging, backend/domain/API change, dependency, build step or archive.
+
+## WP-1.4 — archive dialog compatibility audit
+
+The five dialogs retain explicit HTML. Ambulances and Patients share a basic shell; Doctors uses header/footer elements and an archive-history note, Destinations uses different close/cancel/confirm IDs and a text close control, and Routes has a warning with no close control. A shared two-argument component would require structural variants and more configuration. Keeping these templates follows the plan’s preference for clearer callers and its conditional component step.
+
+All five source blocks and rendered HTML blocks remain **byte-identical** to the accepted input. Hashes and structural differences are in `frontend-archive-dialog-audit.json`. This package changes no application bytes; its structural gate verifies all 267 files unchanged and reuses the final package’s complete visual/browser evidence.
+
+## Phase result and stopping point
+
+| Measurement | Before Phase 1 | After Phase 1 |
+|---|---:|---:|
+| First-party files / code files | 266 / 170 | 267 / 171 |
+| Application code bytes | 2,310,420 | 2,302,948 |
+| CSS bytes / style rules | 696,173 / 5,787 | 693,367 / 5,753 |
+| Theme bytes | 191,486 | 191,486 |
+| Hardcoded colors / var() uses | 3,292 / 1,556 | 3,278 / 1,556 |
+| Explicit color literals / named colors | 2,991 / 301 | 2,977 / 301 |
+| Page duplicate groups / extra occurrences | 89 / 113 | 66 / 77 |
+| JS nonblank lines / helper definitions | 14,311 / 48 | 14,311 / 48 |
+| Getters / nested expressions / long functions | 218 / 35 / 70 | 218 / 35 / 70 |
+| Inline style attributes | 215 | 40 |
+| Handwritten view versions / shared constant | 27 / 0 | 0 / 1 |
+
+Application code decreases by **7,472 bytes**, including **2,806 CSS bytes and 34 net style rules**. JS formatting growth is zero. No color merge is proposed or applied. The remaining duplicate candidates stay visible in the metrics and rule inventory.
+
+The fresh final replay passes **636 style/pixel pairs with zero differences**, both languages, both themes, all three viewports and existing open states. All seven browser suites pass: 534 assertions plus 50 theme cases; the associated integrations pass 203 SQL/API checks. Coverage validates 1,816 bilingual keys, all 25 rendered pages, 1,111 literal references and 408 versioned resource URLs. Readability checks pass 98 cases. Motion signatures match exactly. Full-phase structural verification declares exactly 41 changed application files; all 79 protected domain/API/database files retain their bytes.
+
+The isolated preflight is healthy. Owned disposable schemas/accounts/storage and test servers are removed; all eleven test ports are closed. Demonstration port 8091 returns HTTP 200. The pre-existing Stage 5 fixture, original private configuration/data and global Apache settings are untouched. Recovery checks used local mock delivery; live provider/inbox verification remains deferred until hosting. No dependency, build system, schema migration or submission archive was introduced.
+
+**Paused for user review. Phase 2 has not started.** Its token work still needs the explicit custom-property gate allowance described in `frontend-gates.md`.

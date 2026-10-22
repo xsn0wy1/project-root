@@ -1,0 +1,71 @@
+{
+  "decision": "Retain all five explicit templates; add no component dispatcher.",
+  "reason": "A single two-argument helper would need multiple structural variants, special IDs, close-control variants, notes, action classes and whitespace handling. The small matching pair saves no useful source after key/fallback arguments. Keeping the five explicit templates follows the plan preference for simpler call sites and exact markup.",
+  "dialogs": [
+    {
+      "file": "public/src/views/management/ambulances.php",
+      "bytes": 911,
+      "sha256": "ff3280ee3f3c9004417c414c1992d613baa1c4ccc203e8bdd22be693e87f0a26",
+      "structure": "Nested delete-dialog-content, a heading with close-image button, cancel-button and delete-button actions.",
+      "before_sha256": "ff3280ee3f3c9004417c414c1992d613baa1c4ccc203e8bdd22be693e87f0a26",
+      "after_sha256": "ff3280ee3f3c9004417c414c1992d613baa1c4ccc203e8bdd22be693e87f0a26",
+      "source_bytes_equal": true,
+      "rendered_bytes": 911,
+      "rendered_before_sha256": "ff3280ee3f3c9004417c414c1992d613baa1c4ccc203e8bdd22be693e87f0a26",
+      "rendered_after_sha256": "ff3280ee3f3c9004417c414c1992d613baa1c4ccc203e8bdd22be693e87f0a26",
+      "rendered_bytes_equal": true
+    },
+    {
+      "file": "public/src/views/management/patients.php",
+      "bytes": 898,
+      "sha256": "e68f7c47e65c06b75a7afc4d6f7b2320be0d27e15fb6e553f4f76c81ba4c5178",
+      "structure": "Same basic shell as ambulances, with different title/action translations, patient CSS prefix and an extra blank line.",
+      "before_sha256": "e68f7c47e65c06b75a7afc4d6f7b2320be0d27e15fb6e553f4f76c81ba4c5178",
+      "after_sha256": "e68f7c47e65c06b75a7afc4d6f7b2320be0d27e15fb6e553f4f76c81ba4c5178",
+      "source_bytes_equal": true,
+      "rendered_bytes": 898,
+      "rendered_before_sha256": "e68f7c47e65c06b75a7afc4d6f7b2320be0d27e15fb6e553f4f76c81ba4c5178",
+      "rendered_after_sha256": "e68f7c47e65c06b75a7afc4d6f7b2320be0d27e15fb6e553f4f76c81ba4c5178",
+      "rendered_bytes_equal": true
+    },
+    {
+      "file": "public/src/views/management/doctors.php",
+      "bytes": 1146,
+      "sha256": "3310a7287f988c5886290e5daf7c0a099c1c713e3804006a25c3c1fc2e66d2dd",
+      "structure": "delete-content with header/footer elements, trash symbol, separate description and archive-history note, secondary/danger actions.",
+      "before_sha256": "3310a7287f988c5886290e5daf7c0a099c1c713e3804006a25c3c1fc2e66d2dd",
+      "after_sha256": "3310a7287f988c5886290e5daf7c0a099c1c713e3804006a25c3c1fc2e66d2dd",
+      "source_bytes_equal": true,
+      "rendered_bytes": 1146,
+      "rendered_before_sha256": "3310a7287f988c5886290e5daf7c0a099c1c713e3804006a25c3c1fc2e66d2dd",
+      "rendered_after_sha256": "3310a7287f988c5886290e5daf7c0a099c1c713e3804006a25c3c1fc2e66d2dd",
+      "rendered_bytes_equal": true
+    },
+    {
+      "file": "public/src/views/management/destinations.php",
+      "bytes": 902,
+      "sha256": "085807baf988dcdbf22e1398da362d5eb964cd6538ef75bafc3a71205040c864",
+      "structure": "Flat heading and actions, text close control, three distinct delete-close/delete-cancel/delete-confirm IDs and a trash icon inside the confirmation button.",
+      "before_sha256": "085807baf988dcdbf22e1398da362d5eb964cd6538ef75bafc3a71205040c864",
+      "after_sha256": "085807baf988dcdbf22e1398da362d5eb964cd6538ef75bafc3a71205040c864",
+      "source_bytes_equal": true,
+      "rendered_bytes": 902,
+      "rendered_before_sha256": "085807baf988dcdbf22e1398da362d5eb964cd6538ef75bafc3a71205040c864",
+      "rendered_after_sha256": "085807baf988dcdbf22e1398da362d5eb964cd6538ef75bafc3a71205040c864",
+      "rendered_bytes_equal": true
+    },
+    {
+      "file": "public/src/views/management/routes.php",
+      "bytes": 929,
+      "sha256": "b6388f0b56f80a4fd7f24c36e1ef9825f20ace093aaae32ab41b08c15aea060b",
+      "structure": "delete-content with trash symbol and archive warning, no close control, secondary/danger actions.",
+      "before_sha256": "b6388f0b56f80a4fd7f24c36e1ef9825f20ace093aaae32ab41b08c15aea060b",
+      "after_sha256": "b6388f0b56f80a4fd7f24c36e1ef9825f20ace093aaae32ab41b08c15aea060b",
+      "source_bytes_equal": true,
+      "rendered_bytes": 929,
+      "rendered_before_sha256": "b6388f0b56f80a4fd7f24c36e1ef9825f20ace093aaae32ab41b08c15aea060b",
+      "rendered_after_sha256": "b6388f0b56f80a4fd7f24c36e1ef9825f20ace093aaae32ab41b08c15aea060b",
+      "rendered_bytes_equal": true
+    }
+  ]
+}

@@ -45,7 +45,12 @@
         }
       ],
       "moved": true,
-      "reason": "Promoted unchanged declarations; earlier loading passes the full gate."
+      "reason": "Promoted unchanged declarations; earlier loading passes the full gate.",
+      "retained_standalone_copy": {
+        "file": "public/src/views/surveys/user-view/survey-user.css",
+        "line": 14,
+        "reason": "Standalone survey form reset retained outside this extraction."
+      }
     },
     {
       "selector": ".form-message.error",
@@ -1181,5 +1186,6 @@
       "moved": false,
       "reason": "Keep content-card rules in their original layout/cascade and media positions."
     }
-  ]
+  ],
+  "inventory_scope": "Reviewed whole selector-list blocks in public/src/css, plus the separately verified public-survey visually-hidden copy. Full first-party duplicate totals, including retained standalone rules, are measured in frontend-phase1-metrics.json."
 }
