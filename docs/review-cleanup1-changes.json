@@ -1,0 +1,22 @@
+{
+  "public/src/views/management/patients.php": {
+    "reason": "Authorized removal of the appointment metric card and its two labels; update the patient CSS cache version.",
+    "before_sha256": "3a5bfc59a4352fcff50114fe6848b669d31e0564ed3b5b63a0025426796883dd",
+    "after_sha256": "a23f9632a77422d9be3ba3da1958d60b1ebf10561f18025e1b6b48c6b251177e"
+  },
+  "public/src/css/management/patients.css": {
+    "reason": "Three desktop metric columns after card removal; existing responsive overrides retained.",
+    "before_sha256": "5e5d17370e72093540e2463b0b2636fcc7d64f1809234910501d1b7a30dc53f7",
+    "after_sha256": "fa8420d53be5d27b875fffc8496b42cfa8b9e9203064063c353dc139f8fdc7be"
+  },
+  "db/json/es.json": {
+    "reason": "Remove exactly 37 reviewed unused/card-only keys; preserve all other values.",
+    "before_sha256": "2841001334bc15e2a4861d48db195b9fcb6d603bc65fbfd4bfff552c8c4b6020",
+    "after_sha256": "c70c8d66e06be30a8ea3184ce35e0c9fca3e87773cc246136281ba6565e336c8"
+  },
+  "db/json/en.json": {
+    "reason": "Remove the same 37 keys; preserve all other values and dictionary parity.",
+    "before_sha256": "89129cde156db77d577a35746114300e76e5057a1849fbb4bb7ddb1efa82f3b4",
+    "after_sha256": "65d8ed90ccdce725038ee1b2f8af4195f8e5500911e93f19d56185f931c29c5e"
+  }
+}

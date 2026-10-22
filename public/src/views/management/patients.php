@@ -6,7 +6,7 @@ staff_page_open([
     'module' => 'patients',
     'title_key' => 'patients.pacientes_hospital_de_clinicas',
     'title' => 'Pacientes | Hospital de Clínicas',
-    'stylesheet' => 'management/patients.css?v=20261013-patients-sql',
+    'stylesheet' => 'management/patients.css?v=review-cleanup1',
     'background' => true,
     'described_nav' => true,
     'font_stylesheet' => 'interface',
@@ -24,7 +24,6 @@ staff_page_open([
           <article class="metric-card"><span class="metric-icon"><img src="../../../assets/Icons/people-svgrepo-com.svg" alt="" aria-hidden="true"></span><div><strong data-patient-stat="active">—</strong><span data-i18n="patients.pacientes_activos">Pacientes activos</span><small data-i18n="patients.actualmente_en_seguimiento">Actualmente en seguimiento.</small></div></article>
           <article class="metric-card"><span class="metric-icon"><img src="../../../assets/Icons/bed-icon.svg" alt="" aria-hidden="true"></span><div><strong data-patient-stat="inpatient">—</strong><span data-i18n="patients.internados">Internados</span><small data-i18n="patients.pacientes_hospitalizados">Pacientes hospitalizados.</small></div></article>
           <article class="metric-card"><span class="metric-icon"><img src="../../../assets/Icons/leave-icon.svg" alt="" aria-hidden="true"></span><div><strong data-patient-stat="discharged_today">—</strong><span data-i18n="patients.altas_hoy">Altas hoy</span><small data-i18n="patients.pacientes_dados_de_alta">Pacientes dados de alta.</small></div></article>
-          <article class="metric-card"><span class="metric-icon"><img src="../../../assets/Icons/calendar-icon.svg" alt="" aria-hidden="true"></span><div><strong data-patient-stat="appointments_today">—</strong><span data-i18n="patients.citas_de_hoy">Citas de hoy</span><small data-i18n="patients.solo_lectura_agenda_pendiente">Solo lectura; agenda pendiente.</small></div></article>
         </section>
       </div>
 

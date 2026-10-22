@@ -61,6 +61,8 @@ def main():
     check(call(Client(),'catalogs.php')[0]==401,'patient catalogs require authentication')
     check(all(call(c,'list.php',{})[0]==403 for c in [admin,staff,dispatcher]),'full clinical records require explicit records_manager, including for admins')
     check(staff.call('/src/views/management/patients.php')[0]==303 and first.call('/src/views/management/patients.php')[0]==200,'patient HTML is guarded by records permissions')
+    html=first.call('/src/views/management/patients.php')[1]
+    check(html.count('data-patient-stat=')==3 and 'data-patient-stat="appointments_today"' not in html and 'patients.solo_lectura_agenda_pendiente' not in html,'patient HTML keeps three metrics and omits the legacy appointment card')
     check(call(first,'list.php')[0]==405,'patient search terms never use GET')
     check(first.call('/api/v1/patients.php?action=list','POST',{},csrf=False)[0]==403,'private patient searches require CSRF')
     base=fields(first)

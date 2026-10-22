@@ -6,6 +6,7 @@ import json
 import os
 import re
 import secrets
+import shlex
 import shutil
 import subprocess
 import sys
@@ -89,11 +90,12 @@ class Client:
         self.csrf=self.call('auth.php?action=csrf')[1]['data']['csrf_token']
         return self
 
-def serve(port,mount='',configured=True):
+def serve(port,mount='',configured=True,override=None,php_options=()):
     serving=dict(env,HOSPITAL_BASE_PATH=mount,HOSPITAL_APP_URL=f'http://127.0.0.1:{port}{mount}/')
     if not configured:serving['HOSPITAL_BREVO_API_KEY']=''
+    serving.update(override or {})
     log=(RUNTIME/f'server-{port}.log').open('w')
-    p=subprocess.Popen([PHP,'-S',f'127.0.0.1:{port}','-t','public','backend/php/dev-router.php'],cwd=ROOT,env=serving,stdout=log,stderr=log)
+    p=subprocess.Popen([PHP,*php_options,'-S',f'127.0.0.1:{port}','-t','public','backend/php/dev-router.php'],cwd=ROOT,env=serving,stdout=log,stderr=log)
     servers.append((p,log))
     for _ in range(60):
         try:urllib.request.urlopen(f'http://127.0.0.1:{port}{mount}/index.php',timeout=1).close();return
@@ -102,7 +104,65 @@ def serve(port,mount='',configured=True):
             time.sleep(.05)
     raise RuntimeError('Disposable server timed out.')
 
+def readiness_checks(client):
+    def preflight(override=None, options=()):
+        result=subprocess.run([PHP,*options,'backend/php/cli/preflight.php'],cwd=ROOT,
+                              env=dict(env,**(override or {})),capture_output=True,text=True,timeout=8)
+        for secret in [env['HOSPITAL_APP_KEY'],env['HOSPITAL_DB_PASSWORD'],env['HOSPITAL_BREVO_API_KEY']]:
+            assert secret not in result.stdout+result.stderr,'Readiness output disclosed a private value'
+        assert not result.stderr,result.stderr
+        return result.returncode,json.loads(result.stdout)
+    code,report=preflight({'HOSPITAL_BREVO_API_KEY':'','HOSPITAL_MAIL_FROM_EMAIL':''})
+    check(code==0 and report['healthy'] and report['recovery_email']['status']=='unconfigured',
+          'optional unconfigured mail does not make the installation unhealthy')
+    code,report=preflight()
+    check(code==0 and report['recovery_email']['status']=='ready' and
+          all(report['recovery_email']['checks'].values()),'configured mail preflight checks real CLI/process/storage readiness')
+    code,report=preflight({'HOSPITAL_MAIL_PHP_BINARY':''})
+    check(code==0 and report['recovery_email']['status']=='ready','automatic PHP CLI discovery remains available')
+    executable=RUNTIME/'non executable php';executable.write_text('#!/bin/sh\nexit 0\n');executable.chmod(0o600)
+    restricted_cli=RUNTIME/'php with disabled curl'
+    restricted_cli.write_text('#!/bin/sh\nexec '+shlex.quote(PHP)+' -d disable_functions=curl_init "$@"\n');restricted_cli.chmod(0o700)
+    slow=RUNTIME/'slow php';slow.write_text('#!/bin/sh\nexec /bin/sleep 5\n');slow.chmod(0o700)
+    for program,label in [('php','relative override'),(str(RUNTIME/'missing php'),'missing executable'),
+                          (str(executable),'non executable file'),('/usr/bin/true','wrong runtime'),
+                          (str(restricted_cli),'disabled CLI transport functions')]:
+        code,report=preflight({'HOSPITAL_MAIL_PHP_BINARY':program})
+        check(code==1 and not report['healthy'] and report['recovery_email']['status']=='unavailable',
+              'mail preflight rejects '+label)
+    began=time.monotonic();code,report=preflight({'HOSPITAL_MAIL_PHP_BINARY':str(slow)})
+    check(code==1 and report['recovery_email']['status']=='unavailable' and time.monotonic()-began<4.5,
+          'mail CLI readiness probe has a bounded timeout')
+    code,report=preflight(options=('-d','disable_functions=proc_open'))
+    check(code==1 and report['recovery_email']['checks']['process_functions'] is False,
+          'mail preflight identifies disabled process execution')
+    code,report=preflight({'HOSPITAL_MAIL_FROM_EMAIL':'invalid'})
+    check(code==1 and report['recovery_email']['checks']['configuration'] is False,
+          'partially configured mail is unavailable instead of silently disabled')
+    serve(8884,override={'HOSPITAL_MAIL_PHP_BINARY':str(RUNTIME/'missing php')})
+    serve(8885,php_options=('-d','disable_functions=proc_open'))
+    for port,label in [(8884,'missing PHP CLI'),(8885,'disabled process execution')]:
+        unavailable=Client('http://127.0.0.1:'+str(port)).start()
+        outcomes=[unavailable.call('auth.php?action=reset-request',{'email':address}) for address in
+                  ['active@hospital.example','unknown@hospital.example']]
+        check(all(row[0]==503 and row[1]['error']['code']=='RECOVERY_UNAVAILABLE' for row in outcomes),
+              label+' returns uniform unavailable before account lookup')
+    directory=RUNTIME/'storage/mail';previous=directory.stat().st_mode&0o777;directory.chmod(0o500)
+    try:
+        code,report=preflight()
+        outcomes=[client.call('auth.php?action=reset-request',{'email':address})[0] for address in
+                  ['active@hospital.example','unknown@hospital.example']]
+        check(code==1 and report['recovery_email']['checks']['storage'] is False and outcomes==[503,503],
+              'unwritable mail storage is detected consistently by CLI and HTTP')
+    finally:directory.chmod(previous)
+    check(not sql('SELECT * FROM password_reset_tokens') and not mail_requests and
+          not list(directory.glob('*.bin')),'readiness checks create no reset tokens, delivery jobs or provider requests')
+
 def run():
+    executable=RUNTIME/'php cli with spaces/php'
+    executable.parent.mkdir(parents=True,exist_ok=True)
+    executable.symlink_to(PHP)
+    env['HOSPITAL_MAIL_PHP_BINARY']=str(executable)
     os.environ.update(env)
     global manage_account
     from auth_integration import manage_account
@@ -136,6 +196,7 @@ def run():
         if status!='pending':
             assert manage_account(admin, 'approve', {'user_id':ids[status],'role':'staff'})[0]==200
         if status=='disabled':sql("UPDATE users SET status='disabled',auth_version=auth_version+1 WHERE id="+ids[status])
+    readiness_checks(c)
     check(c.call('auth.php?action=reset-request',{'email':'active@hospital.example'},csrf=False)[0]==403,'request requires CSRF')
     check(c.call('auth.php?action=reset-password',{'token':'a'*64,'new_password':NEW_PASSWORD},csrf=False)[0]==403,'redemption requires CSRF')
     check(c.call('auth.php?action=reset-request')[0]==405 and c.call('auth.php?action=reset-password')[0]==405,'GET cannot request mail or reset passwords')

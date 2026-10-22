@@ -4,6 +4,7 @@ storage/**
 logs/**
 !logs/.gitkeep
 tests/.runtime/
+tests/node_modules/
 __pycache__/
 *.pyc
 .DS_Store

@@ -1,9 +1,13 @@
 <?php
 declare(strict_types=1);
-if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
 require dirname(__DIR__) . '/autoload.php';
 try {
-    $config = Hospital\Config::load(); $db = Hospital\Database::connect($config);
+    $config = Hospital\Config::load();
+    $db = Hospital\Database::connect($config);
     $command = $argv[1] ?? '';
     if ($command === 'facilities') {
         $rows = $db->query('SELECT id, name, status, version FROM facilities ORDER BY name')->fetchAll();
@@ -13,22 +17,35 @@ try {
         $id = null;
         if ($command === 'facility-add') {
             $name = settings_text($argv[2] ?? null, 'name', 150, false);
-            $stmt = $db->prepare('INSERT INTO facilities (name) VALUES (?)'); $stmt->execute([$name]); $id = $db->lastInsertId();
+            $stmt = $db->prepare('INSERT INTO facilities (name) VALUES (?)');
+            $stmt->execute([$name]);
+            $id = $db->lastInsertId();
         } else {
             $id = Hospital\Http\Request::id($argv[2] ?? null);
-            $stmt = $db->prepare('SELECT id FROM facilities WHERE id = ? FOR UPDATE'); $stmt->execute([$id]);
-            if (!$stmt->fetchColumn()) throw new RuntimeException('Facility not found.');
+            $stmt = $db->prepare('SELECT id FROM facilities WHERE id = ? FOR UPDATE');
+            $stmt->execute([$id]);
+            if (!$stmt->fetchColumn())
+                throw new RuntimeException('Facility not found.');
             if ($command === 'facility-rename') {
                 $name = settings_text($argv[3] ?? null, 'name', 150, false);
-                $stmt = $db->prepare('UPDATE facilities SET name = ?, version = version + 1 WHERE id = ?'); $stmt->execute([$name, $id]);
+                $stmt = $db->prepare('UPDATE facilities SET name = ?, version = version + 1 WHERE id = ?');
+                $stmt->execute([$name, $id]);
             } else {
-                $stmt = $db->prepare('UPDATE facilities SET status = ?, version = version + 1 WHERE id = ?'); $stmt->execute([$command === 'facility-archive' ? 'archived' : 'active', $id]);
+                $stmt = $db->prepare('UPDATE facilities SET status = ?, version = version + 1 WHERE id = ?');
+                $stmt->execute([$command === 'facility-archive' ? 'archived' : 'active', $id]);
             }
         }
-        $stmt = $db->prepare("INSERT INTO audit_events (action, resource_type, resource_id, request_id) VALUES (?, 'facility', ?, ?)"); $stmt->execute([$command, $id, 'cli-' . bin2hex(random_bytes(8))]);
-        $db->commit(); echo 'Facility operation completed, ID ' . $id . ".\n";
+        $stmt = $db->prepare("INSERT INTO audit_events (action, resource_type, resource_id, request_id) VALUES (?, 'facility', ?, ?)");
+        $stmt->execute([$command, $id, 'cli-' . bin2hex(random_bytes(8))]);
+        $db->commit();
+        echo 'Facility operation completed, ID ' . $id . ".\n";
     } else echo "Commands: facilities | facility-add NAME | facility-rename ID NAME | facility-archive ID | facility-restore ID\n";
 } catch (Throwable $error) {
-    if (isset($db) && $db->inTransaction()) $db->rollBack();
-    fwrite(STDERR, $error instanceof PDOException ? "Catalog operation failed. Check duplicate names and database setup.\n" : $error->getMessage() . "\n"); exit(1);
+    if (isset($db) && $db->inTransaction())
+        $db->rollBack();
+    fwrite(
+        STDERR,
+        $error instanceof PDOException ? "Catalog operation failed. Check duplicate names and database setup.\n" : $error->getMessage() . "\n"
+    );
+    exit(1);
 }

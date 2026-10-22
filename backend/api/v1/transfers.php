@@ -8,15 +8,26 @@ use Hospital\Http\Response;
 use Hospital\Security\Csrf;
 
 $action = $_GET['action'] ?? '';
-if (!is_string($action) || !in_array($action, ['catalogs', 'create-token', 'create', 'draft', 'get', 'list', 'patients', 'status', 'update'], true)) {
+if (
+    !is_string($action)
+    || !in_array(
+        $action,
+        ['catalogs', 'create-token', 'create', 'draft', 'get', 'list', 'patients', 'status', 'update'],
+        true
+    )
+) {
     throw new ApiException(404, 'NOT_FOUND', Hospital\I18n::t('errors.no_se_encontro_el_endpoint'));
 }
 $query = $_GET;
 unset($query['action']);
 $write = in_array($action, ['create', 'update', 'status'], true);
 $post = $write || in_array($action, ['list', 'patients'], true);
-Request::method(...($action === 'draft' ? ['GET', 'POST'] : [$post ? 'POST' : 'GET']));
-if ($post) Csrf::verify();
+$methods = $post ? ['POST'] : ['GET'];
+if ($action === 'draft')
+    $methods = ['GET', 'POST'];
+Request::method(...$methods);
+if ($post)
+    Csrf::verify();
 $user = auth_require_user($db, $config, $write);
 $actor = (string) $user['id'];
 
@@ -28,12 +39,14 @@ switch ($action) {
         break;
     case 'patients':
         transfer_require_dispatch($db, $actor);
-        if ($query) throw new ApiException(422, 'UNEXPECTED_FIELDS', Hospital\I18n::t('errors.parametro_no_permitido'));
+        if ($query)
+            throw new ApiException(422, 'UNEXPECTED_FIELDS', Hospital\I18n::t('errors.parametro_no_permitido'));
         $body = Request::body(['q']);
         Response::json(transfer_catalog_patients($db, $body['q'] ?? ''));
         break;
     case 'get':
-        if (array_diff(array_keys($query), ['id'])) throw new ApiException(422, 'UNEXPECTED_FIELDS', Hospital\I18n::t('errors.parametro_no_permitido'));
+        if (array_diff(array_keys($query), ['id']))
+            throw new ApiException(422, 'UNEXPECTED_FIELDS', Hospital\I18n::t('errors.parametro_no_permitido'));
         Response::json(transfers_get($db, $actor, Request::id($query['id'] ?? null)));
         break;
     case 'list':
@@ -60,7 +73,8 @@ switch ($action) {
         } else {
             Csrf::verify();
             $body = Request::body(['version', 'payload', 'clear'], ['payload']);
-            if (isset($body['clear']) && !is_bool($body['clear'])) throw new ApiException(422, 'VALIDATION_FAILED', Hospital\I18n::t('errors.opcion_no_valida'));
+            if (isset($body['clear']) && !is_bool($body['clear']))
+                throw new ApiException(422, 'VALIDATION_FAILED', Hospital\I18n::t('errors.opcion_no_valida'));
             Response::json(transfer_draft_save($db, $config, $actor, $body, $body['clear'] ?? false));
         }
         break;

@@ -99,13 +99,25 @@ function staff_sidebar(bool $described, bool $hub, string $section = 'management
     $nested = $document || $transfer || $survey;
     $root = in_array($section, ['home', 'settings'], true);
     $prefix = $root ? '' : '../';
-    $active = $section === 'home' ? 0 : ($section === 'settings' ? 5 : ($document ? 1 : ($transfer ? 2 : ($survey ? 3 : 4))));
+    $active = 4;
+    if ($section === 'home') $active = 0;
+    elseif ($section === 'settings') $active = 5;
+    elseif ($document) $active = 1;
+    elseif ($transfer) $active = 2;
+    elseif ($survey) $active = 3;
+    $documentsUrl = $prefix . 'documents/documents.php';
+    if ($document) $documentsUrl = $section === 'documents' ? '#' : 'documents.php';
+    $transfersUrl = $prefix . 'traces/trace.php';
+    if ($transfer) $transfersUrl = $section === 'transfers' ? '#' : 'trace.php';
+    $managementPrefix = '';
+    if ($root) $managementPrefix = 'management/';
+    elseif ($nested) $managementPrefix = '../management/';
     $links = [
         [$section === 'home' ? '#' : $prefix . 'main-menu.php', 'house-icon.svg', 'main_menu.inicio', 'Inicio'],
-        [$document ? ($section === 'documents' ? '#' : 'documents.php') : $prefix . 'documents/documents.php', 'folder-icon.svg', 'main_menu.documentos', 'Documentos'],
-        [$transfer ? ($section === 'transfers' ? '#' : 'trace.php') : $prefix . 'traces/trace.php', 'location-icon.svg', 'main_menu.ambulancias', 'Ambulancias'],
+        [$documentsUrl, 'folder-icon.svg', 'main_menu.documentos', 'Documentos'],
+        [$transfersUrl, 'location-icon.svg', 'main_menu.ambulancias', 'Ambulancias'],
         [$survey ? 'survey.php' : $prefix . 'surveys/survey.php', 'survey-icon.svg', 'main_menu.encuestas', 'Encuestas'],
-        [$hub ? '#' : ($root ? 'management/' : ($nested ? '../management/' : '')) . 'management.php', 'database-cog.svg', $root || $document || $transfer ? 'main_menu.gestion' : 'trace_map.gestion', $root || $document || $transfer ? 'Gestion' : 'Gestión'],
+        [$hub ? '#' : $managementPrefix . 'management.php', 'database-cog.svg', $root || $document || $transfer ? 'main_menu.gestion' : 'trace_map.gestion', $root || $document || $transfer ? 'Gestion' : 'Gestión'],
         [$section === 'settings' ? '#' : $prefix . 'settings.php', 'settings-icon.svg', 'main_menu.configuracion', 'Configuración'],
     ];
     ?>
@@ -133,12 +145,23 @@ function staff_header(string $variant, string $assets = '../../../assets/'): voi
     $document = in_array($variant, ['documents', 'document-form'], true);
     $transfer = in_array($variant, ['transfers', 'transfer-form'], true);
     $described = $variant !== 'plain';
+    $searchPlaceholder = 'Buscar documento...';
+    $searchPlaceholderKey = 'documents.buscar_documento';
+    if ($transfer) {
+        if ($variant === 'transfers') {
+            $searchPlaceholder = 'Buscar una acción o sección...';
+            $searchPlaceholderKey = 'main_menu.buscar_una_accion_o_seccion';
+        } else {
+            $searchPlaceholder = 'Escribe algo...';
+            $searchPlaceholderKey = 'trace_new.escribe_algo';
+        }
+    }
     ?>
     <header class="topbar<?= $quick ? ' quick-search-topbar' : '' ?>">
       <div class="brand"><img src="<?= $assets ?>Icons/hospital-logo.png" alt="<?= $described ? 'Hospital de Clínicas' : '' ?>"<?= $described ? ' data-i18n-alt="main_menu.hospital_de_clinicas"' : '' ?>><span data-i18n="main_menu.hospital_de_clinicas_2">HOSPITAL DE CLINICAS</span></div>
       <div class="search-wrapper"<?= $quick ? ' role="search"' : '' ?>>
 <?php if ($document || $transfer): ?>
-        <input type="<?= $transfer || $variant === 'document-form' ? 'search' : 'text' ?>"<?= $transfer ? ' id="' . ($variant === 'transfers' ? 'quickSearch' : 'transferSearch') . '"' : '' ?> class="search-input" placeholder="<?= $transfer ? ($variant === 'transfers' ? 'Buscar una acción o sección...' : 'Escribe algo...') : 'Buscar documento...' ?>" data-i18n-placeholder="<?= $transfer ? ($variant === 'transfers' ? 'main_menu.buscar_una_accion_o_seccion' : 'trace_new.escribe_algo') : 'documents.buscar_documento' ?>"<?= $transfer || $variant === 'document-form' ? ' autocomplete="off"' : '' ?>>
+        <input type="<?= $transfer || $variant === 'document-form' ? 'search' : 'text' ?>"<?= $transfer ? ' id="' . ($variant === 'transfers' ? 'quickSearch' : 'transferSearch') . '"' : '' ?> class="search-input" placeholder="<?= $searchPlaceholder ?>" data-i18n-placeholder="<?= $searchPlaceholderKey ?>"<?= $transfer || $variant === 'document-form' ? ' autocomplete="off"' : '' ?>>
         <button type="button" class="topbar-action search-action" aria-label="Buscar" data-i18n-aria-label="trace_new.buscar"<?= $variant === 'document-form' ? ' aria-expanded="false"' : '' ?>><img src="<?= $assets ?>Icons/search-icon.svg" alt="" aria-hidden="true"></button>
 <?php else: ?>
         <input type="<?= $quick ? 'text' : 'search' ?>"<?= $quick ? ' id="quick-search"' : '' ?> class="search-input" placeholder="<?= $modules ? 'Buscar módulo...' : 'Buscar una acción o sección...' ?>" data-i18n-placeholder="<?= $modules ? 'management.buscar_modulo' : 'main_menu.buscar_una_accion_o_seccion' ?>" aria-label="<?= $modules ? 'Buscar módulo de gestión' : 'Buscar una acción o sección' ?>" data-i18n-aria-label="<?= $modules ? 'management.buscar_modulo_de_gestion' : 'main_menu.buscar_una_accion_o_seccion_2' ?>"<?= $quick ? ' role="combobox" aria-autocomplete="list" aria-controls="search-results-list" aria-expanded="false" autocomplete="off" tabindex="-1"' : '' ?>>

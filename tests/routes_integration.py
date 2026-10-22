@@ -11,6 +11,11 @@ def cache(url,data):
     sql("INSERT INTO route_map_cache (cache_key,payload,expires_at) VALUES ('"+hashlib.sha256(url.encode()).hexdigest()+"','"+payload+"',DATE_ADD(UTC_TIMESTAMP(),INTERVAL 1 DAY)) ON DUPLICATE KEY UPDATE payload=VALUES(payload),expires_at=VALUES(expires_at)")
 
 
+def router_url(points):
+    coordinates=';'.join(format(p['longitude'],'.12g')+','+format(p['latitude'],'.12g') for p in points)
+    return 'https://127.0.0.1:9/route/v1/driving/'+coordinates+'?overview=full&geometries=geojson&steps=false'
+
+
 def cache_path(places):
     # Fictional deterministic provider responses; never calls public APIs in the suite.
     points=[]
@@ -18,8 +23,7 @@ def cache_path(places):
         point=dict(latitude=round(-34.89-index*.005,7),longitude=round(-56.16-index*.01,7));points.append(point)
         query=place['address'] or place['name']
         cache('https://127.0.0.1:9/api/?'+urlencode(dict(q=query,countrycode='UY',limit=1)),dict(features=[dict(geometry=dict(coordinates=[point['longitude'],point['latitude']]))]))
-    coordinates=';'.join(format(p['longitude'],'.12g')+','+format(p['latitude'],'.12g') for p in points)
-    cache('https://127.0.0.1:9/route/v1/driving/'+coordinates+'?overview=full&geometries=geojson&steps=false',dict(code='Ok',routes=[dict(distance=5600,duration=900,geometry=dict(coordinates=[[p['longitude'],p['latitude']] for p in points]))]))
+    cache(router_url(points),dict(code='Ok',routes=[dict(distance=5600,duration=900,geometry=dict(coordinates=[[p['longitude'],p['latitude']] for p in points]))]))
     return points
 
 
@@ -104,7 +108,81 @@ def run():
     program=r"require 'backend/php/autoload.php';$c=Hospital\Config::load();echo tracking_tick(Hospital\Database::connect($c), $c);"
     tick=subprocess.run([PHP,'-r',program],cwd=ROOT,capture_output=True,text=True,check=True)
     check(tick.stdout=='1','the existing server simulator accepts mapped preset traces')
+    verify_route_regressions(dispatcher, record, places)
     proof=Path(os.environ['HOSPITAL_ROUTE_TEST_DIR'])/'browser.json';proof.write_text(json.dumps(dict(username=username,password=PASSWORD,id=rid,trace_id=trace['id'],manual_trace_id=custom['id'])));proof.chmod(0o600)
+
+
+def verify_route_regressions(dispatcher, record, places):
+    """Exercise extracted persistence and mapping through the existing API/SQL fixture."""
+    from documents_integration import admin_sql
+
+    def request(action, body):
+        return dispatcher.call('/api/v1/routes.php?action='+action, 'POST', body)
+
+    def snapshot():
+        return [sql('SELECT * FROM route_templates ORDER BY id'),
+                sql('SELECT * FROM route_stops ORDER BY route_id,stop_number'),
+                sql("SELECT * FROM audit_events WHERE resource_type='route' ORDER BY id")]
+
+    points=cache_path(places)
+    base={**record, 'name':'Ruta de regresión '+SUFFIX}
+    trigger='route_regression_fault'
+    for action in ['create', 'update']:
+        if action=='update':
+            status,payload,_=request('create',base); assert status==201,payload
+            item=payload['data']
+            body={**base,'id':item['id'],'version':item['version'],
+                  'stops':[dict(name='Nueva parada ficticia',address='Calle ficticia 100')],
+                  'notes':'Este cambio debe revertirse'}
+            cache_path([places[0],*body['stops'],places[-1]])
+        else:
+            body=base
+        before=snapshot()
+        admin_sql("CREATE TRIGGER "+trigger+" BEFORE INSERT ON audit_events FOR EACH ROW BEGIN IF NEW.resource_type='route' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Disposable route audit fault'; END IF; END")
+        try:
+            status,payload,_=request(action,body)
+            check(status==503 and payload['error']['code']=='SERVICE_UNAVAILABLE', 'route '+action+' reports an injected final audit failure')
+            check(snapshot()==before, 'route '+action+' rolls back row, code, ordered stops, revision and audit together')
+        finally:
+            admin_sql('DROP TRIGGER '+trigger)
+    before=snapshot()
+    admin_sql("CREATE TRIGGER "+trigger+" BEFORE INSERT ON route_stops FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Disposable route stop fault'")
+    try:
+        status,payload,_=request('update',body)
+        check(status==503 and snapshot()==before, 'failed replacement stop insertion restores the original stop rows and route revision')
+    finally:
+        admin_sql('DROP TRIGGER '+trigger)
+    status,payload,_=request('update',body)
+    check(status==200 and payload['data']['stops']==body['stops'], 'route update retry succeeds after rollback and keeps stop order')
+    cache_path(places)
+    good=dict(distance=5600,duration=900,geometry=dict(coordinates=[[p['longitude'],p['latitude']] for p in points]))
+    bad_routes=[None,dict(code='NoRoute',routes=[good]),dict(code='Ok',routes=[])]
+    for changes in [dict(distance=0),dict(duration=0),dict(geometry=dict(coordinates=[[-56,-34]])),
+                    dict(geometry=dict(coordinates=[[-56,-34],[181,-34.1]])),
+                    dict(geometry=dict(coordinates=[[-56,-34],['invalid',-34.1]]))]:
+        bad_routes.append(dict(code='Ok',routes=[{**good,**changes}]))
+    for index, response in enumerate(bad_routes):
+        cache(router_url(points),response)
+        status,payload,_=request('create',{**record,'name':'Mapa inválido '+SUFFIX+' '+str(index)})
+        check(status==201 and payload['data']['geometry']==[] and payload['data']['duration_seconds']==record['duration_seconds'],
+              'malformed route response '+str(index)+' preserves the manual itinerary and estimates without inventing geometry')
+    for index, xy in enumerate([[-56],[-56,91],['invalid',-34]]):
+        cache_path(places)
+        url='https://127.0.0.1:9/api/?'+urlencode(dict(q=places[0]['address'],countrycode='UY',limit=1))
+        cache(url,dict(features=[dict(geometry=dict(coordinates=xy))]))
+        status,payload,_=request('create',{**record,'name':'Geocodificación inválida '+SUFFIX+' '+str(index)})
+        check(status==201 and payload['data']['geometry']==[], 'invalid geocoder coordinate '+str(index)+' retains mapping fallback')
+    cache_path(places)
+    raw=[[-56.16-index*.00001,-34.89-index*.000005] for index in range(1501)]
+    cache(router_url(points),dict(code='Ok',routes=[{**good,'geometry':dict(coordinates=raw)}]))
+    status,payload,_=request('create',{**record,'name':'Geometría acotada '+SUFFIX});assert status==201,payload
+    geometry=payload['data']['geometry']
+    check(len(geometry)==1000 and geometry[0]==dict(longitude=raw[0][0],latitude=raw[0][1]) and
+          geometry[-1]==dict(longitude=round(raw[-1][0],7),latitude=round(raw[-1][1],7)),
+          'long road paths retain both endpoints and exactly 1000 bounded points')
+    program="require 'backend/php/autoload.php';$c=Hospital\\Config::load();$d=Hospital\\Database::connect($c);$u=trim(stream_get_contents(STDIN));echo json_encode([route_mapping_cached($d,$u,microtime(true)-1)!==null,route_mapping_cached($d,$u.'&uncached=1',microtime(true)-1)]);"
+    response=subprocess.run([PHP,'-r',program],cwd=ROOT,input=router_url(points),capture_output=True,text=True,check=True)
+    check(json.loads(response.stdout)==[True,None], 'expired absolute deadline permits a cache hit and rejects an uncached request without HTTP')
 
 
 if __name__=='__main__':run()

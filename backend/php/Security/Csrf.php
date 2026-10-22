@@ -7,14 +7,19 @@ final class Csrf
 {
     public static function token(): string
     {
-        if (!isset($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        if (!isset($_SESSION['csrf_token']))
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         return $_SESSION['csrf_token'];
     }
 
     public static function verify(): void
     {
         $given = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-        if (!is_string($given) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $given)) {
+        if (
+            !is_string($given)
+            || !isset($_SESSION['csrf_token'])
+            || !hash_equals($_SESSION['csrf_token'], $given)
+        ) {
             throw new ApiException(403, 'CSRF_INVALID', \Hospital\I18n::t("errors.la_sesion_del_formulario_vencio_volve_a_intentarlo"));
         }
     }

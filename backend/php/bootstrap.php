@@ -9,14 +9,21 @@ set_exception_handler(static function (Throwable $error): void {
         Hospital\Http\Response::error($error);
     } else {
         // Do not log SQL parameters, request bodies, credentials, CI or session IDs.
-        $diagnostic=get_class($error).' at '.basename($error->getFile()).':'.$error->getLine();
+        $diagnostic = get_class($error) . ' at ' . basename($error->getFile()) . ':' . $error->getLine();
         if ($error instanceof PDOException) {
-            $state=$error->errorInfo[0]??'';$number=$error->errorInfo[1]??0;
-            if (is_string($state)&&preg_match('/^[A-Z0-9]{5}$/',$state)) $diagnostic.=' SQLSTATE='.$state;
-            if (is_int($number)) $diagnostic.=' driver_code='.$number;
+            $state = $error->errorInfo[0] ?? '';
+            $number = $error->errorInfo[1] ?? 0;
+            if (is_string($state) && preg_match('/^[A-Z0-9]{5}$/', $state))
+                $diagnostic .= ' SQLSTATE=' . $state;
+            if (is_int($number))
+                $diagnostic .= ' driver_code=' . $number;
         }
-        error_log('Hospital request '.$GLOBALS['request_id'].' failed: '.$diagnostic);
-        Hospital\Http\Response::error(new Hospital\Http\ApiException(503, 'SERVICE_UNAVAILABLE', \Hospital\I18n::t("errors.el_servicio_no_esta_disponible_revisa_la_configuracion_o_intenta_nuevamente")));
+        error_log('Hospital request ' . $GLOBALS['request_id'] . ' failed: ' . $diagnostic);
+        Hospital\Http\Response::error(new Hospital\Http\ApiException(
+            503,
+            'SERVICE_UNAVAILABLE',
+            \Hospital\I18n::t("errors.el_servicio_no_esta_disponible_revisa_la_configuracion_o_intenta_nuevamente")
+        ));
     }
 });
 if (PHP_SAPI !== 'cli') {
@@ -35,9 +42,15 @@ if (PHP_SAPI !== 'cli') {
     ini_set('session.gc_maxlifetime', (string) $config['session_absolute_seconds']);
     session_name('hospital_session');
     session_cache_limiter(''); // Keep the explicit private/no-store headers above.
-    session_set_cookie_params(['lifetime' => 0, 'path' => ($config['base_path'] ?: '') . '/', 'secure' => $config['secure_cookies'], 'httponly' => true, 'samesite' => 'Lax']);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => ($config['base_path'] ?: '') . '/',
+        'secure' => $config['secure_cookies'],
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_set_save_handler(new Hospital\Security\DatabaseSessionHandler($db, $config), true);
     session_start();
-    if (!isset($_SESSION['_created_at'])) $_SESSION['_created_at'] = time();
+    if (!isset($_SESSION['_created_at']))
+        $_SESSION['_created_at'] = time();
 }
-

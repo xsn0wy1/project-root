@@ -32,21 +32,30 @@ final class Config
         $config['mail_from_email'] = (string) $env('MAIL_FROM_EMAIL', $config['mail_from_email'] ?? '');
         $config['mail_from_name'] = (string) $env('MAIL_FROM_NAME', $config['mail_from_name'] ?? 'Hospital — Proyecto educativo');
         $config['mail_api_url'] = (string) $env('MAIL_API_URL', $config['mail_api_url'] ?? 'https://api.brevo.com/v3/smtp/email');
+        $config['mail_php_binary'] = (string) $env('MAIL_PHP_BINARY', $config['mail_php_binary'] ?? '');
         $config['storage_path'] = (string) $env('STORAGE_PATH', $config['storage_path'] ?? dirname(__DIR__, 2) . '/storage');
         $config['document_scanner'] = (string) $env('DOCUMENT_SCANNER', $config['document_scanner'] ?? '');
         $config['route_mapping_enabled'] = filter_var($env('ROUTE_MAPPING_ENABLED', $config['route_mapping_enabled'] ?? false), FILTER_VALIDATE_BOOLEAN);
         $config['geocoder_url'] = (string) $env('GEOCODER_URL', $config['geocoder_url'] ?? '');
         $config['router_url'] = (string) $env('ROUTER_URL', $config['router_url'] ?? '');
         $config['unmapped_duration_seconds'] = (int) $env('UNMAPPED_DURATION_SECONDS', $config['unmapped_duration_seconds'] ?? 3600);
-        if ($config['unmapped_duration_seconds']<900 || $config['unmapped_duration_seconds']>172800) throw new \RuntimeException('Invalid unmapped booking interval.');
+        if ($config['unmapped_duration_seconds'] < 900 || $config['unmapped_duration_seconds'] > 172800)
+            throw new \RuntimeException('Invalid unmapped booking interval.');
         $config['map_country'] = (string) $env('MAP_COUNTRY', $config['map_country'] ?? 'UY');
         if (strlen($config['app_key']) < 32 || str_starts_with($config['app_key'], 'REPLACE_')) {
             throw new \RuntimeException('Configure HOSPITAL_APP_KEY or backend/php/config/local.php.');
         }
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $config['db']['name']) ||
-            !preg_match('#^(?:/[a-zA-Z0-9_-]+)*$#', $config['base_path']) ||
-            $config['session_idle_seconds'] < 2 || $config['session_absolute_seconds'] < $config['session_idle_seconds'] ||
-            $config['bcrypt_cost'] < 10 || $config['bcrypt_cost'] > 14) {
+        if (
+            !preg_match('/^[a-zA-Z0-9_]+$/', $config['db']['name'])
+            ||
+            !preg_match('#^(?:/[a-zA-Z0-9_-]+)*$#', $config['base_path'])
+            ||
+            $config['session_idle_seconds'] < 2
+            || $config['session_absolute_seconds'] < $config['session_idle_seconds']
+            ||
+            $config['bcrypt_cost'] < 10
+            || $config['bcrypt_cost'] > 14
+        ) {
             throw new \RuntimeException('Invalid application configuration.');
         }
         return $config;

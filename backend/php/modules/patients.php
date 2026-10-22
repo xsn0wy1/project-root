@@ -6,17 +6,33 @@ use Hospital\Http\Request;
 
 // Patient field validation.
 const PATIENT_INPUT_FIELDS = [
-    'full_name', 'national_id', 'date_of_birth', 'sex', 'age', 'phone', 'blood_group', 'allergies',
-    'emergency_name', 'emergency_phone', 'emergency_relationship', 'care_status', 'room', 'department',
-    'doctor_staff_id', 'doctor_specialty', 'admission_date', 'diagnosis', 'clinical_state'
+    'full_name',
+    'national_id',
+    'date_of_birth',
+    'sex',
+    'age',
+    'phone',
+    'blood_group',
+    'allergies',
+    'emergency_name',
+    'emergency_phone',
+    'emergency_relationship',
+    'care_status',
+    'room',
+    'department',
+    'doctor_staff_id',
+    'doctor_specialty',
+    'admission_date',
+    'diagnosis',
+    'clinical_state'
 ];
 
-function patient_input_today() : string
+function patient_input_today(): string
 {
     return (new \DateTimeImmutable('now', new \DateTimeZone('America/Montevideo')))->format('Y-m-d');
 }
 
-function patient_input_identity($value) : string
+function patient_input_identity($value): string
 {
     if (!is_string($value))
         patient_input_invalid('national_id');
@@ -26,7 +42,7 @@ function patient_input_identity($value) : string
     return $value;
 }
 
-function patient_input_invalid(string $field) : void
+function patient_input_invalid(string $field): void
 {
     throw new ApiException(
         422,
@@ -36,7 +52,7 @@ function patient_input_invalid(string $field) : void
     );
 }
 
-function patient_input_date($value, string $field) : ?string
+function patient_input_date($value, string $field): ?string
 {
     if ($value === null || $value === '')
         return null;
@@ -49,7 +65,7 @@ function patient_input_date($value, string $field) : ?string
     return $value;
 }
 
-function patient_input_phone($value, string $field) : string
+function patient_input_phone($value, string $field): string
 {
     $value = settings_text($value, $field, 25);
     if (
@@ -63,24 +79,28 @@ function patient_input_phone($value, string $field) : string
     return $value;
 }
 
-function patient_input_version($value) : int
+function patient_input_version($value): int
 {
     if (
         (!is_int($value) && !is_string($value))
         || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $value)
     )
         throw new ApiException(
-            422, 'VERSION_REQUIRED', \Hospital\I18n::t("errors.se_requiere_la_revision_actual")
+            422,
+            'VERSION_REQUIRED',
+            \Hospital\I18n::t("errors.se_requiere_la_revision_actual")
         );
     return (int) $value;
 }
 
-function patient_input_fields(array $input) : array
+function patient_input_fields(array $input): array
 {
     foreach (PATIENT_INPUT_FIELDS as $key)
         if (!array_key_exists($key, $input))
             throw new ApiException(
-                422, 'MISSING_FIELDS', \Hospital\I18n::t("errors.envia_todos_los_campos_del_formulario")
+                422,
+                'MISSING_FIELDS',
+                \Hospital\I18n::t("errors.envia_todos_los_campos_del_formulario")
             );
     $f = [
         'full_name' => settings_text($input['full_name'], 'full_name', 150, false),
@@ -113,8 +133,13 @@ function patient_input_fields(array $input) : array
         patient_input_invalid('blood_group');
     $f['blood_group'] = $group === '' ? null : $group;
     foreach ([
-        'allergies' => 100, 'emergency_name' => 100, 'emergency_relationship' => 50, 'room' => 80,
-        'department' => 80, 'doctor_specialty' => 80, 'clinical_state' => 100
+        'allergies' => 100,
+        'emergency_name' => 100,
+        'emergency_relationship' => 50,
+        'room' => 80,
+        'department' => 80,
+        'doctor_specialty' => 80,
+        'clinical_state' => 100
     ] as $key => $max)
         $f[$key] = settings_text($input[$key], $key, $max);
     $f['emergency_phone'] = patient_input_phone($input['emergency_phone'], 'emergency_phone');
@@ -132,9 +157,17 @@ function patient_input_fields(array $input) : array
         patient_input_invalid('diagnosis');
     $f['diagnosis'] = $diagnosis;
     if ($f['care_status'] === null) {
-        foreach ([
-            'room', 'department', 'doctor_staff_id', 'doctor_specialty', 'admission_date', 'diagnosis', 'clinical_state'
-        ] as $key)
+        foreach (
+            [
+                'room',
+                'department',
+                'doctor_staff_id',
+                'doctor_specialty',
+                'admission_date',
+                'diagnosis',
+                'clinical_state'
+            ] as $key
+        )
             if ($f[$key] !== '' && $f[$key] !== null)
                 patient_input_invalid('care_status');
     } elseif ($f['room'] === '' || $f['department'] === '')
@@ -143,18 +176,21 @@ function patient_input_fields(array $input) : array
 }
 
 // Patient records and encounters.
-function patients_access(PDO $db, string $actor) : void
+
+function patients_access(PDO $db, string $actor): void
 {
     if (!in_array('records_manager', users_roles($db, $actor), true))
         throw new ApiException(
-            403, 'FORBIDDEN', \Hospital\I18n::t("patients.se_requiere_permiso_de_gestion_de_registros")
+            403,
+            'FORBIDDEN',
+            \Hospital\I18n::t("patients.se_requiere_permiso_de_gestion_de_registros")
         );
 }
 
-function patients_actor(PDO $db, ?string $actor) : void
+function patients_actor(PDO $db, ?string $actor): void
 {
     if ($actor === null)
-        return; // Trusted local CLI only; HTTP always supplies an ID.
+    return; // Trusted local CLI only; HTTP always supplies an ID.
     $u = users_by_id($db, $actor, true);
     if (
         !$u || $u['status'] !== 'active' || $u['staff_status'] !== 'active'
@@ -164,33 +200,39 @@ function patients_actor(PDO $db, ?string $actor) : void
     patients_access($db, $actor);
 }
 
-function patients_audit(PDO $db, array $config, ?string $actor, string $action, string $id) : void
+function patients_audit(PDO $db, array $config, ?string $actor, string $action, string $id): void
 {
     transfer_audit($db, $actor, $action, $id, 'patient');
 }
 
 function patients_transaction(PDO $db, array $config, ?string $actor, callable $work)
 {
-    return transfer_serialized($db, $config, function() use ($actor, $work, $db) {
-        $db->beginTransaction();
-        try {
-            patients_actor($db, $actor);
-            $result = $work();
-            $db->commit();
-            return $result;
-        } catch (\Throwable $error) {
-            if ($db->inTransaction())
-                $db->rollBack();
-            if ($error instanceof \PDOException && ($error->errorInfo[1] ?? 0) === 1062)
-                throw new ApiException(
-                    409, 'PATIENT_CONFLICT', \Hospital\I18n::t("errors.ya_existe_un_registro_con_ese_documento")
-                );
-            throw $error;
+    return transfer_serialized(
+        $db,
+        $config,
+        function () use ($actor, $work, $db) {
+            $db->beginTransaction();
+            try {
+                patients_actor($db, $actor);
+                $result = $work();
+                $db->commit();
+                return $result;
+            } catch (\Throwable $error) {
+                if ($db->inTransaction())
+                    $db->rollBack();
+                if ($error instanceof \PDOException && ($error->errorInfo[1] ?? 0) === 1062)
+                    throw new ApiException(
+                        409,
+                        'PATIENT_CONFLICT',
+                        \Hospital\I18n::t("errors.ya_existe_un_registro_con_ese_documento")
+                    );
+                throw $error;
+            }
         }
-    });
+    );
 }
 
-function patients_lock(PDO $db, string $id, ?int $version = null) : array
+function patients_lock(PDO $db, string $id, ?int $version = null): array
 {
     $s = $db->prepare('SELECT * FROM patients WHERE id=? FOR UPDATE');
     $s->execute([$id]);
@@ -199,56 +241,71 @@ function patients_lock(PDO $db, string $id, ?int $version = null) : array
         throw new ApiException(404, 'PATIENT_NOT_FOUND', \Hospital\I18n::t("errors.no_se_encontro_el_paciente"));
     if ($version !== null && (int) $p['version'] !== $version)
         throw new ApiException(
-            409, 'VERSION_CONFLICT',
+            409,
+            'VERSION_CONFLICT',
             \Hospital\I18n::t("errors.el_paciente_cambio_volve_a_abrirlo_antes_de_guardar")
         );
     return $p;
 }
 
-function patients_joins() : string
+function patients_joins(): string
 {
     return ' FROM patients p LEFT JOIN patient_contacts c ON c.patient_id=p.id LEFT JOIN patient_encounters e ON e.id=(SELECT MAX(ep.id) FROM patient_encounters ep WHERE ep.patient_id=p.id) LEFT JOIN departments dep ON dep.id=e.department_id LEFT JOIN staff doctor ON doctor.id=e.doctor_staff_id LEFT JOIN doctor_profiles dp ON dp.staff_id=doctor.id ';
 }
 
-function patients_select() : string
+function patients_select(): string
 {
     return "SELECT p.*,c.full_name AS emergency_name,c.phone AS emergency_phone,c.relationship AS emergency_relationship,e.id AS encounter_id,e.care_status,e.room,e.department_id,dep.name AS department,e.doctor_staff_id,doctor.full_name AS doctor_name,CASE WHEN doctor.status='active' AND (dp.staff_id IS NULL OR (dp.status='active' AND dp.availability<>'inactive')) THEN 'active' ELSE 'inactive' END AS doctor_status,e.doctor_specialty,e.admission_date,e.discharged_at,e.diagnosis,e.clinical_state";
 }
 
-function patients_serialize(array $p) : array
+function patients_serialize(array $p): array
 {
     $age = $p['estimated_age'] === null ? null : (int) $p['estimated_age'];
     if ($p['date_of_birth'] !== null)
         $age = (new \DateTimeImmutable($p['date_of_birth']))->diff(new \DateTimeImmutable(patient_input_today()))->y;
     $result = [
-        'id' => (string) $p['id'], 'version' => (int) $p['version'], 'full_name' => $p['full_name'],
-        'national_id' => $p['national_id'], 'status' => $p['status'],
-        'date_of_birth' => $p['date_of_birth'], 'sex' => $p['sex'], 'age' => $age,
+        'id' => (string) $p['id'],
+        'version' => (int) $p['version'],
+        'full_name' => $p['full_name'],
+        'national_id' => $p['national_id'],
+        'status' => $p['status'],
+        'date_of_birth' => $p['date_of_birth'],
+        'sex' => $p['sex'],
+        'age' => $age,
         'age_is_estimate' => $age !== null && $p['date_of_birth'] === null,
         'age_recorded_on' => $p['age_recorded_on'],
-        'phone' => $p['phone'], 'blood_group' => $p['blood_group'], 'allergies' => $p['allergies'],
+        'phone' => $p['phone'],
+        'blood_group' => $p['blood_group'],
+        'allergies' => $p['allergies'],
         'emergency_contact' => [
-            'full_name' => $p['emergency_name'] ?? '', 'phone' => $p['emergency_phone'] ?? '',
+            'full_name' => $p['emergency_name'] ?? '',
+            'phone' => $p['emergency_phone'] ?? '',
             'relationship' => $p['emergency_relationship'] ?? ''
         ],
-        'encounter' => null, 'created_at' => users_date($p['created_at']), 'updated_at' => users_date($p['updated_at'])
+        'encounter' => null,
+        'created_at' => users_date($p['created_at']),
+        'updated_at' => users_date($p['updated_at'])
     ];
     if ($p['encounter_id'] !== null)
         $result['encounter'] = [
-            'id' => (string) $p['encounter_id'], 'care_status' => $p['care_status'], 'room' => $p['room'],
+            'id' => (string) $p['encounter_id'],
+            'care_status' => $p['care_status'],
+            'room' => $p['room'],
             'department_id' => $p['department_id'] === null ? null : (string) $p['department_id'],
             'department' => $p['department'] ?? '',
             'doctor_staff_id' => $p['doctor_staff_id'] === null ? null : (string) $p['doctor_staff_id'],
-            'doctor_name' => $p['doctor_name'] ?? '', 'doctor_active' => $p['doctor_status'] === 'active',
+            'doctor_name' => $p['doctor_name'] ?? '',
+            'doctor_active' => $p['doctor_status'] === 'active',
             'doctor_specialty' => $p['doctor_specialty'],
             'admission_date' => $p['admission_date'],
             'discharged_at' => $p['discharged_at'] === null ? null : users_date($p['discharged_at']),
-            'diagnosis' => $p['diagnosis'], 'clinical_state' => $p['clinical_state']
+            'diagnosis' => $p['diagnosis'],
+            'clinical_state' => $p['clinical_state']
         ];
     return $result;
 }
 
-function patients_get(PDO $db, array $config, string $actor, string $id) : array
+function patients_get(PDO $db, array $config, string $actor, string $id): array
 {
     patients_access($db, $actor);
     $s = $db->prepare(patients_select() . patients_joins() . ' WHERE p.id=?');
@@ -260,7 +317,7 @@ function patients_get(PDO $db, array $config, string $actor, string $id) : array
     return patients_serialize($p);
 }
 
-function patients_listing(PDO $db, array $config, string $actor, array $input) : array
+function patients_listing(PDO $db, array $config, string $actor, array $input): array
 {
     patients_access($db, $actor);
     $page = patient_input_version($input['page'] ?? 1);
@@ -281,14 +338,18 @@ function patients_listing(PDO $db, array $config, string $actor, array $input) :
         $args[] = $care;
     }
     if ($q !== '') {
-        $escape = static fn(string $s): string => '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $s) . '%';
+        $escape = static fn (string $s): string => '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $s) . '%';
         $where .= " AND (p.full_name LIKE ? ESCAPE '!' OR p.national_id LIKE ? ESCAPE '!' OR p.phone LIKE ? ESCAPE '!' OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(p.phone,' ',''),'-',''),'(',''),')',''),'+','') LIKE ? ESCAPE '!')";
+        $phoneQuery = $q;
+        if (preg_match('/^[+0-9 ()-]+$/', $q)) {
+            $phoneQuery = preg_replace('/\D/', '', $q) ?: $q;
+        }
         array_push(
             $args,
             $escape($q),
             $escape(preg_replace('/[.\s-]/u', '', $q) ?: $q),
             $escape($q),
-            $escape(preg_match('/^[+0-9 ()-]+$/', $q) ? (preg_replace('/\D/', '', $q) ?: $q) : $q)
+            $escape($phoneQuery)
         );
     }
     $s = $db->prepare('SELECT COUNT(*)' . patients_joins() . $where);
@@ -298,7 +359,7 @@ function patients_listing(PDO $db, array $config, string $actor, array $input) :
     $offset = ($page - 1) * $size;
     $s = $db->prepare(patients_select() . patients_joins() . $where . " ORDER BY p.id DESC LIMIT $size OFFSET $offset");
     $s->execute($args);
-    $rows = array_map(fn(array $p): array => patients_serialize($p), $s->fetchAll());
+    $rows = array_map(fn (array $p): array => patients_serialize($p), $s->fetchAll());
     patients_audit($db, $config, $actor, 'patient.listed', '0');
     return [
         'data' => $rows,
@@ -306,7 +367,7 @@ function patients_listing(PDO $db, array $config, string $actor, array $input) :
     ];
 }
 
-function patients_stats(PDO $db) : array
+function patients_stats(PDO $db): array
 {
     $today = new \DateTimeImmutable(patient_input_today(), new \DateTimeZone('America/Montevideo'));
     $start = $today->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
@@ -321,28 +382,38 @@ function patients_stats(PDO $db) : array
     $s = $db->prepare("SELECT COUNT(*) FROM patient_appointments a JOIN patients p ON p.id=a.patient_id WHERE a.status='scheduled' AND p.status='active' AND a.scheduled_at>=? AND a.scheduled_at<?");
     $s->execute([$start, $end]);
     return [
-        'active' => $active, 'inpatient' => $inpatient, 'discharged_today' => $discharged,
+        'active' => $active,
+        'inpatient' => $inpatient,
+        'discharged_today' => $discharged,
         'appointments_today' => (int) $s->fetchColumn()
     ];
 }
 
-function patients_catalogs(PDO $db, string $actor) : array
+function patients_catalogs(PDO $db, string $actor): array
 {
     patients_access($db, $actor);
     $doctors = $db->query("SELECT s.id,s.full_name FROM staff s JOIN staff_roles r ON r.staff_id=s.id AND r.role_code='doctor' LEFT JOIN doctor_profiles dp ON dp.staff_id=s.id WHERE s.status='active' AND (dp.staff_id IS NULL OR (dp.status='active' AND dp.availability<>'inactive')) ORDER BY s.full_name,s.id")->fetchAll();
     $departments = $db->query("SELECT id,name FROM departments WHERE status='active' ORDER BY name,id")->fetchAll();
     return [
-        'doctors' => array_map(static fn(array $r): array => [
-            'id' => (string) $r['id'], 'full_name' => $r['full_name']
-        ], $doctors),
-        'departments' => array_map(static fn(array $r): array => [
-            'id' => (string) $r['id'], 'name' => $r['name']
-        ], $departments),
+        'doctors' => array_map(
+            static fn (array $r): array => [
+                'id' => (string) $r['id'],
+                'full_name' => $r['full_name']
+            ],
+            $doctors
+        ),
+        'departments' => array_map(
+            static fn (array $r): array => [
+                'id' => (string) $r['id'],
+                'name' => $r['name']
+            ],
+            $departments
+        ),
         'create_token' => bin2hex(random_bytes(32))
     ];
 }
 
-function patients_save_related(PDO $db, string $id, array $f, ?array $old) : void
+function patients_save_related(PDO $db, string $id, array $f, ?array $old): void
 {
     $s = $db->prepare('INSERT INTO patient_contacts (patient_id,full_name,phone,relationship) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE full_name=VALUES(full_name),phone=VALUES(phone),relationship=VALUES(relationship)');
     $s->execute([$id, $f['emergency_name'], $f['emergency_phone'], $f['emergency_relationship']]);
@@ -376,8 +447,15 @@ function patients_save_related(PDO $db, string $id, array $f, ?array $old) : voi
     $discharge = $f['care_status'] === 'discharged'
         ? ($encounter['discharged_at'] ?? gmdate('Y-m-d H:i:s')) : null;
     $values = [
-        $f['care_status'], $f['room'], $department, $f['doctor_staff_id'], $f['doctor_specialty'],
-        $f['admission_date'], $discharge, $f['diagnosis'], $f['clinical_state']
+        $f['care_status'],
+        $f['room'],
+        $department,
+        $f['doctor_staff_id'],
+        $f['doctor_specialty'],
+        $f['admission_date'],
+        $discharge,
+        $f['diagnosis'],
+        $f['clinical_state']
     ];
     if ($newCase) {
         $s = $db->prepare('INSERT INTO patient_encounters (care_status,room,department_id,doctor_staff_id,doctor_specialty,admission_date,discharged_at,diagnosis,clinical_state,patient_id) VALUES (?,?,?,?,?,?,?,?,?,?)');
@@ -389,7 +467,7 @@ function patients_save_related(PDO $db, string $id, array $f, ?array $old) : voi
     $s->execute($values);
 }
 
-function patients_identity_values(array $f, ?array $old) : array
+function patients_identity_values(array $f, ?array $old): array
 {
     $recorded = $f['age'] === null ? null : (
         $old && $old['date_of_birth'] === null && $old['estimated_age'] !== null
@@ -397,108 +475,148 @@ function patients_identity_values(array $f, ?array $old) : array
         ? $old['age_recorded_on'] : patient_input_today()
     );
     return [
-        $f['full_name'], $f['national_id'], $f['date_of_birth'], $f['sex'], $f['age'], $recorded,
-        $f['phone'], $f['blood_group'], $f['allergies']
+        $f['full_name'],
+        $f['national_id'],
+        $f['date_of_birth'],
+        $f['sex'],
+        $f['age'],
+        $recorded,
+        $f['phone'],
+        $f['blood_group'],
+        $f['allergies']
     ];
 }
 
-function patients_create(PDO $db, array $config, string $actor, array $input) : array
+function patients_create(PDO $db, array $config, string $actor, array $input): array
 {
     $f = patient_input_fields($input);
     $token = $input['create_token'] ?? null;
     if (!is_string($token) || !preg_match('/^[a-f0-9]{64}$/', $token))
         throw new ApiException(
-            422, 'CREATE_TOKEN_REQUIRED',
+            422,
+            'CREATE_TOKEN_REQUIRED',
             \Hospital\I18n::t("errors.se_requiere_una_referencia_de_creacion_valida")
         );
     $key = hash('sha256', $actor . ':' . $token);
     $fingerprint = hash('sha256', json_encode($f, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
-    $id = patients_transaction($db, $config, $actor, function() use ($actor, $f, $key, $fingerprint, $db, $config) {
-        $s = $db->prepare('SELECT id,create_fingerprint FROM patients WHERE create_key=?');
-        $s->execute([$key]);
-        $existing = $s->fetch();
-        if ($existing) {
-            if (!hash_equals($existing['create_fingerprint'], $fingerprint))
-                throw new ApiException(
-                    409, 'CREATE_TOKEN_REUSED',
-                    \Hospital\I18n::t("errors.la_referencia_ya_se_utilizo_con_otros_datos")
-                );
-            return (string) $existing['id'];
+    $id = patients_transaction(
+        $db,
+        $config,
+        $actor,
+        function () use ($actor, $f, $key, $fingerprint, $db, $config) {
+            $s = $db->prepare('SELECT id,create_fingerprint FROM patients WHERE create_key=?');
+            $s->execute([$key]);
+            $existing = $s->fetch();
+            if ($existing) {
+                if (!hash_equals($existing['create_fingerprint'], $fingerprint))
+                    throw new ApiException(
+                        409,
+                        'CREATE_TOKEN_REUSED',
+                        \Hospital\I18n::t("errors.la_referencia_ya_se_utilizo_con_otros_datos")
+                    );
+                return (string) $existing['id'];
+            }
+            $values = patients_identity_values($f, null);
+            array_push($values, $key, $fingerprint);
+            $s = $db->prepare('INSERT INTO patients (full_name,national_id,date_of_birth,sex,estimated_age,age_recorded_on,phone,blood_group,allergies,create_key,create_fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
+            $s->execute($values);
+            $id = $db->lastInsertId();
+            patients_save_related($db, $id, $f, null);
+            patients_audit($db, $config, $actor, 'patient.created', $id);
+            return $id;
         }
-        $values = patients_identity_values($f, null);
-        array_push($values, $key, $fingerprint);
-        $s = $db->prepare('INSERT INTO patients (full_name,national_id,date_of_birth,sex,estimated_age,age_recorded_on,phone,blood_group,allergies,create_key,create_fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
-        $s->execute($values);
-        $id = $db->lastInsertId();
-        patients_save_related($db, $id, $f, null);
-        patients_audit($db, $config, $actor, 'patient.created', $id);
-        return $id;
-    });
+    );
     return patients_get($db, $config, $actor, $id);
 }
 
-function patients_update(PDO $db, array $config, string $actor, string $id, array $input) : array
+function patients_update(PDO $db, array $config, string $actor, string $id, array $input): array
 {
     $f = patient_input_fields($input);
     $version = patient_input_version($input['version'] ?? null);
-    patients_transaction($db, $config, $actor, function() use ($actor, $id, $f, $version, $db, $config) {
-        $p = patients_lock($db, $id, $version);
-        if ($p['status'] !== 'active')
-            throw new ApiException(
-                409, 'PATIENT_ARCHIVED', \Hospital\I18n::t("errors.restaura_el_paciente_antes_de_editarlo")
-            );
-        $values = patients_identity_values($f, $p);
-        $values[] = $id;
-        $s = $db->prepare('UPDATE patients SET full_name=?,national_id=?,date_of_birth=?,sex=?,estimated_age=?,age_recorded_on=?,phone=?,blood_group=?,allergies=?,version=version+1 WHERE id=?');
-        $s->execute($values);
-        patients_save_related($db, $id, $f, $p);
-        patients_audit($db, $config, $actor, 'patient.updated', $id);
-    });
+    patients_transaction(
+        $db,
+        $config,
+        $actor,
+        function () use ($actor, $id, $f, $version, $db, $config) {
+            $p = patients_lock($db, $id, $version);
+            if ($p['status'] !== 'active')
+                throw new ApiException(
+                    409,
+                    'PATIENT_ARCHIVED',
+                    \Hospital\I18n::t("errors.restaura_el_paciente_antes_de_editarlo")
+                );
+            $values = patients_identity_values($f, $p);
+            $values[] = $id;
+            $s = $db->prepare('UPDATE patients SET full_name=?,national_id=?,date_of_birth=?,sex=?,estimated_age=?,age_recorded_on=?,phone=?,blood_group=?,allergies=?,version=version+1 WHERE id=?');
+            $s->execute($values);
+            patients_save_related($db, $id, $f, $p);
+            patients_audit($db, $config, $actor, 'patient.updated', $id);
+        }
+    );
     return patients_get($db, $config, $actor, $id);
 }
 
 function patients_archive(
-    PDO $db, array $config, ?string $actor, string $id, int $version, bool $restore = false
-) : ?array
-{
-    patients_transaction($db, $config, $actor, function() use ($actor, $id, $version, $restore, $db, $config) {
-        $p = patients_lock($db, $id, $version);
-        $wanted = $restore ? 'active' : 'archived';
-        if ($p['status'] === $wanted)
-            throw new ApiException(
-                409, 'PATIENT_STATE_CONFLICT', \Hospital\I18n::t("errors.el_estado_del_registro_cambio")
-            );
-        if (!$restore) {
-            $s = $db->prepare("SELECT id FROM transfers WHERE patient_id=? AND status NOT IN ('completed','cancelled') LIMIT 1");
-            $s->execute([$id]);
-            if ($s->fetchColumn())
+    PDO $db,
+    array $config,
+    ?string $actor,
+    string $id,
+    int $version,
+    bool $restore = false
+): ?array {
+    patients_transaction(
+        $db,
+        $config,
+        $actor,
+        function () use ($actor, $id, $version, $restore, $db, $config) {
+            $p = patients_lock($db, $id, $version);
+            $wanted = $restore ? 'active' : 'archived';
+            if ($p['status'] === $wanted)
                 throw new ApiException(
-                    409, 'PATIENT_IN_USE',
-                    \Hospital\I18n::t("errors.el_paciente_tiene_un_traslado_pendiente_o_en_curso")
+                    409,
+                    'PATIENT_STATE_CONFLICT',
+                    \Hospital\I18n::t("errors.el_estado_del_registro_cambio")
                 );
-            $s = $db->prepare("SELECT id FROM patient_appointments WHERE patient_id=? AND status='scheduled' AND scheduled_at>=UTC_TIMESTAMP() LIMIT 1");
-            $s->execute([$id]);
-            if ($s->fetchColumn())
-                throw new ApiException(
-                    409, 'PATIENT_IN_USE', \Hospital\I18n::t("errors.el_paciente_tiene_una_cita_pendiente")
-                );
+            if (!$restore) {
+                $s = $db->prepare("SELECT id FROM transfers WHERE patient_id=? AND status NOT IN ('completed','cancelled') LIMIT 1");
+                $s->execute([$id]);
+                if ($s->fetchColumn())
+                    throw new ApiException(
+                        409,
+                        'PATIENT_IN_USE',
+                        \Hospital\I18n::t("errors.el_paciente_tiene_un_traslado_pendiente_o_en_curso")
+                    );
+                $s = $db->prepare("SELECT id FROM patient_appointments WHERE patient_id=? AND status='scheduled' AND scheduled_at>=UTC_TIMESTAMP() LIMIT 1");
+                $s->execute([$id]);
+                if ($s->fetchColumn())
+                    throw new ApiException(
+                        409,
+                        'PATIENT_IN_USE',
+                        \Hospital\I18n::t("errors.el_paciente_tiene_una_cita_pendiente")
+                    );
+            }
+            $s = $db->prepare('UPDATE patients SET status=?,archived_at=?,version=version+1 WHERE id=?');
+            $s->execute([$wanted, $restore ? null : gmdate('Y-m-d H:i:s'), $id]);
+            patients_audit($db, $config, $actor, $restore ? 'patient.restored' : 'patient.archived', $id);
         }
-        $s = $db->prepare('UPDATE patients SET status=?,archived_at=?,version=version+1 WHERE id=?');
-        $s->execute([$wanted, $restore ? null : gmdate('Y-m-d H:i:s'), $id]);
-        patients_audit($db, $config, $actor, $restore ? 'patient.restored' : 'patient.archived', $id);
-    });
+    );
     return $actor === null ? null : patients_get($db, $config, $actor, $id);
 }
 
-function patients_add_identity(PDO $db, array $config, string $ci, string $name) : string
+function patients_add_identity(PDO $db, array $config, string $ci, string $name): string
 {
     $ci = patient_input_identity($ci);
     $name = settings_text($name, 'full_name', 150, false);
-    return patients_transaction($db, $config, null, function() use ($ci, $name, $db, $config) {
-        $s = $db->prepare('INSERT INTO patients (national_id,full_name) VALUES (?,?)');
-        $s->execute([$ci, $name]);
-        $id = $db->lastInsertId();
-        patients_audit($db, $config, null, 'patient.created', $id);
-        return $id;
-    });
+    return patients_transaction(
+        $db,
+        $config,
+        null,
+        function () use ($ci, $name, $db, $config) {
+            $s = $db->prepare('INSERT INTO patients (national_id,full_name) VALUES (?,?)');
+            $s->execute([$ci, $name]);
+            $id = $db->lastInsertId();
+            patients_audit($db, $config, null, 'patient.created', $id);
+            return $id;
+        }
+    );
 }

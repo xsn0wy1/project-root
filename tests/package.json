@@ -1,0 +1,8 @@
+{
+  "name": "hospital-verification-tools",
+  "private": true,
+  "description": "Development-only structural comparison; not required to run the website.",
+  "devDependencies": {
+    "acorn": "8.15.0"
+  }
+}

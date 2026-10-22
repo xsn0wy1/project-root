@@ -118,6 +118,8 @@ def run():
     with ThreadPoolExecutor(8) as pool:
         codes = list(pool.map(consume, range(7)))
     check(sorted(codes) == [200]*3+[429]*4, 'concurrent rate limiting serializes one bucket without deadlocks or exceeding its cap')
+    from auth_budget_checks import run_budget_checks
+    run_budget_checks(admin, account, me, check)
     print('Release fix integration checks completed.')
 
 

@@ -4,7 +4,7 @@ from html.parser import HTMLParser
 from collections import Counter
 import argparse,json,re
 ROOT=Path(__file__).resolve().parents[1]
-parser=argparse.ArgumentParser();parser.add_argument('--baseline',type=Path);parser.add_argument('--rendered-pages',type=Path);parser.add_argument('--allow-added-ids',action='store_true',help='Preserve every baseline ID while permitting explicitly added UI controls.');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--baseline',type=Path);parser.add_argument('--rendered-pages',type=Path);parser.add_argument('--allow-added-ids',action='store_true',help='Preserve every baseline ID while permitting explicitly added UI controls.');parser.add_argument('--removed-keys',type=Path,help='Explicitly reviewed removed-key inventory; reject reintroduced keys or references.');args=parser.parse_args()
 def load(path):
  def unique(pairs):
   result={}
@@ -65,4 +65,14 @@ for path in [*(ROOT/'public/src').rglob('*.js'),*(ROOT/'backend').rglob('*.php')
  if path.name=='local.php':continue
  used.update(re.findall(r'(?:HospitalI18n\.(?:t|mark|html)|I18n::t)\(\s*[\'\"]([^\'\"]+)',path.read_text()))
 assert not (used-es.keys()),sorted(used-es.keys())
+for code in ['admin','staff','records_manager','dispatcher']:
+ assert 'account_role_code.'+code in es,'Dynamic account-role translation missing: '+code
+assert any(key.startswith('catalog.document_categories.') for key in es),'Dynamic category translations missing'
+if args.removed_keys:
+ removed=set(load(args.removed_keys)['removed_keys'])
+ assert not (removed & es.keys()),'Removed keys reintroduced: '+str(sorted(removed & es.keys()))
+ for path in [*(ROOT/'public').rglob('*.php'),*(ROOT/'public').rglob('*.js'),*(ROOT/'backend').rglob('*.php')]:
+  if 'vendor' in path.parts or path.name=='local.php':continue
+  source=path.read_text()
+  assert not any(key in source for key in removed),'Removed key still referenced: '+str(path)
 print(f'PASS {len(es)} bilingual keys, interpolation/plural contracts, {len(files)} page bindings/assets, {len(used)} literal key references'+(' and original Spanish fallback/attribute/ID preservation' if baseline else ''))

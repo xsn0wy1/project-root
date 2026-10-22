@@ -1,0 +1,278 @@
+{
+  "method": "First-party application files under public/backend/db; excludes vendor, private config and generated files. Development tests/tools/docs are outside these totals. Duplication windows overlap.",
+  "before": {
+    "files": 266,
+    "bytes": 12499689,
+    "code_files": 170,
+    "code_bytes": 2210429,
+    "pages": 25,
+    "repeated_8_line_groups": 497,
+    "repeated_8_line_extra_occurrences": 524
+  },
+  "after": {
+    "files": 266,
+    "bytes": 12506044,
+    "code_files": 170,
+    "code_bytes": 2216784,
+    "pages": 25,
+    "repeated_8_line_groups": 497,
+    "repeated_8_line_extra_occurrences": 524
+  },
+  "delta": {
+    "files": 0,
+    "bytes": 6355,
+    "code_files": 0,
+    "code_bytes": 6355,
+    "pages": 0,
+    "repeated_8_line_groups": 0,
+    "repeated_8_line_extra_occurrences": 0
+  },
+  "php_before": {
+    "php_files": 90,
+    "significant_tokens": 69642,
+    "semicolon_tokens": 3866,
+    "decision_keyword_operator_tokens": 2099,
+    "function_declarations": 364,
+    "named_function_declarations": 288,
+    "ternary_candidates": 336,
+    "lines": 9120,
+    "lines_over_120": 1469,
+    "maximum_function_lines": 91,
+    "longest_functions": [
+      {
+        "path": "backend/php/modules/personnel.php",
+        "name": "personnel_save",
+        "start": 824,
+        "end": 1388,
+        "line": 140,
+        "end_line": 230,
+        "lines": 91
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "name": "(closure)",
+        "start": 885,
+        "end": 1373,
+        "line": 150,
+        "end_line": 228,
+        "lines": 79
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "route_mapping_path",
+        "start": 2015,
+        "end": 2620,
+        "line": 241,
+        "end_line": 313,
+        "lines": 73
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "routes_save",
+        "start": 1178,
+        "end": 1856,
+        "line": 152,
+        "end_line": 220,
+        "lines": 69
+      },
+      {
+        "path": "backend/php/modules/settings.php",
+        "name": "settings_profile",
+        "start": 379,
+        "end": 1180,
+        "line": 35,
+        "end_line": 102,
+        "lines": 68
+      },
+      {
+        "path": "backend/php/modules/doctors.php",
+        "name": "doctors_save",
+        "start": 1374,
+        "end": 1926,
+        "line": 204,
+        "end_line": 270,
+        "lines": 67
+      },
+      {
+        "path": "backend/php/modules/patients.php",
+        "name": "patient_input_fields",
+        "start": 378,
+        "end": 1045,
+        "line": 78,
+        "end_line": 143,
+        "lines": 66
+      },
+      {
+        "path": "backend/php/modules/doctors.php",
+        "name": "(closure)",
+        "start": 1433,
+        "end": 1913,
+        "line": 208,
+        "end_line": 268,
+        "lines": 61
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "routes_fields",
+        "start": 159,
+        "end": 732,
+        "line": 34,
+        "end_line": 94,
+        "lines": 61
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "route_mapping_cached",
+        "start": 2621,
+        "end": 3098,
+        "line": 315,
+        "end_line": 373,
+        "lines": 59
+      },
+      {
+        "path": "backend/php/modules/transfers.php",
+        "name": "transfer_locations_resolve",
+        "start": 2079,
+        "end": 3070,
+        "line": 112,
+        "end_line": 169,
+        "lines": 58
+      },
+      {
+        "path": "backend/php/modules/doctors.php",
+        "name": "doctor_input_fields",
+        "start": 83,
+        "end": 585,
+        "line": 22,
+        "end_line": 76,
+        "lines": 55
+      }
+    ],
+    "repeated_16_token_groups": 2509,
+    "repeated_16_token_extra_occurrences": 5137
+  },
+  "php_after": {
+    "php_files": 90,
+    "significant_tokens": 70558,
+    "semicolon_tokens": 3930,
+    "decision_keyword_operator_tokens": 2142,
+    "function_declarations": 371,
+    "named_function_declarations": 295,
+    "ternary_candidates": 343,
+    "lines": 9267,
+    "lines_over_120": 1471,
+    "maximum_function_lines": 91,
+    "longest_functions": [
+      {
+        "path": "backend/php/modules/personnel.php",
+        "name": "personnel_save",
+        "start": 824,
+        "end": 1388,
+        "line": 140,
+        "end_line": 230,
+        "lines": 91
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "name": "(closure)",
+        "start": 885,
+        "end": 1373,
+        "line": 150,
+        "end_line": 228,
+        "lines": 79
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "route_mapping_path",
+        "start": 2015,
+        "end": 2620,
+        "line": 241,
+        "end_line": 313,
+        "lines": 73
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "routes_save",
+        "start": 1178,
+        "end": 1856,
+        "line": 152,
+        "end_line": 220,
+        "lines": 69
+      },
+      {
+        "path": "backend/php/modules/settings.php",
+        "name": "settings_profile",
+        "start": 379,
+        "end": 1180,
+        "line": 35,
+        "end_line": 102,
+        "lines": 68
+      },
+      {
+        "path": "backend/php/modules/doctors.php",
+        "name": "doctors_save",
+        "start": 1374,
+        "end": 1926,
+        "line": 204,
+        "end_line": 270,
+        "lines": 67
+      },
+      {
+        "path": "backend/php/modules/patients.php",
+        "name": "patient_input_fields",
+        "start": 378,
+        "end": 1045,
+        "line": 78,
+        "end_line": 143,
+        "lines": 66
+      },
+      {
+        "path": "backend/php/modules/doctors.php",
+        "name": "(closure)",
+        "start": 1433,
+        "end": 1913,
+        "line": 208,
+        "end_line": 268,
+        "lines": 61
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "routes_fields",
+        "start": 159,
+        "end": 732,
+        "line": 34,
+        "end_line": 94,
+        "lines": 61
+      },
+      {
+        "path": "backend/php/modules/routes.php",
+        "name": "route_mapping_cached",
+        "start": 2621,
+        "end": 3098,
+        "line": 315,
+        "end_line": 373,
+        "lines": 59
+      },
+      {
+        "path": "backend/php/modules/transfers.php",
+        "name": "transfer_locations_resolve",
+        "start": 2079,
+        "end": 3070,
+        "line": 112,
+        "end_line": 169,
+        "lines": 58
+      },
+      {
+        "path": "backend/php/modules/doctors.php",
+        "name": "doctor_input_fields",
+        "start": 83,
+        "end": 585,
+        "line": 22,
+        "end_line": 76,
+        "lines": 55
+      }
+    ],
+    "repeated_16_token_groups": 2534,
+    "repeated_16_token_extra_occurrences": 5167
+  }
+}

@@ -507,6 +507,36 @@ async function doctorsRoutes(page) {
     }
   }
 }
+async function patientSummary(page, label, theme) {
+  const count = Number(process.env.HOSPITAL_UI_PATIENT_CARDS || 3);
+  assert([3, 4].includes(count), 'Only the accepted three-card summary or its four-card baseline is supported.');
+  const fields = ['active', 'inpatient', 'discharged_today', ...(count === 4 ? ['appointments_today'] : [])];
+  await page.waitForFunction(() => [...document.querySelectorAll('[data-patient-stat]')].every(node => /^\d+$/.test(node.textContent)));
+  const result = await page.evaluate(() => HospitalApi.request('patients.php?action=list', {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'
+  }, true, true));
+  check(Number.isInteger(result.meta.stats.appointments_today), label + ' legacy appointment API field remains available');
+  check(JSON.stringify(await page.locator('[data-patient-stat]').evaluateAll(nodes => nodes.map(node => node.dataset.patientStat))) === JSON.stringify(fields),
+    label + ' patient summary has exactly the intended cards');
+  for (const field of fields) {
+    check(await page.locator(`[data-patient-stat="${field}"]`).textContent() === String(result.meta.stats[field]), label + ' renders the SQL-backed ' + field + ' metric');
+  }
+  const dynamicKeys = Object.keys(JSON.parse(fs.readFileSync(path.join(root, 'db/json/es.json'))))
+    .filter(key => key.startsWith('catalog.document_categories.'));
+  for (const locale of ['es-UY', 'en']) {
+    await page.evaluate(locale => HospitalI18n.preview(locale), locale); await page.waitForTimeout(180);
+    check(await page.locator('.metrics [data-i18n]').evaluateAll(nodes => nodes.every(node =>
+      node.textContent === HospitalI18n.t(node.dataset.i18n) && Boolean(node.textContent))), label + ' ' + locale + ' metric labels translate');
+    check(await page.evaluate(keys => ['admin', 'staff', 'records_manager', 'dispatcher'].every(code =>
+      HospitalI18n.t('account_role_code.' + code) && HospitalI18n.role(code) === HospitalI18n.t('account_role_code.' + code)) &&
+      keys.length > 0 && keys.every(key => HospitalI18n.t(key)), dynamicKeys), label + ' ' + locale + ' dynamic role/category translations remain available');
+    await managementFit(page, label + ' ' + locale);
+    check(!(await overflow(page)).length, label + ' ' + locale + ' summary stays within the viewport');
+    await page.screenshot({path: path.join(output, 'patients-summary-' + page.viewportSize().width + '-' + theme + '-' + locale + '.png'), animations: 'disabled'});
+  }
+  await page.evaluate(locale => HospitalI18n.preview(locale), theme === 'light' ? 'en' : 'es-UY');
+}
+
 async function patientEditors(page) {
   const captureForm = async name => {
     await page.locator('#patient-dialog').evaluate(async dialog => {
@@ -705,6 +735,7 @@ async function accountSecurity(browser, admin) {
           const label = file + ' ' + size + ' ' + theme, issues = await overflow(page);
           check(!issues.length, label + ' horizontal overflow: ' + JSON.stringify(issues));
           if (file.includes('/management/')) await managementFit(page, label);
+          if (file.endsWith('/management/patients.php')) await patientSummary(page, label, theme);
           await routeOutline(page, label);
           const topbar = page.locator('.topbar');
           if (size === 'desktop' && await topbar.count()) check(Math.abs((await topbar.boundingBox()).height - 100) < 1, label + ' desktop header stays 100px');

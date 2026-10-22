@@ -1,0 +1,437 @@
+{
+  "method": "First-party application only: public/backend/db; exclude vendor, private configuration, tests/docs and generated/runtime files. Duplicate windows overlap and do not measure safely removable code.",
+  "before": {
+    "inventory": {
+      "files": 266,
+      "bytes": 12506044,
+      "code_files": 170,
+      "code_bytes": 2216784,
+      "pages": 25,
+      "repeated_8_line_groups": 497,
+      "repeated_8_line_extra_occurrences": 524
+    },
+    "php": {
+      "php_files": 90,
+      "significant_tokens": 70558,
+      "semicolon_tokens": 3930,
+      "decision_keyword_operator_tokens": 2142,
+      "function_declarations": 371,
+      "named_function_declarations": 295,
+      "ternary_candidates": 343,
+      "lines": 9267,
+      "lines_over_120": 1471,
+      "maximum_function_lines": 91,
+      "longest_functions": [
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_save",
+          "start": 824,
+          "end": 1388,
+          "line": 140,
+          "end_line": 230,
+          "lines": 91
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "(closure)",
+          "start": 885,
+          "end": 1373,
+          "line": 150,
+          "end_line": 228,
+          "lines": 79
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "route_mapping_path",
+          "start": 2015,
+          "end": 2620,
+          "line": 241,
+          "end_line": 313,
+          "lines": 73
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "routes_save",
+          "start": 1178,
+          "end": 1856,
+          "line": 152,
+          "end_line": 220,
+          "lines": 69
+        },
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_profile",
+          "start": 379,
+          "end": 1180,
+          "line": 35,
+          "end_line": 102,
+          "lines": 68
+        },
+        {
+          "path": "backend/php/modules/doctors.php",
+          "name": "doctors_save",
+          "start": 1374,
+          "end": 1926,
+          "line": 204,
+          "end_line": 270,
+          "lines": 67
+        },
+        {
+          "path": "backend/php/modules/patients.php",
+          "name": "patient_input_fields",
+          "start": 378,
+          "end": 1045,
+          "line": 78,
+          "end_line": 143,
+          "lines": 66
+        },
+        {
+          "path": "backend/php/modules/doctors.php",
+          "name": "(closure)",
+          "start": 1433,
+          "end": 1913,
+          "line": 208,
+          "end_line": 268,
+          "lines": 61
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "routes_fields",
+          "start": 159,
+          "end": 732,
+          "line": 34,
+          "end_line": 94,
+          "lines": 61
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "route_mapping_cached",
+          "start": 2621,
+          "end": 3098,
+          "line": 315,
+          "end_line": 373,
+          "lines": 59
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_locations_resolve",
+          "start": 2079,
+          "end": 3070,
+          "line": 112,
+          "end_line": 169,
+          "lines": 58
+        },
+        {
+          "path": "backend/php/modules/doctors.php",
+          "name": "doctor_input_fields",
+          "start": 83,
+          "end": 585,
+          "line": 22,
+          "end_line": 76,
+          "lines": 55
+        }
+      ],
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5167
+    }
+  },
+  "formatted": {
+    "inventory": {
+      "files": 266,
+      "bytes": 12588550,
+      "code_files": 170,
+      "code_bytes": 2299290,
+      "pages": 25,
+      "repeated_8_line_groups": 603,
+      "repeated_8_line_extra_occurrences": 669
+    },
+    "php": {
+      "php_files": 90,
+      "significant_tokens": 70558,
+      "semicolon_tokens": 3930,
+      "decision_keyword_operator_tokens": 2142,
+      "function_declarations": 371,
+      "named_function_declarations": 295,
+      "ternary_candidates": 343,
+      "lines": 12054,
+      "lines_over_120": 1093,
+      "maximum_function_lines": 121,
+      "longest_functions": [
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_fields",
+          "start": 398,
+          "end": 1464,
+          "line": 69,
+          "end_line": 189,
+          "lines": 121
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_locations_resolve",
+          "start": 2079,
+          "end": 3070,
+          "line": 258,
+          "end_line": 366,
+          "lines": 109
+        },
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_profile",
+          "start": 379,
+          "end": 1180,
+          "line": 62,
+          "end_line": 162,
+          "lines": 101
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfers_create",
+          "start": 4587,
+          "end": 5367,
+          "line": 538,
+          "end_line": 634,
+          "lines": 97
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_stage",
+          "start": 23,
+          "end": 674,
+          "line": 9,
+          "end_line": 102,
+          "lines": 94
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_catalog_import",
+          "start": 425,
+          "end": 1456,
+          "line": 55,
+          "end_line": 148,
+          "lines": 94
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_save",
+          "start": 824,
+          "end": 1388,
+          "line": 140,
+          "end_line": 230,
+          "lines": 91
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_office",
+          "start": 791,
+          "end": 1278,
+          "line": 126,
+          "end_line": 211,
+          "lines": 86
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "(closure)",
+          "start": 885,
+          "end": 1373,
+          "line": 150,
+          "end_line": 228,
+          "lines": 79
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "route_mapping_path",
+          "start": 2015,
+          "end": 2620,
+          "line": 241,
+          "end_line": 313,
+          "lines": 73
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_draft_save",
+          "start": 1563,
+          "end": 2011,
+          "line": 164,
+          "end_line": 236,
+          "lines": 73
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "(closure)",
+          "start": 4777,
+          "end": 5354,
+          "line": 559,
+          "end_line": 631,
+          "lines": 73
+        }
+      ],
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5167
+    }
+  },
+  "after": {
+    "inventory": {
+      "files": 266,
+      "bytes": 12599680,
+      "code_files": 170,
+      "code_bytes": 2310420,
+      "pages": 25,
+      "repeated_8_line_groups": 601,
+      "repeated_8_line_extra_occurrences": 664
+    },
+    "php": {
+      "php_files": 90,
+      "significant_tokens": 71145,
+      "semicolon_tokens": 3986,
+      "decision_keyword_operator_tokens": 2160,
+      "function_declarations": 388,
+      "named_function_declarations": 312,
+      "ternary_candidates": 327,
+      "lines": 12490,
+      "lines_over_120": 1073,
+      "maximum_function_lines": 97,
+      "longest_functions": [
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfers_create",
+          "start": 4671,
+          "end": 5451,
+          "line": 581,
+          "end_line": 677,
+          "lines": 97
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_catalog_import",
+          "start": 425,
+          "end": 1456,
+          "line": 55,
+          "end_line": 148,
+          "lines": 94
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_office",
+          "start": 840,
+          "end": 1327,
+          "line": 136,
+          "end_line": 221,
+          "lines": 86
+        },
+        {
+          "path": "backend/php/modules/patients.php",
+          "name": "patient_input_fields",
+          "start": 378,
+          "end": 1045,
+          "line": 96,
+          "end_line": 176,
+          "lines": 81
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfers_update",
+          "start": 5452,
+          "end": 6117,
+          "line": 679,
+          "end_line": 759,
+          "lines": 81
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfers_payload",
+          "start": 6693,
+          "end": 7448,
+          "line": 829,
+          "end_line": 904,
+          "lines": 76
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "routes_fields",
+          "start": 159,
+          "end": 732,
+          "line": 48,
+          "end_line": 122,
+          "lines": 75
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_answers",
+          "start": 1563,
+          "end": 2246,
+          "line": 231,
+          "end_line": 304,
+          "lines": 74
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_draft_save",
+          "start": 1563,
+          "end": 2011,
+          "line": 164,
+          "end_line": 236,
+          "lines": 73
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "(closure)",
+          "start": 4861,
+          "end": 5438,
+          "line": 602,
+          "end_line": 674,
+          "lines": 73
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "surveys_payload",
+          "start": 2738,
+          "end": 3335,
+          "line": 384,
+          "end_line": 453,
+          "lines": 70
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfers_catalog",
+          "start": 3357,
+          "end": 4034,
+          "line": 438,
+          "end_line": 506,
+          "lines": 69
+        }
+      ],
+      "repeated_16_token_groups": 2494,
+      "repeated_16_token_extra_occurrences": 5123
+    }
+  },
+  "delta": {
+    "files": 0,
+    "bytes": 93636,
+    "code_files": 0,
+    "code_bytes": 93636,
+    "pages": 0,
+    "repeated_8_line_groups": 104,
+    "repeated_8_line_extra_occurrences": 140
+  },
+  "phase_code_bytes": {
+    "formatting": 82506,
+    "intentional_refactoring": 11130
+  },
+  "javascript": {
+    "before": {
+      "files": 35,
+      "functions": 2243,
+      "decision_chains": 78,
+      "nested_nodes_including_templates": 131,
+      "long_functions": 34
+    },
+    "after": {
+      "files": 35,
+      "functions": 2274,
+      "decision_chains": 0,
+      "nested_nodes_including_templates": 35,
+      "long_functions": 70
+    }
+  }
+}

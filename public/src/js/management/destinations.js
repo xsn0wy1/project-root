@@ -1,14 +1,44 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    await window.HospitalI18n.ready;
-    await window.HospitalAuth.ready;
+  await window.HospitalI18n.ready;
+  await window.HospitalAuth.ready;
 
-  const api=window.HospitalApi;
-  const pageSize=6;
-  const iconBase='../../../assets/Icons/';
-  const typeCodes={hospital:'hospital',sanatorium:'sanatorium',health_center:'health_center',other:'other'};
-  const typeLabels={get hospital() { return window.HospitalI18n.t("destinations.hospital"); },get sanatorium() { return window.HospitalI18n.t("destinations.sanatorio"); },get health_center() { return window.HospitalI18n.t("destinations.centro_de_salud"); },get other() { return window.HospitalI18n.t("trace_new.otro"); }},statusLabels={get active() { return window.HospitalI18n.t("destinations.activo"); },get inactive() { return window.HospitalI18n.t("destinations.inactivo"); }};
-  const fromApi=d=>({...d,type:d.facility_type,archived:d.status==='archived',
-    status:d.status==='active' && d.availability==='active'?'active':'inactive'});
+  const api = window.HospitalApi;
+  const pageSize = 6;
+  const iconBase = '../../../assets/Icons/';
+  const typeCodes = {
+    hospital: 'hospital',
+    sanatorium: 'sanatorium',
+    health_center: 'health_center',
+    other: 'other'
+  };
+  const typeLabels = {
+      get hospital() {
+        return window.HospitalI18n.t("destinations.hospital");
+      },
+      get sanatorium() {
+        return window.HospitalI18n.t("destinations.sanatorio");
+      },
+      get health_center() {
+        return window.HospitalI18n.t("destinations.centro_de_salud");
+      },
+      get other() {
+        return window.HospitalI18n.t("trace_new.otro");
+      }
+    },
+    statusLabels = {
+      get active() {
+        return window.HospitalI18n.t("destinations.activo");
+      },
+      get inactive() {
+        return window.HospitalI18n.t("destinations.inactivo");
+      }
+    };
+  const fromApi = d => ({
+    ...d,
+    type: d.facility_type,
+    archived: d.status === 'archived',
+    status: d.status === 'active' && d.availability === 'active' ? 'active' : 'inactive'
+  });
   const rows = document.getElementById('destinations-rows');
   const search = document.getElementById('destinations-search');
   const form = document.getElementById('destinations-form');
@@ -26,46 +56,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!api || !rows || !search || !form || !detailDialog || !deleteDialog) return;
 
   let destinations = [];
-  let busy=false,dirty=false,editingVersion=null,deletingVersion=null;
+  let busy = false,
+    dirty = false,
+    editingVersion = null,
+    deletingVersion = null;
   let activeFilter = 'active';
   let currentPage = 1;
   let editingId = null;
   let detailId = null;
   let deletingId = null;
 
-  const report=error=>api.report(error,'destinations');
+  const report = error => api.report(error, 'destinations');
   function upsert(data) {
-    const item=fromApi(data);
-    if(destinations.some(d=>d.id===item.id))destinations=destinations.map(d=>d.id===item.id?item:d);
+    const item = fromApi(data);
+    if (destinations.some(d => d.id === item.id))
+      destinations = destinations.map(d => (d.id === item.id ? item : d));
     else destinations.push(item);
     return item;
   }
   function setBusy(value) {
-    busy=value;
-    [...form.elements,...rows.querySelectorAll('button'),...filterButtons,...deleteDialog.querySelectorAll('button')].forEach(el=>{el.disabled=value;});
+    busy = value;
+    [
+      ...form.elements,
+      ...rows.querySelectorAll('button'),
+      ...filterButtons,
+      ...deleteDialog.querySelectorAll('button')
+    ].forEach(el => {
+      el.disabled = value;
+    });
   }
-  async function refresh(){destinations=(await api.get('destinations.php?action=list')).map(fromApi);render();}
-  async function current(id,action) {
-    if(busy)return;
+  async function refresh() {
+    destinations = (await api.get('destinations.php?action=list')).map(fromApi);
+    render();
+  }
+  async function current(id, action) {
+    if (busy) return;
     try {
-      const item=upsert(await api.get(`destinations.php?action=get&id=${encodeURIComponent(id)}`));
-      if(action==='view')showDestination(item);
-      else if(action==='edit' && !item.archived)editDestination(item);
-      else if(action==='delete' || action==='restore')confirmDeletion(item);
-    } catch(error){report(error);}
+      const item = upsert(await api.get(`destinations.php?action=get&id=${encodeURIComponent(id)}`));
+      if (action === 'view') showDestination(item);
+      else if (action === 'edit' && !item.archived) editDestination(item);
+      else if (action === 'delete' || action === 'restore') confirmDeletion(item);
+    } catch (error) {
+      report(error);
+    }
   }
 
   function normalize(value) {
-    return value.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ').trim();
+    return value
+      .toLocaleLowerCase('es')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   function getMatchingDestinations() {
     const words = normalize(search.value).split(' ').filter(Boolean);
     return destinations.filter(destination => {
-      const content = normalize(`${destination.name} ${destination.address} ${destination.locality} ${typeLabels[destination.type]} ${destination.phone}`);
-      return destination.status === activeFilter &&
-        words.every(word => content.includes(word));
+      const content = normalize(
+        `${destination.name} ${destination.address} ${destination.locality} ${typeLabels[destination.type]} ${destination.phone}`
+      );
+      return destination.status === activeFilter && words.every(word => content.includes(word));
     });
   }
 
@@ -111,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.HospitalI18n.bindText(name, () => destination.name);
     window.HospitalI18n.bindAttr(name, "title", () => destination.name);
     const type = document.createElement('small');
-    window.HospitalI18n.bindText(type, () => (typeLabels)[destination.type]);
+    window.HospitalI18n.bindText(type, () => typeLabels[destination.type]);
     copy.append(name, type);
     nameContent.append(avatar, copy);
     nameCell.append(nameContent);
@@ -122,17 +173,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dot = document.createElement('span');
     dot.className = 'status-dot' + (destination.status === 'inactive' ? ' is-inactive' : '');
     dot.setAttribute('aria-hidden', 'true');
-    status.append(dot, window.HospitalI18n.textNode(() => destination.archived?window.HospitalI18n.t("personnel.archivado"):statusLabels[destination.status]));
+    status.append(
+      dot,
+      window.HospitalI18n.textNode(() =>
+        destination.archived ? window.HospitalI18n.t("personnel.archivado") : statusLabels[destination.status]
+      )
+    );
     statusCell.append(status);
 
     const actionsCell = document.createElement('td');
     const actions = document.createElement('div');
     actions.className = 'row-actions';
-    actions.append(makeAction('view',window.HospitalI18n.t("personnel.ver"),'eye.svg',destination));
-    if(destination.archived)actions.append(makeAction('restore',window.HospitalI18n.t("personnel.restaurar"),'save-floppy.svg',destination));
-    else actions.append(makeAction('edit',window.HospitalI18n.t("trace_view.editar"),'pencil-icon.svg',destination),makeAction('delete',window.HospitalI18n.t("routes.eliminar"),'trash-icon.svg',destination));
+    actions.append(makeAction('view', window.HospitalI18n.t("personnel.ver"), 'eye.svg', destination));
+    if (destination.archived)
+      actions.append(
+        makeAction('restore', window.HospitalI18n.t("personnel.restaurar"), 'save-floppy.svg', destination)
+      );
+    else
+      actions.append(
+        makeAction('edit', window.HospitalI18n.t("trace_view.editar"), 'pencil-icon.svg', destination),
+        makeAction('delete', window.HospitalI18n.t("routes.eliminar"), 'trash-icon.svg', destination)
+      );
     actionsCell.append(actions);
-    row.append(nameCell, makeCell(destination.address), makeCell(destination.locality), statusCell, actionsCell);
+    row.append(
+      nameCell,
+      makeCell(destination.address),
+      makeCell(destination.locality),
+      statusCell,
+      actionsCell
+    );
     return row;
   }
 
@@ -145,25 +214,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     rows.replaceChildren(...visible.map(makeRow));
 
     const statusCount = destinations.filter(destination => destination.status === activeFilter).length;
-    window.HospitalI18n.bindText(document.getElementById('list-title'), () => window.HospitalI18n.t("destinations.destinos_value", {value0: activeFilter === 'active' ? window.HospitalI18n.t("shared.activos") : window.HospitalI18n.t("shared.inactivos")}));
-    window.HospitalI18n.bindText(document.getElementById('list-count'), () => window.HospitalI18n.t("destinations.total_de_value_value", {value0: statusCount, value1: statusCount === 1 ? window.HospitalI18n.t("destinations.destino_registrado") : window.HospitalI18n.t("destinations.destinos_registrados")}));
-    window.HospitalI18n.bindText(document.getElementById('results-summary'), () => matching.length
-      ? window.HospitalI18n.t("personnel.mostrando_value_a_value_de_value_resultados", {value0: start + 1, value1: start + visible.length, value2: matching.length})
-      : window.HospitalI18n.t("personnel.mostrando_0_resultados"));
+    window.HospitalI18n.bindText(document.getElementById('list-title'), () =>
+      window.HospitalI18n.t("destinations.destinos_value", {
+        value0:
+          activeFilter === 'active'
+            ? window.HospitalI18n.t("shared.activos")
+            : window.HospitalI18n.t("shared.inactivos")
+      })
+    );
+    window.HospitalI18n.bindText(document.getElementById('list-count'), () =>
+      window.HospitalI18n.t("destinations.total_de_value_value", {
+        value0: statusCount,
+        value1:
+          statusCount === 1
+            ? window.HospitalI18n.t("destinations.destino_registrado")
+            : window.HospitalI18n.t("destinations.destinos_registrados")
+      })
+    );
+    window.HospitalI18n.bindText(document.getElementById('results-summary'), () =>
+      matching.length
+        ? window.HospitalI18n.t("personnel.mostrando_value_a_value_de_value_resultados", {
+            value0: start + 1,
+            value1: start + visible.length,
+            value2: matching.length
+          })
+        : window.HospitalI18n.t("personnel.mostrando_0_resultados")
+    );
     window.HospitalI18n.bindText(document.getElementById('page-number'), () => String(currentPage));
     document.getElementById('page-prev').disabled = currentPage === 1;
     document.getElementById('page-next').disabled = currentPage === pageCount;
 
     const noRecords = destinations.length === 0;
     document.getElementById('empty-state').hidden = matching.length > 0;
-    window.HospitalI18n.bindText(document.getElementById('empty-title'), () => noRecords ? window.HospitalI18n.t("destinations.aun_no_hay_destinos") : window.HospitalI18n.t("destinations.no_se_encontraron_destinos"));
-    window.HospitalI18n.bindText(document.getElementById('empty-description'), () => noRecords
-      ? window.HospitalI18n.t("destinations.agrega_el_primer_destino_desde_el_formulario") : window.HospitalI18n.t("destinations.prueba_con_otro_nombre_direccion_localidad_o_estado"));
-    window.HospitalI18n.bindText(document.getElementById('empty-action'), () => noRecords ? window.HospitalI18n.t("destinations.agregar_destino") : window.HospitalI18n.t("destinations.limpiar_busqueda"));
+    window.HospitalI18n.bindText(document.getElementById('empty-title'), () =>
+      noRecords
+        ? window.HospitalI18n.t("destinations.aun_no_hay_destinos")
+        : window.HospitalI18n.t("destinations.no_se_encontraron_destinos")
+    );
+    window.HospitalI18n.bindText(document.getElementById('empty-description'), () =>
+      noRecords
+        ? window.HospitalI18n.t("destinations.agrega_el_primer_destino_desde_el_formulario")
+        : window.HospitalI18n.t("destinations.prueba_con_otro_nombre_direccion_localidad_o_estado")
+    );
+    window.HospitalI18n.bindText(document.getElementById('empty-action'), () =>
+      noRecords
+        ? window.HospitalI18n.t("destinations.agregar_destino")
+        : window.HospitalI18n.t("destinations.limpiar_busqueda")
+    );
   }
 
   function showFeedback(message, tone = '') {
-    if (tone === 'error') { console.error(window.HospitalI18n.resolve(message)); window.HospitalI18n.bindText(feedback, () => ''); return; }
+    if (tone === 'error') {
+      console.error(window.HospitalI18n.resolve(message));
+      window.HospitalI18n.bindText(feedback, () => '');
+      return;
+    }
     window.HospitalI18n.bindText(feedback, () => window.HospitalI18n.resolve(message));
     feedback.className = 'form-feedback' + (tone ? ` is-${tone}` : '');
   }
@@ -175,11 +280,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function clearForm() {
     form.reset();
-    editingId = null; editingVersion=null;dirty=false;
-    window.HospitalI18n.bindText(document.getElementById('form-title'), () => window.HospitalI18n.t("destinations.agregar_destino"));
-    window.HospitalI18n.bindText(document.getElementById('form-subtitle'), () => window.HospitalI18n.t("destinations.completa_la_informacion_del_destino"));
-    window.HospitalI18n.bindText(document.getElementById('save-label'), () => window.HospitalI18n.t("accounts.guardar"));
-    [nameInput, addressInput, localityInput, phoneInput].forEach(input => window.HospitalI18n.bindValidity(input, () => ''));
+    editingId = null;
+    editingVersion = null;
+    dirty = false;
+    window.HospitalI18n.bindText(document.getElementById('form-title'), () =>
+      window.HospitalI18n.t("destinations.agregar_destino")
+    );
+    window.HospitalI18n.bindText(document.getElementById('form-subtitle'), () =>
+      window.HospitalI18n.t("destinations.completa_la_informacion_del_destino")
+    );
+    window.HospitalI18n.bindText(document.getElementById('save-label'), () =>
+      window.HospitalI18n.t("accounts.guardar")
+    );
+    [nameInput, addressInput, localityInput, phoneInput].forEach(input =>
+      window.HospitalI18n.bindValidity(input, () => '')
+    );
     showFeedback('');
     updateStatus();
   }
@@ -197,10 +312,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function editDestination(destination) {
     clearForm();
-    editingId = destination.id; editingVersion=destination.version;
-    window.HospitalI18n.bindText(document.getElementById('form-title'), () => window.HospitalI18n.t("destinations.editar_destino"));
-    window.HospitalI18n.bindText(document.getElementById('form-subtitle'), () => window.HospitalI18n.t("destinations.actualiza_la_informacion_del_destino"));
-    window.HospitalI18n.bindText(document.getElementById('save-label'), () => window.HospitalI18n.t("destinations.actualizar"));
+    editingId = destination.id;
+    editingVersion = destination.version;
+    window.HospitalI18n.bindText(document.getElementById('form-title'), () =>
+      window.HospitalI18n.t("destinations.editar_destino")
+    );
+    window.HospitalI18n.bindText(document.getElementById('form-subtitle'), () =>
+      window.HospitalI18n.t("destinations.actualiza_la_informacion_del_destino")
+    );
+    window.HospitalI18n.bindText(document.getElementById('save-label'), () =>
+      window.HospitalI18n.t("destinations.actualizar")
+    );
     nameInput.value = destination.name;
     addressInput.value = destination.address;
     localityInput.value = destination.locality;
@@ -216,53 +338,101 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function showDestination(destination) {
     detailId = destination.id;
-    document.getElementById('detail-edit').hidden=destination.archived;
+    document.getElementById('detail-edit').hidden = destination.archived;
     window.HospitalI18n.bindText(document.getElementById('destination-detail-name'), () => destination.name);
-    window.HospitalI18n.bindText(document.getElementById('destination-detail-type'), () => typeLabels[destination.type]);
+    window.HospitalI18n.bindText(
+      document.getElementById('destination-detail-type'),
+      () => typeLabels[destination.type]
+    );
     const status = document.getElementById('destination-detail-status');
     status.classList.toggle('is-active', !destination.archived && destination.status === 'active');
-    window.HospitalI18n.bindText(status, () => destination.archived ? window.HospitalI18n.t('personnel.archivado') : statusLabels[destination.status]);
+    window.HospitalI18n.bindText(status, () =>
+      destination.archived ? window.HospitalI18n.t('personnel.archivado') : statusLabels[destination.status]
+    );
     window.HospitalUI.detailRows(document.getElementById('dialog-details'), [
       ['destinations.direccion', destination.address],
       ['destinations.localidad', destination.locality || '—'],
-      ['destinations.telefono', () => destination.phone || window.HospitalI18n.t('destinations.sin_telefono_registrado')],
-      ['shared.acceso', () => destination.notes || window.HospitalI18n.t('destinations.sin_referencia_de_acceso')]
+      [
+        'destinations.telefono',
+        () => destination.phone || window.HospitalI18n.t('destinations.sin_telefono_registrado')
+      ],
+      [
+        'shared.acceso',
+        () => destination.notes || window.HospitalI18n.t('destinations.sin_referencia_de_acceso')
+      ]
     ]);
     detailDialog.showModal();
   }
 
   function confirmDeletion(destination) {
-    deletingId = destination.id;deletingVersion=destination.version;
-    window.HospitalI18n.bindText(document.getElementById('delete-title'), () => destination.archived?window.HospitalI18n.t("destinations.restaurar_destino"):window.HospitalI18n.t("destinations.eliminar_destino"));
-    window.HospitalI18n.bindText(document.getElementById('delete-confirm').querySelector('span'), () => destination.archived?window.HospitalI18n.t("destinations.restaurar_destino"):window.HospitalI18n.t("destinations.eliminar_destino"));
-    window.HospitalI18n.bindText(document.getElementById('delete-description'), () => destination.archived?window.HospitalI18n.t("destinations.restaurar_value_con_su_estado_anterior", {value0: destination.name}):window.HospitalI18n.t("destinations.archivar_value_se_conservara_el_historial_y_podras_restaurarlo_desde_inactivos", {value0: destination.name}));
+    deletingId = destination.id;
+    deletingVersion = destination.version;
+    window.HospitalI18n.bindText(document.getElementById('delete-title'), () =>
+      destination.archived
+        ? window.HospitalI18n.t("destinations.restaurar_destino")
+        : window.HospitalI18n.t("destinations.eliminar_destino")
+    );
+    window.HospitalI18n.bindText(document.getElementById('delete-confirm').querySelector('span'), () =>
+      destination.archived
+        ? window.HospitalI18n.t("destinations.restaurar_destino")
+        : window.HospitalI18n.t("destinations.eliminar_destino")
+    );
+    window.HospitalI18n.bindText(document.getElementById('delete-description'), () =>
+      destination.archived
+        ? window.HospitalI18n.t("destinations.restaurar_value_con_su_estado_anterior", {
+            value0: destination.name
+          })
+        : window.HospitalI18n.t(
+            "destinations.archivar_value_se_conservara_el_historial_y_podras_restaurarlo_desde_inactivos",
+            { value0: destination.name }
+          )
+    );
     deleteDialog.showModal();
   }
 
   filterButtons.forEach(button => button.addEventListener('click', () => setFilter(button.dataset.filter)));
-  search.addEventListener('input', () => { currentPage = 1; render(); });
-  document.getElementById('page-prev').addEventListener('click', () => { currentPage -= 1; render(); });
-  document.getElementById('page-next').addEventListener('click', () => { currentPage += 1; render(); });
-  document.getElementById('form-cancel').addEventListener('click', () => { clearForm(); render(); });
+  search.addEventListener('input', () => {
+    currentPage = 1;
+    render();
+  });
+  document.getElementById('page-prev').addEventListener('click', () => {
+    currentPage -= 1;
+    render();
+  });
+  document.getElementById('page-next').addEventListener('click', () => {
+    currentPage += 1;
+    render();
+  });
+  document.getElementById('form-cancel').addEventListener('click', () => {
+    clearForm();
+    render();
+  });
   statusInput.addEventListener('change', updateStatus);
   [nameInput, addressInput, localityInput, phoneInput].forEach(input => {
-    input.addEventListener('input', () => { window.HospitalI18n.bindValidity(input, () => ''); showFeedback(''); });
+    input.addEventListener('input', () => {
+      window.HospitalI18n.bindValidity(input, () => '');
+      showFeedback('');
+    });
   });
   document.getElementById('empty-action').addEventListener('click', () => {
     search.value = '';
     currentPage = 1;
     render();
-    if (destinations.length === 0) { clearForm(); nameInput.focus(); }
-    else search.focus();
+    if (destinations.length === 0) {
+      clearForm();
+      nameInput.focus();
+    } else search.focus();
   });
 
-  rows.addEventListener('click',event=>{
-    const button=event.target.closest('button[data-action]');
-    if(button)current(button.dataset.id,button.dataset.action);
+  rows.addEventListener('click', event => {
+    const button = event.target.closest('button[data-action]');
+    if (button) current(button.dataset.id, button.dataset.action);
   });
 
   form.addEventListener('submit', async event => {
-    event.preventDefault();if(busy)return;showFeedback('');
+    event.preventDefault();
+    if (busy) return;
+    showFeedback('');
     const requiredInputs = [
       [nameInput, () => window.HospitalI18n.t("destinations.ingresa_el_nombre_del_destino")],
       [addressInput, () => window.HospitalI18n.t("destinations.ingresa_la_direccion_del_destino")],
@@ -277,70 +447,149 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
     const phone = phoneInput.value.trim();
-    if (phone && (!/^\+?[\d\s().-]+$/.test(phone) || phone.replace(/\D/g, '').length < 8 || phone.replace(/\D/g, '').length > 15)) {
-      window.HospitalI18n.bindValidity(phoneInput, () => window.HospitalI18n.t("destinations.ingresa_un_telefono_de_8_a_15_digitos_o_deja_el_campo_vacio"));
+    if (
+      phone &&
+      (!/^\+?[\d\s().-]+$/.test(phone) ||
+        phone.replace(/\D/g, '').length < 8 ||
+        phone.replace(/\D/g, '').length > 15)
+    ) {
+      window.HospitalI18n.bindValidity(phoneInput, () =>
+        window.HospitalI18n.t("destinations.ingresa_un_telefono_de_8_a_15_digitos_o_deja_el_campo_vacio")
+      );
       phoneInput.checkValidity();
       showFeedback(() => window.HospitalI18n.t("destinations.revisa_el_telefono_de_contacto"), 'error');
       return;
     }
-    if(!form.checkValidity())return;
-    const record={name:nameInput.value.trim(),address:addressInput.value.trim(),locality:localityInput.value.trim(),
-      facility_type:typeCodes[typeInput.value],phone,notes:notesInput.value.trim(),availability:statusInput.value==='active'?'active':'inactive'};
-    const wasEditing=editingId!==null;
-    if(wasEditing)Object.assign(record,{id:editingId,version:editingVersion});
+    if (!form.checkValidity()) return;
+    const record = {
+      name: nameInput.value.trim(),
+      address: addressInput.value.trim(),
+      locality: localityInput.value.trim(),
+      facility_type: typeCodes[typeInput.value],
+      phone,
+      notes: notesInput.value.trim(),
+      availability: statusInput.value === 'active' ? 'active' : 'inactive'
+    };
+    const wasEditing = editingId !== null;
+    if (wasEditing) Object.assign(record, { id: editingId, version: editingVersion });
     setBusy(true);
     try {
-      const saved=upsert(await api.post(`destinations.php?action=${wasEditing?'update':'create'}`,record));
-      clearForm();search.value='';setFilter(saved.status);
-      currentPage=Math.floor(getMatchingDestinations().findIndex(d=>d.id===saved.id)/pageSize)+1;
-      showFeedback(() => wasEditing?window.HospitalI18n.t("destinations.destino_actualizado"):window.HospitalI18n.t("destinations.destino_guardado"));
-    } catch(error){report(error);}finally{setBusy(false);render();}
-
+      const saved = upsert(
+        await api.post(`destinations.php?action=${wasEditing ? 'update' : 'create'}`, record)
+      );
+      clearForm();
+      search.value = '';
+      setFilter(saved.status);
+      currentPage = Math.floor(getMatchingDestinations().findIndex(d => d.id === saved.id) / pageSize) + 1;
+      showFeedback(() =>
+        wasEditing
+          ? window.HospitalI18n.t("destinations.destino_actualizado")
+          : window.HospitalI18n.t("destinations.destino_guardado")
+      );
+    } catch (error) {
+      report(error);
+    } finally {
+      setBusy(false);
+      render();
+    }
   });
 
   document.getElementById('detail-close').addEventListener('click', () => detailDialog.close());
   detailDialog.addEventListener('close', () => {
     const trigger = rows.querySelector(`[data-action="view"][data-id="${CSS.escape(detailId || '')}"]`);
-    (trigger || search).focus({preventScroll: true});
+    (trigger || search).focus({ preventScroll: true });
   });
-  document.getElementById('detail-edit').addEventListener('click',()=>{detailDialog.close();current(detailId,'edit');});
+  document.getElementById('detail-edit').addEventListener('click', () => {
+    detailDialog.close();
+    current(detailId, 'edit');
+  });
   ['delete-close', 'delete-cancel'].forEach(id => {
     document.getElementById(id).addEventListener('click', () => deleteDialog.close());
   });
   document.getElementById('delete-confirm').addEventListener('click', async () => {
     const destination = destinations.find(item => item.id === deletingId);
-    if (!destination) { deleteDialog.close(); return; }
-    if(busy)return;
+    if (!destination) {
+      deleteDialog.close();
+      return;
+    }
+    if (busy) return;
     setBusy(true);
     try {
-      upsert(await api.post(`destinations.php?action=${destination.archived?'restore':'archive'}`,{id:destination.id,version:deletingVersion}));
-      if(editingId===destination.id)clearForm();
-      deleteDialog.close();showFeedback(() => destination.archived?window.HospitalI18n.t("destinations.destino_restaurado"):window.HospitalI18n.t("destinations.destino_eliminado_del_listado"));
-    } catch(error){report(error);}finally{setBusy(false);render();}
-
+      upsert(
+        await api.post(`destinations.php?action=${destination.archived ? 'restore' : 'archive'}`, {
+          id: destination.id,
+          version: deletingVersion
+        })
+      );
+      if (editingId === destination.id) clearForm();
+      deleteDialog.close();
+      showFeedback(() =>
+        destination.archived
+          ? window.HospitalI18n.t("destinations.destino_restaurado")
+          : window.HospitalI18n.t("destinations.destino_eliminado_del_listado")
+      );
+    } catch (error) {
+      report(error);
+    } finally {
+      setBusy(false);
+      render();
+    }
   });
-  deleteDialog.addEventListener('close', () => { deletingId = null; });
+  deleteDialog.addEventListener('close', () => {
+    deletingId = null;
+  });
   [detailDialog, deleteDialog].forEach(dialog => {
     dialog.addEventListener('click', event => {
       if (event.target !== dialog || busy) return;
       const bounds = dialog.getBoundingClientRect();
-      if (event.clientX < bounds.left || event.clientX > bounds.right ||
-          event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+      if (
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom
+      )
+        dialog.close();
     });
   });
 
-  form.addEventListener('input',()=>{dirty=true;});form.addEventListener('change',()=>{dirty=true;});
-  deleteDialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
-  window.addEventListener('focus',()=>{if(!busy && !dirty && !editingId && !detailDialog.open && !deleteDialog.open)refresh().catch(report);});
-  async function start(){
-    setBusy(true);updateStatus();window.HospitalI18n.bindText(document.getElementById('list-count'), () => window.HospitalI18n.t("destinations.cargando_destinos"));
+  form.addEventListener('input', () => {
+    dirty = true;
+  });
+  form.addEventListener('change', () => {
+    dirty = true;
+  });
+  deleteDialog.addEventListener('cancel', event => {
+    if (busy) event.preventDefault();
+  });
+  window.addEventListener('focus', () => {
+    if (!busy && !dirty && !editingId && !detailDialog.open && !deleteDialog.open) refresh().catch(report);
+  });
+  async function start() {
+    setBusy(true);
+    updateStatus();
+    window.HospitalI18n.bindText(document.getElementById('list-count'), () =>
+      window.HospitalI18n.t("destinations.cargando_destinos")
+    );
     try {
-      const session=await window.HospitalAuth.ready;if(!session)return;
-      if(!session.user.roles.includes('dispatcher')){location.replace(api.page('src/views/management/management.php'));return;}
-      await refresh();setBusy(false);
-    } catch(error){report(error);window.HospitalI18n.bindText(document.getElementById('list-count'), () => '');}
+      const session = await window.HospitalAuth.ready;
+      if (!session) return;
+      if (!session.user.roles.includes('dispatcher')) {
+        location.replace(api.page('src/views/management/management.php'));
+        return;
+      }
+      await refresh();
+      setBusy(false);
+    } catch (error) {
+      report(error);
+      window.HospitalI18n.bindText(document.getElementById('list-count'), () => '');
+    }
   }
   start();
-  window.addEventListener('hospital:localechange',()=>{render();if(detailDialog.open){const item=destinations.find(d=>d.id===detailId);if(item)showDestination(item);}});
-
+  window.addEventListener('hospital:localechange', () => {
+    render();
+    if (detailDialog.open) {
+      const item = destinations.find(d => d.id === detailId);
+      if (item) showDestination(item);
+    }
+  });
 });

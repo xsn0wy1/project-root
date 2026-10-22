@@ -9,17 +9,22 @@ function require_staff_page(string $view): void
     try {
         $user = auth_require_user($db, $config, false);
     } catch (Hospital\Http\ApiException $error) {
-        if ($error->status !== 401) throw $error;
+        if ($error->status !== 401)
+            throw $error;
         header('Location: ' . $config['base_path'] . '/index.php?reason=session_expired', true, 303);
         exit;
     }
 
     $page = preg_replace('/\.php$/', '', $view);
     $permissions = [
-        'management/patients' => 'records_manager', 'management/doctors' => 'records_manager',
-        'management/ambulances' => 'dispatcher', 'management/personnel' => 'dispatcher',
-        'management/destinations' => 'dispatcher', 'management/routes' => 'dispatcher',
-        'traces/trace-new' => 'dispatcher', 'management/accounts' => 'admin',
+        'management/patients' => 'records_manager',
+        'management/doctors' => 'records_manager',
+        'management/ambulances' => 'dispatcher',
+        'management/personnel' => 'dispatcher',
+        'management/destinations' => 'dispatcher',
+        'management/routes' => 'dispatcher',
+        'traces/trace-new' => 'dispatcher',
+        'management/accounts' => 'admin',
     ];
     if (isset($permissions[$page])) {
         $roles = users_roles($db, (string) $user['id']);
@@ -33,6 +38,7 @@ function require_staff_page(string $view): void
     $locale->execute([(string)$user['id']]);
     $GLOBALS['page_locale'] = $locale->fetchColumn() === 'en' ? 'en' : 'es-UY';
     session_write_close();
-    if (in_array($page, ['traces/trace-view', 'traces/trace-map'], true)) header('Referrer-Policy: strict-origin');
+    if (in_array($page, ['traces/trace-view', 'traces/trace-map'], true))
+        header('Referrer-Policy: strict-origin');
     header('Content-Type: text/html; charset=utf-8');
 }

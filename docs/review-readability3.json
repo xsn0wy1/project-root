@@ -1,0 +1,589 @@
+{
+  "status": "complete; paused for user review before Checkpoint 4",
+  "baseline": "Verified Checkpoint 2 state, including accepted uncommitted changes; private snapshot without configuration, uploads, logs or Git history.",
+  "scope": "Readability, natural function boundaries and explicit conditional decisions. No intentional UI/API/schema change, application dependency, build step or archive.",
+  "core": {
+    "modules": 16,
+    "checks": 861,
+    "passed": true,
+    "results": [
+      {
+        "module": "auth",
+        "status": "passed",
+        "checks": 59,
+        "cleaned": true
+      },
+      {
+        "module": "settings",
+        "status": "passed",
+        "checks": 54,
+        "cleaned": true
+      },
+      {
+        "module": "ambulances",
+        "status": "passed",
+        "checks": 99,
+        "cleaned": true
+      },
+      {
+        "module": "patients",
+        "status": "passed",
+        "checks": 67,
+        "cleaned": true
+      },
+      {
+        "module": "doctors",
+        "status": "passed",
+        "checks": 18,
+        "cleaned": true
+      },
+      {
+        "module": "personnel",
+        "status": "passed",
+        "checks": 92,
+        "cleaned": true
+      },
+      {
+        "module": "destinations",
+        "status": "passed",
+        "checks": 92,
+        "cleaned": true
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 40,
+        "cleaned": true
+      },
+      {
+        "module": "documents",
+        "status": "passed",
+        "checks": 83,
+        "cleaned": true
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true
+      },
+      {
+        "module": "surveys",
+        "status": "passed",
+        "checks": 48,
+        "cleaned": true
+      },
+      {
+        "module": "audit_corrections",
+        "status": "passed",
+        "checks": 26,
+        "cleaned": true
+      },
+      {
+        "module": "release_fixes",
+        "status": "passed",
+        "checks": 48,
+        "cleaned": true
+      },
+      {
+        "module": "migrations",
+        "status": "passed",
+        "checks": 17,
+        "cleaned": true
+      },
+      {
+        "module": "i18n",
+        "status": "passed",
+        "checks": 27,
+        "cleaned": true
+      },
+      {
+        "module": "theme",
+        "status": "passed",
+        "checks": 15,
+        "cleaned": true
+      }
+    ]
+  },
+  "focused": {
+    "before_catalog_checks": 189,
+    "after_catalog_checks": 189,
+    "after_documents_settings_surveys_checks": 185,
+    "enhanced_routes_before_and_after_checks": 40,
+    "javascript_boundary_checks": 98,
+    "document_links_sql_api_checks": 46,
+    "document_links_browser_checks": 139,
+    "recovery_mock_sql_api_checks": 58,
+    "recovery_browser_checks": 130,
+    "workflow_browser_checks": 53,
+    "sql_api_total_excluding_replays": 965,
+    "browser_total_excluding_baseline_replays": 1912,
+    "note": "Counts are successful assertions in their named suites, not a claim of disjoint requirements or exhaustive coverage."
+  },
+  "browser": {
+    "all_page_checks": 1590,
+    "views": 100,
+    "pages": 25,
+    "interaction_groups": 61,
+    "errors": [],
+    "missing_local_assets": [],
+    "google_font_requests": [],
+    "matrix": "Desktop 1440x900 and phone 390x844, dark/es-UY and light/en; interaction cases also cover narrow, tablet and landscape; recovery crosses both locales/themes."
+  },
+  "visual": {
+    "intentional_appearance_changes": [],
+    "unmasked_matching_captures": 132,
+    "pixel_identical": 111,
+    "minor_channel_delta_only": 13,
+    "dynamic_cases": 8,
+    "dynamic_reason": "Auto-filled form start time and live vendor tile fade; no application styling changes.",
+    "controlled_replay": [
+      {
+        "file": "trace-map.php",
+        "size": "desktop",
+        "theme": "dark",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-map.php",
+        "size": "desktop",
+        "theme": "light",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-map.php",
+        "size": "mobile",
+        "theme": "dark",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-map.php",
+        "size": "mobile",
+        "theme": "light",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-new.php",
+        "size": "desktop",
+        "theme": "dark",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-new.php",
+        "size": "desktop",
+        "theme": "light",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-new.php",
+        "size": "mobile",
+        "theme": "dark",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      },
+      {
+        "file": "trace-new.php",
+        "size": "mobile",
+        "theme": "light",
+        "geometry_equal": true,
+        "exactPixels": 0,
+        "over12Pixels": 0,
+        "maxDelta": 0
+      }
+    ],
+    "controlled_method": "Same saved source baseline/current fictional database, fixed form date/time, existing reduced-motion behavior, vendor tile images hidden while controls/paths/markers/popups remain visible; all eight pairs are exact."
+  },
+  "structure": {
+    "files_by_gate_status": {
+      "unchanged": 181,
+      "formatting-only": 53,
+      "declared-change": 32
+    },
+    "php_files": 90,
+    "js_files": 35,
+    "php_token_equal": 79,
+    "js_ast_equal": 14,
+    "non_php_js_byte_equal": 141,
+    "public_page_bytes_equal": 25,
+    "intentional_file_declarations": 32,
+    "named_php_functions": {
+      "equal": 283,
+      "changed": [
+        {
+          "path": "backend/php/components/shell.php",
+          "name": "staff_header"
+        },
+        {
+          "path": "backend/php/components/shell.php",
+          "name": "staff_sidebar"
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_stage"
+        },
+        {
+          "path": "backend/php/modules/patients.php",
+          "name": "patients_listing"
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_save"
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "route_mapping_path"
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "routes_save"
+        },
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_profile"
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_fields"
+        },
+        {
+          "path": "backend/php/modules/transfer-input.php",
+          "name": "transfer_input_fields"
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_locations_resolve"
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfers_catalog"
+        }
+      ],
+      "added": [
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_image"
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_pdf"
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_check_identity_update"
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_create_identity"
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_store_profile"
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "route_mapping_coordinates"
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "route_mapping_response"
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "routes_store_row"
+        },
+        {
+          "path": "backend/php/modules/routes.php",
+          "name": "routes_store_stops"
+        },
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_profile_fields"
+        },
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_store_specialties"
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_item"
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_items"
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_options"
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_existing_route"
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_matching_route"
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_selected_route"
+        }
+      ],
+      "removed": []
+    },
+    "javascript_decisions": {
+      "before": {
+        "files": 35,
+        "functions": 2243,
+        "decision_chains": 78,
+        "nested_nodes_including_templates": 131,
+        "long_functions": 34
+      },
+      "after": {
+        "files": 35,
+        "functions": 2274,
+        "decision_chains": 0,
+        "nested_nodes_including_templates": 35,
+        "long_functions": 70
+      }
+    },
+    "format_gate_reports": [
+      "documents-format-gate.json",
+      "transfers-format-gate.json",
+      "surveys-format-gate.json",
+      "auth-catalog-format-gate.json",
+      "formatting-final-gate.json",
+      "refactor-format-gate.json"
+    ],
+    "semantic_gate": "semantic-gate.json",
+    "final_gate": "final-gate.json",
+    "self_checks_passed": true
+  },
+  "contracts": {
+    "prior_sampled_signatures": 552,
+    "removed": 0,
+    "added_injected_failure_signatures": 2,
+    "suites": [
+      {
+        "suite": "ambulances",
+        "before": 34,
+        "after": 34,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "audit_corrections",
+        "before": 33,
+        "after": 33,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "auth",
+        "before": 39,
+        "after": 39,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "destinations",
+        "before": 77,
+        "after": 77,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "doctors",
+        "before": 23,
+        "after": 23,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "documents",
+        "before": 32,
+        "after": 32,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "i18n",
+        "before": 20,
+        "after": 20,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "patients",
+        "before": 45,
+        "after": 45,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "personnel",
+        "before": 77,
+        "after": 77,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "release_fixes",
+        "before": 20,
+        "after": 20,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "routes",
+        "before": 24,
+        "after": 26,
+        "removed": [],
+        "added": [
+          {
+            "action": "create",
+            "allow": null,
+            "data_keys": [],
+            "data_kind": "NoneType",
+            "domain": "routes",
+            "envelope_keys": [
+              "error",
+              "meta",
+              "success"
+            ],
+            "error_code": "SERVICE_UNAVAILABLE",
+            "method": "POST",
+            "role_context": [
+              "dispatcher"
+            ],
+            "status": 503
+          },
+          {
+            "action": "update",
+            "allow": null,
+            "data_keys": [],
+            "data_kind": "NoneType",
+            "domain": "routes",
+            "envelope_keys": [
+              "error",
+              "meta",
+              "success"
+            ],
+            "error_code": "SERVICE_UNAVAILABLE",
+            "method": "POST",
+            "role_context": [
+              "dispatcher"
+            ],
+            "status": 503
+          }
+        ]
+      },
+      {
+        "suite": "settings",
+        "before": 27,
+        "after": 27,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "surveys",
+        "before": 36,
+        "after": 36,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "theme",
+        "before": 13,
+        "after": 13,
+        "removed": [],
+        "added": []
+      },
+      {
+        "suite": "transfers",
+        "before": 52,
+        "after": 52,
+        "removed": [],
+        "added": []
+      }
+    ],
+    "limits": "Shared-Client action/method/last-known-role/status/envelope/top-level shape observations; not exhaustive response schemas or independently asserted roles."
+  },
+  "syntax": {
+    "php": 90,
+    "js": 35,
+    "test_php": 1,
+    "test_cjs": 14,
+    "test_python": 30
+  },
+  "localization": {
+    "bilingual_keys": 1816,
+    "rendered_pages": 25,
+    "literal_references": 1111,
+    "spanish_fallback_attributes_ids_preserved": true,
+    "removed_keys_still_absent": true
+  },
+  "length_policy": {
+    "soft_physical_line_ceiling": 60,
+    "includes_closures": true,
+    "php_exceptions": 25,
+    "javascript_exceptions": 70,
+    "inventory": "docs/review-readability3-lengths.json",
+    "all_exceptions_explained": true
+  },
+  "preflight_healthy": true,
+  "cleanup": {
+    "remaining_schemas": 0,
+    "remaining_account_entries": 0,
+    "recovery_schemas": 0,
+    "recovery_accounts": 0,
+    "doclinks_schemas": 0,
+    "doclinks_accounts": 0,
+    "suite_schemas_checked": 26,
+    "suite_usernames_checked": 26,
+    "storage_remaining": 0,
+    "ports_open": {
+      "8113": false,
+      "8114": false,
+      "8120": false,
+      "8873": false,
+      "8881": false,
+      "8882": false,
+      "8883": false,
+      "8884": false,
+      "8885": false
+    },
+    "demonstration_http_status": 200,
+    "browser_fixture_http_status": 200
+  },
+  "email": "Configured/operational by user direction; live provider/inbox verification deferred until hosting. Local delivery checks use mocks only.",
+  "not_repeated_here": [
+    "Full clean-install browser/integrity run; scheduled for Checkpoint 4.",
+    "New comparison with the original johnproject; current baseline is the verified Checkpoint 2 snapshot."
+  ],
+  "limits": [
+    "Automated Chrome emulation does not verify physical devices/Safari.",
+    "Actual hosted Apache-user/Windows deployment remains outside this local checkpoint.",
+    "Soft function-length exceptions remain explicitly documented."
+  ],
+  "evidence": "tests/.runtime/review-cleanup/checkpoint3/ (ignored, private)"
+}

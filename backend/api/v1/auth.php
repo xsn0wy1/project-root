@@ -8,20 +8,41 @@ use Hospital\Http\Response;
 use Hospital\Security\Csrf;
 
 $action = $_GET['action'] ?? '';
-if (!is_string($action) || !in_array($action, ['change-password', 'csrf', 'heartbeat', 'login', 'logout', 'me', 'register', 'reset-password', 'reset-request', 'revoke-session', 'sessions'], true)) {
+if (
+    !is_string($action)
+    || !in_array(
+        $action,
+        [
+            'change-password',
+            'csrf',
+            'heartbeat',
+            'login',
+            'logout',
+            'me',
+            'register',
+            'reset-password',
+            'reset-request',
+            'revoke-session',
+            'sessions'
+        ],
+        true
+    )
+) {
     throw new ApiException(404, 'NOT_FOUND', Hospital\I18n::t('errors.no_se_encontro_el_endpoint'));
 }
 
 $write = !in_array($action, ['csrf', 'me', 'sessions'], true);
 Request::method($write ? 'POST' : 'GET');
-if ($write) Csrf::verify();
+if ($write)
+    Csrf::verify();
 
 switch ($action) {
     case 'change-password':
-        $user=auth_require_user($db, $config);
-        $body=Request::body(['current_password','new_password']);
-        password_change($db, $config, (string)$user['id'],(string)$user['id'],$body);
-        auth_logout($db, $config);Response::json(['changed'=>true,'sign_in_required'=>true]);
+        $user = auth_require_user($db, $config);
+        $body = Request::body(['current_password', 'new_password']);
+        password_change($db, $config, (string)$user['id'], (string)$user['id'], $body);
+        auth_logout($db, $config);
+        Response::json(['changed' => true, 'sign_in_required' => true]);
         break;
     case 'csrf':
 
@@ -55,18 +76,24 @@ switch ($action) {
     case 'reset-password':
 
 
-        $body=Request::body(['token','new_password']);
+        $body = Request::body(['token', 'new_password']);
         password_reset_with_token($db, $config, $body);
         auth_clear_session($config);
-        Response::json(['changed'=>true,'sign_in_required'=>true]);
+        Response::json(['changed' => true, 'sign_in_required' => true]);
         break;
     case 'reset-request':
-        $body=Request::body(['email']);
+        $body = Request::body(['email']);
         $delivery = null;
-        $result = password_request_reset($db, $config, $body, null, static function(callable $send) use (&$delivery): void { $delivery = $send; });
+        $result = password_request_reset($db, $config, $body, null, static function (callable $send) use (&$delivery): void {
+            $delivery = $send;
+        });
         Response::finish($result, 202);
-        try { if ($delivery !== null) $delivery(); }
-        catch (Throwable $error) { error_log('Hospital password recovery dispatch failed.'); }
+        try {
+            if ($delivery !== null)
+                $delivery();
+        } catch (Throwable $error) {
+            error_log('Hospital password recovery dispatch failed.');
+        }
         break;
     case 'revoke-session':
 
