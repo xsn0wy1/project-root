@@ -27,7 +27,7 @@ staff_page_open([
                 <div class="new-transfer-content">
                     <a href="trace.php" class="back-link">
                         <span class="new-transfer-icon back-icon" aria-hidden="true"></span>
-                        <i18n-text data-i18n="trace_new.volver_a_traslados" style="display:contents">Volver a traslados</i18n-text>
+                        <i18n-text data-i18n="trace_new.volver_a_traslados">Volver a traslados</i18n-text>
                     </a>
 
                     <div class="new-transfer-heading">
@@ -46,7 +46,7 @@ staff_page_open([
                                 <section class="form-section general-section">
                                     <h2>
                                         <span class="new-transfer-icon information-icon" aria-hidden="true"></span>
-                                        <i18n-text data-i18n="settings.informacion_general" style="display:contents">Información General</i18n-text>
+                                        <i18n-text data-i18n="settings.informacion_general">Información General</i18n-text>
                                     </h2>
 
                                     <div class="field full-field">
@@ -66,7 +66,7 @@ staff_page_open([
                                     </div>
 
                                     <div class="field full-field">
-                                        <label for="companion"><i18n-text data-i18n="trace_view.acompanante" style="display:contents">Acompañante</i18n-text> <span data-i18n="trace_new.opcional">(Opcional)</span></label>
+                                        <label for="companion"><i18n-text data-i18n="trace_view.acompanante">Acompañante</i18n-text> <span data-i18n="trace_new.opcional">(Opcional)</span></label>
                                         <div class="input-wrapper">
                                             <input type="text" id="companion" name="companion" list="crew-options"
                                                 placeholder="Buscar acompañante..." data-i18n-placeholder="trace_new.buscar_acompanante" autocomplete="off">
@@ -100,7 +100,7 @@ staff_page_open([
                                 <section class="form-section patient-section">
                                     <h2>
                                         <span class="new-transfer-icon patient-icon" aria-hidden="true"></span>
-                                        <i18n-text data-i18n="trace_view.paciente" style="display:contents">Paciente</i18n-text>
+                                        <i18n-text data-i18n="trace_view.paciente">Paciente</i18n-text>
                                     </h2>
 
                                     <div class="patient-fields">
@@ -143,7 +143,7 @@ staff_page_open([
                                 <section class="form-section route-section">
                                     <h2>
                                         <span class="new-transfer-icon location-icon" aria-hidden="true"></span>
-                                        <i18n-text data-i18n="trace_new.origen_y_destino" style="display:contents">Origen y Destino</i18n-text>
+                                        <i18n-text data-i18n="trace_new.origen_y_destino">Origen y Destino</i18n-text>
                                     </h2>
 
                                     <div class="field full-field">
@@ -197,7 +197,7 @@ staff_page_open([
                                     </div>
 
                                     <div class="field full-field">
-                                        <label for="notes"><i18n-text data-i18n="trace_new.notas_adicionales" style="display:contents">Notas Adicionales</i18n-text> <span data-i18n="trace_new.opcional">(Opcional)</span></label>
+                                        <label for="notes"><i18n-text data-i18n="trace_new.notas_adicionales">Notas Adicionales</i18n-text> <span data-i18n="trace_new.opcional">(Opcional)</span></label>
                                         <textarea id="notes" name="notes" rows="4" maxlength="1000"
                                             placeholder="Información relevante..." data-i18n-placeholder="trace_new.informacion_relevante"></textarea>
                                     </div>
@@ -206,7 +206,7 @@ staff_page_open([
                                 <section class="form-section options-section">
                                     <h2>
                                         <span class="new-transfer-icon settings-icon" aria-hidden="true"></span>
-                                        <i18n-text data-i18n="trace_new.opciones_adicionales" style="display:contents">Opciones Adicionales</i18n-text>
+                                        <i18n-text data-i18n="trace_new.opciones_adicionales">Opciones Adicionales</i18n-text>
                                     </h2>
 
                                     <div class="option-grid">

@@ -48,7 +48,7 @@
   }
   // Only explicitly bound copy is translated; interpolated record values remain data.
   function mark(key, params = {}) {
-    return `<i18n-text style="display:contents" data-i18n="${escape(key)}" data-i18n-params="${escape(JSON.stringify(params))}">${escape(t(key, params))}</i18n-text>`;
+    return `<i18n-text data-i18n="${escape(key)}" data-i18n-params="${escape(JSON.stringify(params))}">${escape(t(key, params))}</i18n-text>`;
   }
   function paramsFor(node, name = '') {
     try {

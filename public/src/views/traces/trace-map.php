@@ -59,29 +59,29 @@ staff_page_head([
           <div class="heading-copy">
             <div class="page-title">
               <h1 id="map-heading" tabindex="-1" data-i18n="trace_map.mapa_de_traslados">Mapa de Traslados</h1>
-              <span class="live-indicator"><span class="status-dot"></span><i18n-text data-i18n="trace_map.simulacion" style="display:contents">Simulación</i18n-text></span>
+              <span class="live-indicator"><span class="status-dot"></span><i18n-text data-i18n="trace_map.simulacion">Simulación</i18n-text></span>
             </div>
             <div class="metrics-pill" aria-label="Resumen de traslados" data-i18n-aria-label="trace_map.resumen_de_traslados" id="metrics">
-              <span class="metric metric-total"><span class="icon" style="--icon-image: url('../../../assets/Icons/steering-wheel.svg')" aria-hidden="true"></span><strong id="total-count">0</strong> <i18n-text data-i18n="trace_map.traslados" style="display:contents">traslados</i18n-text></span>
-              <span class="metric"><i class="metric-dot progress-dot"></i><strong id="progress-count">0</strong> <i18n-text data-i18n="trace_map.en_curso" style="display:contents">en curso</i18n-text></span>
-              <span class="metric"><i class="metric-dot scheduled-dot"></i><strong id="scheduled-count">0</strong> <i18n-text data-i18n="trace_map.programado" style="display:contents">programado</i18n-text></span>
-              <span class="metric"><i class="metric-dot delayed-dot"></i><strong id="delayed-count">0</strong> <i18n-text data-i18n="trace_map.demorado" style="display:contents">demorado</i18n-text></span>
+              <span class="metric metric-total"><span class="icon" style="--icon-image: url('../../../assets/Icons/steering-wheel.svg')" aria-hidden="true"></span><strong id="total-count">0</strong> <i18n-text data-i18n="trace_map.traslados">traslados</i18n-text></span>
+              <span class="metric"><i class="metric-dot progress-dot"></i><strong id="progress-count">0</strong> <i18n-text data-i18n="trace_map.en_curso">en curso</i18n-text></span>
+              <span class="metric"><i class="metric-dot scheduled-dot"></i><strong id="scheduled-count">0</strong> <i18n-text data-i18n="trace_map.programado">programado</i18n-text></span>
+              <span class="metric"><i class="metric-dot delayed-dot"></i><strong id="delayed-count">0</strong> <i18n-text data-i18n="trace_map.demorado">demorado</i18n-text></span>
             </div>
           </div>
           <div class="toolbar-actions">
             <a class="toolbar-button return-link" href="trace.php">
-              <span class="icon" style="--icon-image: url('../../../assets/Icons/arrow-left.svg')" aria-hidden="true"></span><i18n-text data-i18n="trace_map.ver_traslados" style="display:contents">Ver traslados</i18n-text>
+              <span class="icon" style="--icon-image: url('../../../assets/Icons/arrow-left.svg')" aria-hidden="true"></span><i18n-text data-i18n="trace_map.ver_traslados">Ver traslados</i18n-text>
             </a>
             <div class="filter-wrapper">
               <button class="toolbar-button" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-panel">
-                <span class="filter-icon" aria-hidden="true"></span><i18n-text data-i18n="trace_map.filtros" style="display:contents">Filtros</i18n-text><span class="filter-count" id="filter-count" hidden>0</span>
+                <span class="filter-icon" aria-hidden="true"></span><i18n-text data-i18n="trace_map.filtros">Filtros</i18n-text><span class="filter-count" id="filter-count" hidden>0</span>
               </button>
               <form class="popover filter-panel" id="filter-panel" hidden>
                 <div class="popover-heading"><h2 data-i18n="trace_map.filtrar_traslados">Filtrar traslados</h2><button class="text-button" id="reset-filters" type="button" data-i18n="trace_map.restablecer">Restablecer</button></div>
                 <p class="popover-eyebrow" data-i18n="trace_map.estado_del_traslado">ESTADO DEL TRASLADO</p>
-                <label><input type="checkbox" name="status" value="in_progress" checked><span class="metric-dot progress-dot"></span><i18n-text data-i18n="trace_map.en_curso_2" style="display:contents">En curso</i18n-text><span class="filter-number">0</span></label>
-                <label><input type="checkbox" name="status" value="scheduled" checked><span class="metric-dot scheduled-dot"></span><i18n-text data-i18n="trace_map.programado_2" style="display:contents">Programado</i18n-text><span class="filter-number">0</span></label>
-                <label><input type="checkbox" name="status" value="delayed" checked><span class="metric-dot delayed-dot"></span><i18n-text data-i18n="trace_map.demorado_2" style="display:contents">Demorado</i18n-text><span class="filter-number">0</span></label>
+                <label><input type="checkbox" name="status" value="in_progress" checked><span class="metric-dot progress-dot"></span><i18n-text data-i18n="trace_map.en_curso_2">En curso</i18n-text><span class="filter-number">0</span></label>
+                <label><input type="checkbox" name="status" value="scheduled" checked><span class="metric-dot scheduled-dot"></span><i18n-text data-i18n="trace_map.programado_2">Programado</i18n-text><span class="filter-number">0</span></label>
+                <label><input type="checkbox" name="status" value="delayed" checked><span class="metric-dot delayed-dot"></span><i18n-text data-i18n="trace_map.demorado_2">Demorado</i18n-text><span class="filter-number">0</span></label>
                 <p class="filter-note" data-i18n="trace_map.los_filtros_se_aplican_al_mapa_y_a_la_lista">Los filtros se aplican al mapa y a la lista.</p>
               </form>
             </div>
@@ -99,7 +99,7 @@ staff_page_head([
 
         <section class="map-stage" id="map-stage" aria-label="Seguimiento de ambulancias en Montevideo" data-i18n-aria-label="trace_map.seguimiento_de_ambulancias_en_montevideo">
           <div id="fleet-map" aria-label="Mapa interactivo de Montevideo" data-i18n-aria-label="trace_map.mapa_interactivo_de_montevideo"></div>
-          <div class="map-loading" id="map-loading" role="status"><span class="loading-spinner"></span><i18n-text data-i18n="trace_map.cargando_mapa_de_montevideo" style="display:contents">Cargando mapa de Montevideo…</i18n-text></div>
+          <div class="map-loading" id="map-loading" role="status"><span class="loading-spinner"></span><i18n-text data-i18n="trace_map.cargando_mapa_de_montevideo">Cargando mapa de Montevideo…</i18n-text></div>
 
           <div class="map-sidebar" id="map-sidebar">
             <aside class="transfer-panel glass-panel" id="transfer-panel" aria-labelledby="transfer-panel-title">
@@ -132,10 +132,10 @@ staff_page_head([
           </div>
           <div class="popover layers-panel" id="layers-panel" hidden>
             <h2 data-i18n="trace_map.capas_del_mapa">Capas del mapa</h2>
-            <label><input type="checkbox" id="show-routes" checked><i18n-text data-i18n="trace_map.rutas_de_traslados" style="display:contents">Rutas de traslados</i18n-text></label>
-            <label><input type="checkbox" id="show-destinations" checked><i18n-text data-i18n="trace_map.origenes_y_destinos" style="display:contents">Orígenes y destinos</i18n-text></label>
-            <label><input type="checkbox" id="show-neighborhoods" checked><i18n-text data-i18n="trace_map.barrios_de_montevideo" style="display:contents">Barrios de Montevideo</i18n-text></label>
-            <button class="text-button" id="fit-fleet" type="button"><i18n-text data-i18n="trace_map.ver_toda_la_flota" style="display:contents">Ver toda la flota</i18n-text> <span aria-hidden="true">↗</span></button>
+            <label><input type="checkbox" id="show-routes" checked><i18n-text data-i18n="trace_map.rutas_de_traslados">Rutas de traslados</i18n-text></label>
+            <label><input type="checkbox" id="show-destinations" checked><i18n-text data-i18n="trace_map.origenes_y_destinos">Orígenes y destinos</i18n-text></label>
+            <label><input type="checkbox" id="show-neighborhoods" checked><i18n-text data-i18n="trace_map.barrios_de_montevideo">Barrios de Montevideo</i18n-text></label>
+            <button class="text-button" id="fit-fleet" type="button"><i18n-text data-i18n="trace_map.ver_toda_la_flota">Ver toda la flota</i18n-text> <span aria-hidden="true">↗</span></button>
           </div>
 
           <aside class="route-legend glass-panel" aria-labelledby="legend-heading">

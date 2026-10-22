@@ -26,7 +26,7 @@ staff_page_open([
           <div class="header-main">
             <div class="document-heading">
               <h1 id="document-title" data-i18n="documents_viewer.cargando_documento">Cargando documento...</h1>
-              <p><span id="patient-name"></span><span aria-hidden="true"> · </span><span><i18n-text data-i18n="documents_viewer.id" style="display:contents">ID:</i18n-text> <span id="document-id"></span></span></p>
+              <p><span id="patient-name"></span><span aria-hidden="true"> · </span><span><i18n-text data-i18n="documents_viewer.id">ID:</i18n-text> <span id="document-id"></span></span></p>
             </div>
             <div class="header-actions">
               <button class="action-button download-button" id="download-button" type="button"><img class="icon" src="../../../assets/Icons/download-icon.svg" alt="" aria-hidden="true"><span data-i18n="documents_viewer.descargar">Descargar</span></button>
@@ -124,7 +124,7 @@ staff_page_open([
   <dialog class="viewer-dialog qr-dialog" id="qr-dialog" aria-labelledby="qr-title">
     <div class="dialog-heading"><h2 id="qr-title" data-i18n="documents_viewer.codigo_qr_del_documento">Código QR del documento</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
     <div class="qr-preview"><canvas id="qr-canvas" width="264" height="264" role="img" aria-label="Código QR de acceso al archivo para el paciente" data-i18n-aria-label="documents_viewer.patient_file_qr"></canvas></div>
-    <p><i18n-text data-i18n="documents_viewer.patient_file_access" style="display:contents">Acceso al archivo del documento</i18n-text> <strong id="qr-document-id"></strong>.</p>
+    <p><i18n-text data-i18n="documents_viewer.patient_file_access">Acceso al archivo del documento</i18n-text> <strong id="qr-document-id"></strong>.</p>
     <p id="qr-expiry"></p>
     <p data-i18n="documents_viewer.patient_link_notice">Cualquier persona con este enlace puede abrir este archivo sin iniciar sesión.</p>
     <input id="patient-qr-url" type="text" readonly aria-label="Enlace del archivo para el paciente" data-i18n-aria-label="documents_viewer.patient_file_url">

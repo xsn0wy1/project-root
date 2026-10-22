@@ -1,0 +1,104 @@
+{
+  "wp1.1": {
+    "backend/php/components/document-form.php": {
+      "before_sha256": "095224a14850dbbf67ebe07ed8e461a93ebb2a04fbb79aa76b4ca5520bcba016",
+      "after_sha256": "f75efdd31aaa7d40f6ed3ab128de876c207ae58a3afe115cfd79ea58ddfe8040",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/index.php": {
+      "before_sha256": "d1464063fc7c2c6b44eb09062a08b697031b7984ba6ce588a15954cf20d7f0f9",
+      "after_sha256": "8cc13134538a1e86b305b7874acc502a2a0e05d1d3c70110beeb6484827b577f",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/api-connection/i18n.js": {
+      "before_sha256": "5cee40025937aed387b8a97a33ac5ad7fe5a624ce0fd4f6792bf991ce1207696",
+      "after_sha256": "2cf32116a04bc60f3aeff89f62724eaa938e4ad1d13e22115038fca0c3799fe8",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/css/theme.css": {
+      "before_sha256": "54c2f0727fda8c3326d158e5dfbb84bf13ef6d1b82504e4aaabe0b1bae6702a4",
+      "after_sha256": "fc44574e11121f91add07a1514010e09642e6276427f66fcca7739bc32c85ece",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/documents/documents-viewer.php": {
+      "before_sha256": "936cb27437b93a6e9c7df0ed02710729ef7ac9bdd3735dd00f2e3ad2a8379332",
+      "after_sha256": "1aac950aeb43399b6ed77e04004b56ed66d3f8c4dea268d881dc9db3cb930ff3",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/management/accounts.php": {
+      "before_sha256": "ee6d207e45951b0db8a30eb1d664dcf46667d4d8504ea646df0f7406be08ef13",
+      "after_sha256": "ddf956677c195cdf8c3fdbe0e3afda7e660d6703e4992e6146c5ebd25aece4ea",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/management/ambulances.php": {
+      "before_sha256": "60e2737c6896f2927bed8ad1770a072a22de42b152a20e0c825e878021d8924f",
+      "after_sha256": "7054e48417de88d0c45860ea10fe149445f3be95a94a84507c6160fbf07acc2f",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/management/destinations.php": {
+      "before_sha256": "c2082faa307b8dfed39d9417a0e1afd5d7927ff6e04a0db04c3b1f7471b0d4a1",
+      "after_sha256": "d110288835e0d49a85cbba433d69b9359a16bd0816751be826d3535fbb835bab",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/management/doctors.php": {
+      "before_sha256": "cba7bf3e362ad372aa4123ff1793196a051795e1751ede7b71b98a6badc91ba1",
+      "after_sha256": "a0871f56ff22632032ce4598bc0ec822aebf776547b4be92c70c70029b4c3446",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/management/patients.php": {
+      "before_sha256": "a23f9632a77422d9be3ba3da1958d60b1ebf10561f18025e1b6b48c6b251177e",
+      "after_sha256": "5f599fdae90032638e7df87cdff20d4b371a72ddf2a8d0a84ec7a3960047a92b",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/management/routes.php": {
+      "before_sha256": "248acbdb8d79f31bc878da8d9fb4a88e1f1e834351c315c0e5604d77aa27ff8f",
+      "after_sha256": "bdf96980403128bf2055a2090461cd53f040c959719ddb17f2131d59f35ae4aa",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/register-restore/register.php": {
+      "before_sha256": "2c62234cbc4cd33bfd3beb6985954801237eb9959ea145612c6befc5b6f268f7",
+      "after_sha256": "be57233ed532adb6d8e5e8ef8b8a4a314b01a1f05b819b4c5b00473f71a7ab41",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/surveys/survey-new.php": {
+      "before_sha256": "17f65a76442524e7db46472f139fbe8aa00a1f72c30dabd91554e2c702e4ef32",
+      "after_sha256": "fa4d06cc4396d9fee00deb31a9a10cca2a88076d68b539bead0559dc600389b9",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/surveys/survey-view.php": {
+      "before_sha256": "892c8d936c9a5ebb629a9d16ab6593f02b7d33d7feff8be1eb82306af10f6ff4",
+      "after_sha256": "716c39ef9a029430cc7ecd66498873ce6a72b17391499fac8e2c97d753d694c7",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/surveys/survey.php": {
+      "before_sha256": "e8558a501bf19b866de79118e9039920daca9eeaedc9b0217254d28ef3a387c0",
+      "after_sha256": "28eb0554bdc200224ed588d38d03eb6029cdc696cbede89294c8ede8ea4c3938",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/surveys/user-view/survey-user.php": {
+      "before_sha256": "ace0177beb3a88fe1401dd488b63dc0f82d3da0743280decfd2679c797301cdc",
+      "after_sha256": "3854a9c9f9539b80601125ff76f9f5736c68219b0efd19c43fb8e098ba23e535",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/traces/trace-map.php": {
+      "before_sha256": "6267663f46976f9be7398db913dd7b5cd061ecf48364c4a15f34c71a574e4220",
+      "after_sha256": "2fc0f3ddff2b6184f208514e23b0cde39579195c3a2bec330e7c3636dd24c8d7",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/traces/trace-new.php": {
+      "before_sha256": "558ce8f9394a36af090128264b8147ef79a8d08e9b286d85db950c2108bcb90e",
+      "after_sha256": "ed1c44a7804732eb15f6dea94a5f7e13cbd80862ffc63ed9c456d36e5fa8ef5b",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/traces/trace-view.php": {
+      "before_sha256": "72a8d04cd67c6a874346dd98fe3ca3acb462589b9cd30ea05baea80cd00295d4",
+      "after_sha256": "d9fc9b276be2906e45556cff490dd6bdb81f5e64ab34beef0977e07585dd2b8b",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    },
+    "public/src/views/traces/trace.php": {
+      "before_sha256": "ecd23bd51e59e6c570eb99b1e89ed17b6dc31035addf65e99015d2976e4b7dc1",
+      "after_sha256": "3d97a1f874023de6c617f68abadd8fd47e5f8182570439a57d3f4540d865eeee",
+      "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
+    }
+  }
+}

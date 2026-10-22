@@ -33,7 +33,7 @@ staff_page_open([
               <div class="vehicle-icon"><img src="../../../assets/Icons/ambulance-icon.png" alt=""></div>
               <div class="transfer-heading-copy">
                 <div class="transfer-title-row"><h1 id="transfer-title" data-i18n="trace_view.cargando_traslado">Cargando traslado...</h1><span class="status-badge" data-status-label></span></div>
-                <p><i18n-text data-i18n="trace_view.ambulancia" style="display:contents">Ambulancia</i18n-text> <span data-field="ambulance"></span><span class="identity-divider" aria-hidden="true">·</span><span data-field="plate"></span></p>
+                <p><i18n-text data-i18n="trace_view.ambulancia">Ambulancia</i18n-text> <span data-field="ambulance"></span><span class="identity-divider" aria-hidden="true">·</span><span data-field="plate"></span></p>
                 <p class="created-at"></p>
               </div>
             </div>
@@ -61,10 +61,10 @@ staff_page_open([
 
         <div class="detail-grid">
           <section class="detail-panel patient-panel is-selected" id="patient-panel" aria-labelledby="patient-heading">
-            <h2 id="patient-heading"><img class="detail-icon" src="../../../assets/Icons/human-icon.svg" alt=""><i18n-text data-i18n="trace_view.informacion_del_paciente" style="display:contents">Información del paciente</i18n-text></h2>
+            <h2 id="patient-heading"><img class="detail-icon" src="../../../assets/Icons/human-icon.svg" alt=""><i18n-text data-i18n="trace_view.informacion_del_paciente">Información del paciente</i18n-text></h2>
             <dl class="patient-information">
               <div class="wide-field"><dt data-i18n="settings.nombre">Nombre</dt><dd data-field="patient"></dd></div>
-              <div><dt data-i18n="trace_view.edad">Edad</dt><dd><span data-field="age"></span> <i18n-text data-i18n="trace_view.anos" style="display:contents">años</i18n-text></dd></div>
+              <div><dt data-i18n="trace_view.edad">Edad</dt><dd><span data-field="age"></span> <i18n-text data-i18n="trace_view.anos">años</i18n-text></dd></div>
               <div><dt data-i18n="trace_view.sexo">Sexo</dt><dd data-field="sex"></dd></div>
               <div class="wide-field"><dt data-i18n="trace_view.documento_historia_clinica">Documento / Historia clínica</dt><dd data-field="document"></dd></div>
               <div class="wide-field"><dt data-i18n="trace_view.acompanante">Acompañante</dt><dd data-field="companion"></dd></div>
@@ -73,7 +73,7 @@ staff_page_open([
           </section>
 
           <section class="detail-panel transfer-panel" id="transfer-panel" aria-labelledby="details-heading">
-            <h2 id="details-heading"><img class="detail-icon" src="../../../assets/Icons/list-icon.svg" alt=""><i18n-text data-i18n="trace_view.detalles_del_traslado" style="display:contents">Detalles del traslado</i18n-text></h2>
+            <h2 id="details-heading"><img class="detail-icon" src="../../../assets/Icons/list-icon.svg" alt=""><i18n-text data-i18n="trace_view.detalles_del_traslado">Detalles del traslado</i18n-text></h2>
             <dl class="transfer-information">
               <div><dt data-i18n="trace_view.motivo_del_traslado">Motivo del traslado</dt><dd data-field="reason"></dd></div>
               <div><dt data-i18n="trace_view.tipo_de_traslado">Tipo de traslado</dt><dd data-field="cargo"></dd></div>
@@ -85,7 +85,7 @@ staff_page_open([
           </section>
 
           <section class="detail-panel route-panel" id="route-panel" aria-labelledby="route-heading">
-            <h2 id="route-heading"><img class="detail-icon" src="../../../assets/Icons/map-icon.svg" alt=""><i18n-text data-i18n="trace_view.ruta_del_traslado" style="display:contents">Ruta del traslado</i18n-text></h2>
+            <h2 id="route-heading"><img class="detail-icon" src="../../../assets/Icons/map-icon.svg" alt=""><i18n-text data-i18n="trace_view.ruta_del_traslado">Ruta del traslado</i18n-text></h2>
             <div class="map-space">
               <div class="route-map-canvas" id="ambulance-map" aria-label="Vista previa de la ruta del traslado" data-i18n-aria-label="trace_view.vista_previa_de_la_ruta_del_traslado"></div>
               <span class="map-preview-status" id="map-preview-status" role="status" data-i18n="trace_view.cargando_ruta">Cargando ruta…</span>
@@ -100,17 +100,17 @@ staff_page_open([
           </section>
 
           <section class="detail-panel timeline-panel" id="timeline-panel" aria-labelledby="timeline-heading">
-            <h2 id="timeline-heading"><img class="detail-icon" src="../../../assets/Icons/time-icon.svg" alt=""><i18n-text data-i18n="trace_view.linea_de_tiempo" style="display:contents">Línea de tiempo</i18n-text></h2>
+            <h2 id="timeline-heading"><img class="detail-icon" src="../../../assets/Icons/time-icon.svg" alt=""><i18n-text data-i18n="trace_view.linea_de_tiempo">Línea de tiempo</i18n-text></h2>
             <ol class="transfer-timeline"></ol>
           </section>
 
           <section class="detail-panel personnel-panel" id="personnel-panel" aria-labelledby="personnel-heading">
-            <h2 id="personnel-heading"><img class="detail-icon" src="../../../assets/Icons/people-svgrepo-com.svg" alt=""><i18n-text data-i18n="trace_view.acompanantes_y_personal" style="display:contents">Acompañantes y personal</i18n-text></h2>
+            <h2 id="personnel-heading"><img class="detail-icon" src="../../../assets/Icons/people-svgrepo-com.svg" alt=""><i18n-text data-i18n="trace_view.acompanantes_y_personal">Acompañantes y personal</i18n-text></h2>
             <dl class="personnel-information">
-              <div><dt><img class="detail-icon" src="../../../assets/Icons/steering-wheel.svg" alt=""><i18n-text data-i18n="trace_view.conductor" style="display:contents">Conductor</i18n-text></dt><dd data-field="driver"></dd></div>
-              <div><dt><img class="detail-icon" src="../../../assets/Icons/person-icon.svg" alt=""><i18n-text data-i18n="trace_view.acompanante_1" style="display:contents">Acompañante 1</i18n-text></dt><dd data-field="companion"></dd></div>
-              <div><dt><img class="detail-icon" src="../../../assets/Icons/person-icon.svg" alt=""><i18n-text data-i18n="trace_view.acompanante_2" style="display:contents">Acompañante 2</i18n-text></dt><dd>—</dd></div>
-              <div><dt><img class="detail-icon" src="../../../assets/Icons/doctor-icon.svg" alt=""><i18n-text data-i18n="trace_view.medico_a_cargo" style="display:contents">Médico a cargo</i18n-text></dt><dd data-field="doctor"></dd></div>
+              <div><dt><img class="detail-icon" src="../../../assets/Icons/steering-wheel.svg" alt=""><i18n-text data-i18n="trace_view.conductor">Conductor</i18n-text></dt><dd data-field="driver"></dd></div>
+              <div><dt><img class="detail-icon" src="../../../assets/Icons/person-icon.svg" alt=""><i18n-text data-i18n="trace_view.acompanante_1">Acompañante 1</i18n-text></dt><dd data-field="companion"></dd></div>
+              <div><dt><img class="detail-icon" src="../../../assets/Icons/person-icon.svg" alt=""><i18n-text data-i18n="trace_view.acompanante_2">Acompañante 2</i18n-text></dt><dd>—</dd></div>
+              <div><dt><img class="detail-icon" src="../../../assets/Icons/doctor-icon.svg" alt=""><i18n-text data-i18n="trace_view.medico_a_cargo">Médico a cargo</i18n-text></dt><dd data-field="doctor"></dd></div>
             </dl>
           </section>
           <footer class="transfer-footer">
@@ -126,27 +126,27 @@ staff_page_open([
     <form id="edit-form" novalidate>
       <header class="dialog-heading"><h2 id="edit-dialog-title" data-i18n="trace_view.editar_traslado">Editar traslado</h2><button class="icon-button" type="button" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span class="detail-icon color-icon close-icon" aria-hidden="true"></span></button></header>
       <div class="edit-fields">
-        <label><i18n-text data-i18n="trace_view.ambulancia" style="display:contents">Ambulancia</i18n-text><input name="ambulance" list="edit-ambulances" required maxlength="255"></label>
-        <label><i18n-text data-i18n="trace_view.conductor" style="display:contents">Conductor</i18n-text><input name="driver" list="edit-crew" required maxlength="255"></label>
-        <label><i18n-text data-i18n="trace_view.ruta_predefinida_opcional" style="display:contents">Ruta predefinida (opcional)</i18n-text><select name="routeTemplate"><option value="" data-i18n="trace_view.escribir_recorrido_manualmente">Escribir recorrido manualmente</option></select></label>
-        <label><i18n-text data-i18n="trace_view.origen" style="display:contents">Origen</i18n-text><input name="origin" list="edit-facilities" required maxlength="255"></label>
-        <label><i18n-text data-i18n="trace_view.destino" style="display:contents">Destino</i18n-text><input name="destination" list="edit-facilities" required maxlength="255"></label>
-        <label><i18n-text data-i18n="trace_view.paciente" style="display:contents">Paciente</i18n-text><input name="patient" list="edit-patients" required maxlength="255"></label>
-        <label><i18n-text data-i18n="trace_view.acompanante" style="display:contents">Acompañante</i18n-text><input name="companion" list="edit-crew" maxlength="255"></label>
-        <label><i18n-text data-i18n="trace_view.motivo" style="display:contents">Motivo</i18n-text><span class="dialog-select"><select name="reason" required></select></span></label>
-        <label><i18n-text data-i18n="trace_view.prioridad" style="display:contents">Prioridad</i18n-text><span class="dialog-select"><select name="priority"><option value="Normal" data-i18n="trace_view.normal">Normal</option><option value="Baja" data-i18n="trace_view.baja">Baja</option><option value="Alta" data-i18n="trace_view.alta">Alta</option><option value="Crítica" data-i18n="trace_view.critica">Crítica</option></select></span></label>
-        <label class="wide-field"><span><input type="checkbox" name="refreshRoute"> <i18n-text data-i18n="trace_view.actualizar_mapa_con_el_recorrido_seleccionado_al_guardar" style="display:contents">Actualizar mapa con el recorrido seleccionado al guardar</i18n-text></span></label>
-        <label class="wide-field"><i18n-text data-i18n="trace_view.notas_adicionales" style="display:contents">Notas adicionales</i18n-text><textarea name="notes" rows="2" maxlength="1000"></textarea></label>
+        <label><i18n-text data-i18n="trace_view.ambulancia">Ambulancia</i18n-text><input name="ambulance" list="edit-ambulances" required maxlength="255"></label>
+        <label><i18n-text data-i18n="trace_view.conductor">Conductor</i18n-text><input name="driver" list="edit-crew" required maxlength="255"></label>
+        <label><i18n-text data-i18n="trace_view.ruta_predefinida_opcional">Ruta predefinida (opcional)</i18n-text><select name="routeTemplate"><option value="" data-i18n="trace_view.escribir_recorrido_manualmente">Escribir recorrido manualmente</option></select></label>
+        <label><i18n-text data-i18n="trace_view.origen">Origen</i18n-text><input name="origin" list="edit-facilities" required maxlength="255"></label>
+        <label><i18n-text data-i18n="trace_view.destino">Destino</i18n-text><input name="destination" list="edit-facilities" required maxlength="255"></label>
+        <label><i18n-text data-i18n="trace_view.paciente">Paciente</i18n-text><input name="patient" list="edit-patients" required maxlength="255"></label>
+        <label><i18n-text data-i18n="trace_view.acompanante">Acompañante</i18n-text><input name="companion" list="edit-crew" maxlength="255"></label>
+        <label><i18n-text data-i18n="trace_view.motivo">Motivo</i18n-text><span class="dialog-select"><select name="reason" required></select></span></label>
+        <label><i18n-text data-i18n="trace_view.prioridad">Prioridad</i18n-text><span class="dialog-select"><select name="priority"><option value="Normal" data-i18n="trace_view.normal">Normal</option><option value="Baja" data-i18n="trace_view.baja">Baja</option><option value="Alta" data-i18n="trace_view.alta">Alta</option><option value="Crítica" data-i18n="trace_view.critica">Crítica</option></select></span></label>
+        <label class="wide-field"><span><input type="checkbox" name="refreshRoute"> <i18n-text data-i18n="trace_view.actualizar_mapa_con_el_recorrido_seleccionado_al_guardar">Actualizar mapa con el recorrido seleccionado al guardar</i18n-text></span></label>
+        <label class="wide-field"><i18n-text data-i18n="trace_view.notas_adicionales">Notas adicionales</i18n-text><textarea name="notes" rows="2" maxlength="1000"></textarea></label>
       </div>
       <p class="dialog-message" id="edit-message" role="status"></p>
-      <div class="dialog-actions"><button class="detail-button" type="button" data-close-dialog data-i18n="trace_view.volver">Volver</button><button class="detail-button primary-button" type="submit"><img class="detail-icon" src="../../../assets/Icons/save-floppy.svg" alt=""><i18n-text data-i18n="trace_view.guardar_cambios" style="display:contents">Guardar cambios</i18n-text></button></div>
+      <div class="dialog-actions"><button class="detail-button" type="button" data-close-dialog data-i18n="trace_view.volver">Volver</button><button class="detail-button primary-button" type="submit"><img class="detail-icon" src="../../../assets/Icons/save-floppy.svg" alt=""><i18n-text data-i18n="trace_view.guardar_cambios">Guardar cambios</i18n-text></button></div>
     </form>
   </dialog>
 
   <dialog class="transfer-dialog compact-dialog" id="status-dialog" aria-labelledby="status-dialog-title">
     <form id="status-form">
       <header class="dialog-heading"><h2 id="status-dialog-title" data-i18n="trace_view.actualizar_estado">Actualizar estado</h2><button class="icon-button" type="button" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span class="detail-icon color-icon close-icon" aria-hidden="true"></span></button></header>
-      <label><i18n-text data-i18n="trace_view.estado_del_traslado" style="display:contents">Estado del traslado</i18n-text><span class="dialog-select"><select id="transfer-status" name="status"><option value="in-progress"></option><option value="arrived" data-i18n="trace_view.en_destino">En destino</option><option value="completed" data-i18n="trace_view.finalizado">Finalizado</option></select></span></label>
+      <label><i18n-text data-i18n="trace_view.estado_del_traslado">Estado del traslado</i18n-text><span class="dialog-select"><select id="transfer-status" name="status"><option value="in-progress"></option><option value="arrived" data-i18n="trace_view.en_destino">En destino</option><option value="completed" data-i18n="trace_view.finalizado">Finalizado</option></select></span></label>
       <div class="dialog-actions"><button class="detail-button" type="button" data-close-dialog data-i18n="trace_view.volver">Volver</button><button class="detail-button primary-button" type="submit" data-i18n="trace_view.guardar_estado">Guardar estado</button></div>
     </form>
   </dialog>

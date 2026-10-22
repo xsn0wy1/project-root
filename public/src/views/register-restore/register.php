@@ -70,7 +70,7 @@ auth_page_open('registration.registro', 'Registro', '../../', '../../../assets/'
 
 </form>
         <p>
-            <i18n-text data-i18n="registration.ya_tienes_cuenta" style="display:contents">¿Ya tienes cuenta?</i18n-text>
+            <i18n-text data-i18n="registration.ya_tienes_cuenta">¿Ya tienes cuenta?</i18n-text>
             <a href="../../../index.php" data-i18n="registration.iniciar_sesion">Iniciar Sesion</a>
         </p>
     </div>

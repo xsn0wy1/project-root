@@ -294,4 +294,8 @@ See `frontend-phase0.md`, `frontend-phase0.json`, `frontend-phase0-metrics.json`
 
 ## Next checkpoint
 
-Await user review of frontend Phase 0. Phase 1 does not start automatically. No application or color change is approved by this gate work. The strict custom-property comparison needs an explicit allowance decision before the Phase 2 token pilot.
+The user verified frontend Phase 0 and authorized Phase 1. No color merge is authorized. The strict custom-property comparison needs an explicit allowance decision before the Phase 2 token pilot.
+
+## Frontend simplification — Phase 1, WP-1.1 (complete)
+
+Moved the existing `i18n-text` display value into the globally loaded appearance sheet and removed 174 static plus one generated inline attribute. Application code decreases by 4,341 bytes; CSS adds 34 bytes and one rule. All 636 style/pixel comparisons are identical, all seven browser suites and 203 associated SQL/API checks pass, and translation/readability/structural checks pass. The duplicate inventory now retains unresolved shorthand variables, correcting the accepted-source page-sheet candidates to 89 groups / 113 extras. See `frontend-phase1.md`, `.json` and exact change declarations. Phase 1 continues with the shared base sheet; Phase 2 remains unstarted.

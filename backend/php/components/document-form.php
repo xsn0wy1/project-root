@@ -25,7 +25,7 @@ staff_page_open([
         <div class="document-form-content">
           <a href="documents.php" class="back-link">
             <span aria-hidden="true">←</span>
-            <i18n-text data-i18n="documents_upload.volver_a_documentos" style="display:contents">Volver a documentos</i18n-text>
+            <i18n-text data-i18n="documents_upload.volver_a_documentos">Volver a documentos</i18n-text>
           </a>
 
           <div class="document-form-heading">
@@ -50,7 +50,7 @@ staff_page_open([
               <section class="form-section details-section" aria-labelledby="document-data-title">
                 <h2 id="document-data-title">
                   <span class="section-marker" aria-hidden="true"></span>
-                  <i18n-text data-i18n="documents_upload.datos_del_documento" style="display:contents">Datos del documento</i18n-text>
+                  <i18n-text data-i18n="documents_upload.datos_del_documento">Datos del documento</i18n-text>
                 </h2>
 
                 <div class="document-field">
@@ -117,7 +117,7 @@ staff_page_open([
               <section class="form-section file-section" aria-labelledby="file-data-title">
                 <h2 id="file-data-title">
                   <span class="section-marker" aria-hidden="true"></span>
-                  <i18n-text data-i18n="documents_upload.archivo_adjunto" style="display:contents">Archivo adjunto</i18n-text>
+                  <i18n-text data-i18n="documents_upload.archivo_adjunto">Archivo adjunto</i18n-text>
                 </h2>
 
 <?php if ($editing): ?>

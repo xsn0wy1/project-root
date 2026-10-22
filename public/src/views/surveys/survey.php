@@ -25,7 +25,7 @@ staff_page_open([
       <section class="surveys-content" aria-labelledby="surveys-title">
         <div class="surveys-heading">
           <h1 id="surveys-title" data-i18n="main_menu.encuestas">Encuestas</h1>
-          <div class="heading-actions"><button type="button" class="survey-button secondary" data-open-templates><img src="../../../assets/Icons/template-icon.svg" alt=""><i18n-text data-i18n="survey.plantillas" style="display:contents">Plantillas</i18n-text></button><a class="survey-button primary new-survey-link" href="survey-new.php"><img src="../../../assets/Icons/plus-icon.svg" alt=""><i18n-text data-i18n="survey.nueva_encuesta" style="display:contents">Nueva encuesta</i18n-text></a></div>
+          <div class="heading-actions"><button type="button" class="survey-button secondary" data-open-templates><img src="../../../assets/Icons/template-icon.svg" alt=""><i18n-text data-i18n="survey.plantillas">Plantillas</i18n-text></button><a class="survey-button primary new-survey-link" href="survey-new.php"><img src="../../../assets/Icons/plus-icon.svg" alt=""><i18n-text data-i18n="survey.nueva_encuesta">Nueva encuesta</i18n-text></a></div>
         </div>
 
         <div class="survey-stats" aria-label="Resumen de encuestas" data-i18n-aria-label="survey.resumen_de_encuestas">
@@ -61,13 +61,13 @@ staff_page_open([
 
         <div class="surveys-workspace">
           <section class="survey-directory" aria-labelledby="directory-title">
-            <div class="directory-heading"><h2 id="directory-title"><i18n-text data-i18n="survey.todas_las_encuestas" style="display:contents">Todas las encuestas</i18n-text> <span id="survey-count">0</span></h2><span class="directory-caption" data-i18n="survey.tu_espacio_para_escuchar">Tu espacio para escuchar</span></div>
+            <div class="directory-heading"><h2 id="directory-title"><i18n-text data-i18n="survey.todas_las_encuestas">Todas las encuestas</i18n-text> <span id="survey-count">0</span></h2><span class="directory-caption" data-i18n="survey.tu_espacio_para_escuchar">Tu espacio para escuchar</span></div>
             <div class="survey-list-head" id="survey-list-head" aria-hidden="true"><span data-i18n="survey.encuesta">Encuesta</span><span data-i18n="trace_view.estado">Estado</span><span data-i18n="survey_view.respuestas">Respuestas</span><span data-i18n="survey.valoracion">Valoración</span><span data-i18n="survey.ultima_actividad">Última actividad</span><span></span></div>
             <div id="survey-list" class="survey-list" aria-label="Encuestas" data-i18n-aria-label="main_menu.encuestas"></div>
             <div class="survey-empty" id="survey-empty">
               <div class="empty-art" aria-hidden="true"><div class="paper-back"></div><div class="paper-front"><img src="../../../assets/Icons/survey-icon.svg" alt=""><i></i><i></i><i></i></div><span>+</span></div>
               <span class="eyebrow" data-i18n="survey.el_primer_paso_es_escuchar">EL PRIMER PASO ES ESCUCHAR</span><h3 id="empty-title" data-i18n="survey.crea_tu_primera_encuesta">Creá tu primera encuesta</h3><p id="empty-description" data-i18n="survey.conoce_como_viven_la_atencion_tus_pacientes_y_como_se_siente_tu_equipo_empeza_desde_cero_o">Conocé cómo viven la atención tus pacientes y cómo se siente tu equipo. Empezá desde cero o elegí una plantilla.</p>
-              <div class="empty-actions" id="empty-actions"><a class="survey-button primary new-survey-link" href="survey-new.php"><img src="../../../assets/Icons/plus-icon.svg" alt=""><i18n-text data-i18n="survey.crear_encuesta" style="display:contents">Crear encuesta</i18n-text></a><button type="button" class="text-button" data-open-templates><i18n-text data-i18n="survey.explorar_plantillas" style="display:contents">Explorar plantillas</i18n-text> <span aria-hidden="true">↗</span></button></div>
+              <div class="empty-actions" id="empty-actions"><a class="survey-button primary new-survey-link" href="survey-new.php"><img src="../../../assets/Icons/plus-icon.svg" alt=""><i18n-text data-i18n="survey.crear_encuesta">Crear encuesta</i18n-text></a><button type="button" class="text-button" data-open-templates><i18n-text data-i18n="survey.explorar_plantillas">Explorar plantillas</i18n-text> <span aria-hidden="true">↗</span></button></div>
               <button type="button" class="survey-button secondary" id="clear-filters" hidden data-i18n="routes.limpiar_filtros">Limpiar filtros</button>
             </div>
             <footer class="survey-footer"><span id="results-summary" role="status" aria-live="polite" data-i18n="survey.0_encuestas">0 encuestas</span><nav id="survey-pagination" class="survey-pagination" aria-label="Páginas de encuestas" data-i18n-aria-label="survey.paginas_de_encuestas"></nav></footer>
@@ -76,7 +76,7 @@ staff_page_open([
           <aside class="survey-detail" aria-labelledby="detail-title">
             <div class="detail-heading"><h2 id="detail-title" data-i18n="survey.detalles_de_la_encuesta">Detalles de la encuesta</h2><img src="../../../assets/Icons/information-icon.svg" alt=""></div>
             <div id="survey-detail-content" class="detail-content"></div>
-            <div class="detail-actions" id="detail-actions" hidden><button type="button" class="survey-button danger" id="delete-survey"><img src="../../../assets/Icons/trash-icon.svg" alt=""><span class="visually-hidden" data-i18n="survey.eliminar_encuesta">Eliminar encuesta</span></button><a class="survey-button secondary" id="edit-survey" href="survey-new.php"><img src="../../../assets/Icons/pencil-icon.svg" alt=""><i18n-text data-i18n="survey_view.editar_encuesta" style="display:contents">Editar encuesta</i18n-text></a></div>
+            <div class="detail-actions" id="detail-actions" hidden><button type="button" class="survey-button danger" id="delete-survey"><img src="../../../assets/Icons/trash-icon.svg" alt=""><span class="visually-hidden" data-i18n="survey.eliminar_encuesta">Eliminar encuesta</span></button><a class="survey-button secondary" id="edit-survey" href="survey-new.php"><img src="../../../assets/Icons/pencil-icon.svg" alt=""><i18n-text data-i18n="survey_view.editar_encuesta">Editar encuesta</i18n-text></a></div>
           </aside>
         </div>
       </section>

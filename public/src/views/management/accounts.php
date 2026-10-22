@@ -56,11 +56,11 @@ staff_page_open([
     <form id="account-form" novalidate>
       <div class="dialog-heading"><h2 id="account-title" data-i18n="accounts.administrar_cuenta">Administrar cuenta</h2></div>
       <div class="form-scroll"><p id="account-name"></p><fieldset id="account-roles" class="form-section account-roles"><legend data-i18n="accounts.permisos_de_la_cuenta">Permisos de la cuenta</legend>
-        <label><input type="checkbox" name="role" value="staff"> <i18n-text data-i18n="trace_view.personal" style="display:contents">Personal</i18n-text></label>
-        <label><input type="checkbox" name="role" value="records_manager"> <i18n-text data-i18n="accounts.registros_clinicos" style="display:contents">Registros clínicos</i18n-text></label>
-        <label><input type="checkbox" name="role" value="dispatcher"> <i18n-text data-i18n="accounts.coordinacion_de_traslados" style="display:contents">Coordinación de traslados</i18n-text></label>
-        <label><input type="checkbox" name="role" value="admin"> <i18n-text data-i18n="accounts.administracion_de_cuentas" style="display:contents">Administración de cuentas</i18n-text></label>
-      </fieldset><label id="password-label" class="form-section" hidden><i18n-text data-i18n="settings.nueva_contrasena" style="display:contents">Nueva contraseña</i18n-text><input type="password" id="account-password" autocomplete="new-password" minlength="12" maxlength="72"></label></div>
+        <label><input type="checkbox" name="role" value="staff"> <i18n-text data-i18n="trace_view.personal">Personal</i18n-text></label>
+        <label><input type="checkbox" name="role" value="records_manager"> <i18n-text data-i18n="accounts.registros_clinicos">Registros clínicos</i18n-text></label>
+        <label><input type="checkbox" name="role" value="dispatcher"> <i18n-text data-i18n="accounts.coordinacion_de_traslados">Coordinación de traslados</i18n-text></label>
+        <label><input type="checkbox" name="role" value="admin"> <i18n-text data-i18n="accounts.administracion_de_cuentas">Administración de cuentas</i18n-text></label>
+      </fieldset><label id="password-label" class="form-section" hidden><i18n-text data-i18n="settings.nueva_contrasena">Nueva contraseña</i18n-text><input type="password" id="account-password" autocomplete="new-password" minlength="12" maxlength="72"></label></div>
       <div class="dialog-actions"><button class="secondary-button" type="button" id="account-cancel" data-i18n="settings.cancelar">Cancelar</button><button class="primary-button" type="submit" id="account-save" data-i18n="accounts.guardar">Guardar</button></div>
     </form>
   </dialog>

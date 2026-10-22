@@ -36,13 +36,13 @@ staff_page_open([
                             <button type="button" class="action-button primary-action">
                                 <img src="../../../assets/Icons/plus-icon.svg" alt="" aria-hidden="true"
                                     class="button-icon">
-                                <i18n-text data-i18n="trace_new.nuevo_traslado" style="display:contents">Nuevo Traslado</i18n-text>
+                                <i18n-text data-i18n="trace_new.nuevo_traslado">Nuevo Traslado</i18n-text>
                             </button>
 
                             <a href="trace-map.php" class="action-button secondary-action">
                                 <img src="../../../assets/Icons/map-icon.svg" alt="" aria-hidden="true"
                                     class="button-icon">
-                                <i18n-text data-i18n="trace.ver_en_mapa" style="display:contents">Ver en Mapa</i18n-text>
+                                <i18n-text data-i18n="trace.ver_en_mapa">Ver en Mapa</i18n-text>
                             </a>
                         </div>
                     </div>
@@ -51,14 +51,14 @@ staff_page_open([
                     <div class="status-tabs" role="tablist" aria-label="Filtrar traslados" data-i18n-aria-label="trace_map.filtrar_traslados">
                         <button type="button" class="filter-button active" data-filter="active" role="tab"
                             aria-selected="true">
-                            <i18n-text data-i18n="trace.activos" style="display:contents">Activos</i18n-text> <span id="activeCount">0</span>
+                            <i18n-text data-i18n="trace.activos">Activos</i18n-text> <span id="activeCount">0</span>
                         </button>
                         <button type="button" class="filter-button" data-filter="completed" role="tab"
                             aria-selected="false">
-                            <i18n-text data-i18n="trace.completados" style="display:contents">Completados</i18n-text> <span id="completedCount">0</span>
+                            <i18n-text data-i18n="trace.completados">Completados</i18n-text> <span id="completedCount">0</span>
                         </button>
                         <button type="button" class="filter-button" data-filter="all" role="tab" aria-selected="false">
-                            <i18n-text data-i18n="trace.todos" style="display:contents">Todos</i18n-text> <span id="allCount">0</span>
+                            <i18n-text data-i18n="trace.todos">Todos</i18n-text> <span id="allCount">0</span>
                         </button>
                     </div>
 

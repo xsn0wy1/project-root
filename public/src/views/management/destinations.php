@@ -111,7 +111,7 @@ staff_page_open([
                   </div>
                 </div>
                 <div class="form-field">
-                  <label for="destination-phone"><i18n-text data-i18n="destinations.telefono" style="display:contents">Teléfono</i18n-text> <span data-i18n="destinations.opcional">(opcional)</span></label>
+                  <label for="destination-phone"><i18n-text data-i18n="destinations.telefono">Teléfono</i18n-text> <span data-i18n="destinations.opcional">(opcional)</span></label>
                   <div class="field-control">
                     <img src="../../../assets/Icons/phone-icon.svg" alt="">
                     <input id="destination-phone" name="phone" type="tel" placeholder="Ej. 2487 1515" data-i18n-placeholder="destinations.ej_2487_1515" autocomplete="tel" maxlength="25">
@@ -130,7 +130,7 @@ staff_page_open([
                   </div>
                 </div>
                 <div class="form-field">
-                  <label for="destination-notes"><i18n-text data-i18n="destinations.referencia" style="display:contents">Referencia</i18n-text> <span data-i18n="destinations.opcional">(opcional)</span></label>
+                  <label for="destination-notes"><i18n-text data-i18n="destinations.referencia">Referencia</i18n-text> <span data-i18n="destinations.opcional">(opcional)</span></label>
                   <div class="field-control textarea-control">
                     <textarea id="destination-notes" name="notes" rows="1" maxlength="400" placeholder="Ej. Entrada lateral" data-i18n-placeholder="destinations.ej_entrada_lateral"></textarea>
                   </div>

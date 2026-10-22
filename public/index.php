@@ -18,14 +18,14 @@ auth_page_open('login.inicio_de_sesion', 'Inicio de Sesion', 'src/', 'assets/', 
       <p id="loginMessage" role="status" aria-live="polite"></p>
 
       <p>
-        <i18n-text data-i18n="login.olvidaste_tu_contrasena" style="display:contents">¿Olvidaste tu contraseña?</i18n-text>
+        <i18n-text data-i18n="login.olvidaste_tu_contrasena">¿Olvidaste tu contraseña?</i18n-text>
         <a href="src/views/register-restore/restore-password.php" data-i18n="login.recuperar_contrasena">Recuperar Contraseña</a>
       </p>
       <button type="submit" data-i18n="login.inicio_sesion">Inicio sesion</button>
     </form>
 
     <p>
-      <i18n-text data-i18n="login.no_tienes_cuenta" style="display:contents">¿No tienes cuenta?</i18n-text>
+      <i18n-text data-i18n="login.no_tienes_cuenta">¿No tienes cuenta?</i18n-text>
       <a href="src/views/register-restore/register.php" data-i18n="login.registrate">Registrate</a>
     </p>
   </div>

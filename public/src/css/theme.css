@@ -1,5 +1,7 @@
 /* Shared appearance layer. Original styles own layout, blur, motion and dark mode.
    Each section is limited to pages that load its corresponding original sheet. */
+i18n-text { display: contents; }
+
 html[data-theme="light"] {
   --light-canvas: #f3f5fa;
   --light-text: #20283d;

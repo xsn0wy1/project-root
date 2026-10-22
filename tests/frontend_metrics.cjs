@@ -75,6 +75,7 @@ async function cssInventory(page, sources) {
                 if (rule.type === CSSRule.STYLE_RULE || rule.type === CSSRule.KEYFRAME_RULE) {
                     rules.push({selector: rule.selectorText || rule.keyText, context,
                         keyframe: rule.type === CSSRule.KEYFRAME_RULE,
+                        declaration_text: rule.style.cssText,
                         declarations: [...rule.style].map(name => [name, rule.style.getPropertyValue(name), rule.style.getPropertyPriority(name)])});
                 } else if (rule.cssRules) {
                     groupingRules++;
@@ -100,7 +101,7 @@ function duplicates(rows, removePageScope = false, crossSheet = false) {
         if (rule.keyframe) continue;
         for (let selector of selectors(rule.selector)) {
             if (removePageScope) selector = selector.replace(/html\[data-theme="light"\]\[data-theme-styles~="[^"]+"\]/g, '<light-page>');
-            const key = JSON.stringify([rule.context, selector, rule.declarations]);
+            const key = JSON.stringify([rule.context, selector, rule.declaration_text, rule.declarations]);
             if (!groups.has(key)) groups.set(key, []);
             groups.get(key).push(file);
         }
@@ -189,6 +190,10 @@ async function measure(page, sourceRoot) {
             assert.equal(fixture[0].hardcoded_colors, 2);
             assert.equal(fixture[0].var_uses, 1);
             assert.equal(duplicates(fixture, false, true).groups, 1, 'media context and near-equal colors stay distinct');
+            const variables = await cssInventory(page, [
+                {file: 'a.css', source: '.x{border:1px solid var(--a)}'},
+                {file: 'b.css', source: '.x{border:1px solid var(--b)}'}]);
+            assert.equal(duplicates(variables, false, true).groups, 0, 'shorthand variables remain distinct');
             const js = ast.inventory('const icon = () => [].map(() => 1); const x={get label(){return window.HospitalI18n.t("key")}}; const y=a?b?c:d:e;');
             assert.equal(js.getters, 1); assert.equal(js.decision_chains.length, 1);
             assert.equal(js.translation_getters, 1);

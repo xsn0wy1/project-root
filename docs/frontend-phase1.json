@@ -1,0 +1,186 @@
+{
+  "baseline_commit": "6d443241177435a46ae2f3b4a6622a1b90b67d97",
+  "duplicate_measurement_correction": "Serialized CSS shorthands distinguish unresolved custom-property values; accepted-source page-sheet duplicate groups/extras are 89/113, not 109/133.",
+  "baseline": {
+    "application": {
+      "files": 266,
+      "bytes": 12599680,
+      "code_files": 170,
+      "code_bytes": 2310420,
+      "repeated_8_line_groups": 601,
+      "repeated_8_line_extra_occurrences": 664
+    },
+    "css": {
+      "files": 26,
+      "bytes": 696173,
+      "rules": 5787,
+      "grouping_rules": 166,
+      "keyframe_rules": 23,
+      "theme_bytes": 191486,
+      "theme_rules": 1166,
+      "theme_grouping_rules": 8,
+      "hardcoded_colors": 3292,
+      "explicit_colors": 2991,
+      "named_colors": 301,
+      "var_uses": 1556,
+      "cross_sheet_duplicates": {
+        "groups": 90,
+        "extra_occurrences": 114
+      },
+      "page_sheet_duplicates": {
+        "groups": 89,
+        "extra_occurrences": 113
+      },
+      "theme_unscoped_duplicates": {
+        "groups": 89,
+        "extra_occurrences": 95
+      }
+    },
+    "js": {
+      "files": 35,
+      "bytes": 597520,
+      "nonblank_lines": 14311,
+      "lines_over_140": 184,
+      "lines_over_250": 98,
+      "helper_definitions": {
+        "setBusy": 10,
+        "report": 10,
+        "icon": 9,
+        "toast": 5,
+        "escape": 2,
+        "escapeHtml": 1,
+        "renderPagination": 3,
+        "upsert": 4,
+        "fromApi": 4
+      },
+      "helper_total": 48,
+      "getters": 218,
+      "translation_getters": 177,
+      "html_references": 80,
+      "nested_ternaries": 35,
+      "nested_decision_chains": 0,
+      "functions_over_60": 70,
+      "function_count": 2274
+    },
+    "views": {
+      "inline_style_attributes": 215,
+      "i18n_inline_style_wrappers": 174,
+      "i18n_style_templates": 1,
+      "cache_buster_strings": 28,
+      "view_cache_buster_strings": 27
+    }
+  },
+  "packages": {
+    "wp1.1": {
+      "status": "passed",
+      "metrics": {
+        "application": {
+          "files": 266,
+          "bytes": 12595339,
+          "code_files": 170,
+          "code_bytes": 2306079,
+          "repeated_8_line_groups": 601,
+          "repeated_8_line_extra_occurrences": 664
+        },
+        "css": {
+          "files": 26,
+          "bytes": 696207,
+          "rules": 5788,
+          "grouping_rules": 166,
+          "keyframe_rules": 23,
+          "theme_bytes": 191520,
+          "theme_rules": 1167,
+          "theme_grouping_rules": 8,
+          "hardcoded_colors": 3292,
+          "explicit_colors": 2991,
+          "named_colors": 301,
+          "var_uses": 1556,
+          "cross_sheet_duplicates": {
+            "groups": 90,
+            "extra_occurrences": 114
+          },
+          "page_sheet_duplicates": {
+            "groups": 89,
+            "extra_occurrences": 113
+          },
+          "theme_unscoped_duplicates": {
+            "groups": 89,
+            "extra_occurrences": 95
+          }
+        },
+        "js": {
+          "files": 35,
+          "bytes": 597495,
+          "nonblank_lines": 14311,
+          "lines_over_140": 184,
+          "lines_over_250": 98,
+          "helper_definitions": {
+            "setBusy": 10,
+            "report": 10,
+            "icon": 9,
+            "toast": 5,
+            "escape": 2,
+            "escapeHtml": 1,
+            "renderPagination": 3,
+            "upsert": 4,
+            "fromApi": 4
+          },
+          "helper_total": 48,
+          "getters": 218,
+          "translation_getters": 177,
+          "html_references": 80,
+          "nested_ternaries": 35,
+          "nested_decision_chains": 0,
+          "functions_over_60": 70,
+          "function_count": 2274
+        },
+        "views": {
+          "inline_style_attributes": 40,
+          "i18n_inline_style_wrappers": 0,
+          "i18n_style_templates": 0,
+          "cache_buster_strings": 28,
+          "view_cache_buster_strings": 27
+        }
+      },
+      "js_line_attribution": {
+        "formatting_only_nonblank_line_delta": 0,
+        "changed_ast_nonblank_line_delta": 0,
+        "method": "AST-equal files are formatting-only; changed-AST file deltas can include formatting and behavior together."
+      },
+      "visual": {
+        "page_pairs": 300,
+        "interaction_pairs": 336,
+        "style_pairs": 636,
+        "style_differences": 0,
+        "element_observations_per_side": 160954,
+        "property_values_per_side": 77765452,
+        "maximum_pixel_difference_percent": 0.041,
+        "unhandled_errors": 0,
+        "missing_assets": 0,
+        "browser": "155.0.8059.85"
+      },
+      "browser_suites": [
+        "theme: 50 page/viewport cases with light/dark restore",
+        "i18n: 58 checks",
+        "dropdowns: 136 checks, 52 variants, two journeys",
+        "ambulances: 18 browser and 99 SQL/API checks",
+        "transfers/surveys: 53 checks",
+        "document links: 139 browser and 46 SQL/API checks",
+        "password recovery: 130 browser and 58 SQL/API checks, local mock delivery"
+      ],
+      "source_equivalence": {
+        "passed": true,
+        "php_streams": 90,
+        "js_asts": 35,
+        "exact_intentional_files": 20
+      },
+      "i18n": {
+        "keys": 1816,
+        "fresh_pages": 25,
+        "literal_references": 1111
+      },
+      "readability_checks": 98,
+      "transient_run_note": "One map API-settle timeout was resumed on unchanged source; all four final shards passed."
+    }
+  }
+}
