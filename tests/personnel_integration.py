@@ -5,6 +5,7 @@ import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, ROOT, check, sql
+from catalog_write_checks import verify_catalog_writes
 
 
 def run():
@@ -66,6 +67,7 @@ def run():
     legacy=next(p for p in call('list.php')[1]['data'] if p['id'] not in [did,cid] and p['responsibility']=='driver')
     code,payload,_=call('update.php',dict(id=legacy['id'],version=legacy['version'],full_name=legacy['full_name'],national_id=legacy['national_id'],phone='099 222 333',responsibility='driver',driving_license='LEGACY123',availability='active')); assert code==200,payload
     check(payload['data']['id']==legacy['id'] and payload['data']['driving_license']=='LEGACY123','legacy trace staff can be completed without duplicate identities')
+    verify_catalog_writes('personnel', dispatcher, admin, {**record, 'full_name': 'Personal de prueba de atomicidad', 'national_id': '98003290', 'driving_license': 'GUARD99'})
     proof=Path(os.environ['HOSPITAL_PERSONNEL_TEST_DIR'])/'browser.json'
     proof.write_text(json.dumps(dict(username=username,password=PASSWORD,id=did)));proof.chmod(0o600)
 

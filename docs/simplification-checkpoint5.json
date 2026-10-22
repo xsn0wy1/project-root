@@ -1,0 +1,798 @@
+{
+  "checkpoint": 5,
+  "date": "2026-10-22",
+  "status": "complete; paused for review",
+  "scope": "Strengthened Personnel/Destinations write permission and rollback coverage, extracted their matching transaction handling, and refreshed the two detail dialogs as requested.",
+  "source_proof": {
+    "php_files": 90,
+    "changed_php_sources": [
+      "backend/php/components/shell.php",
+      "backend/php/modules/destinations.php",
+      "backend/php/modules/personnel.php",
+      "backend/php/modules/transfer-access.php",
+      "public/src/views/management/destinations.php",
+      "public/src/views/management/personnel.php"
+    ],
+    "unchanged_php_token_streams": 84,
+    "unchanged_named_domain_functions": {
+      "backend/php/modules/destinations.php": [
+        "destinations_access",
+        "destinations_fields",
+        "destinations_serialize",
+        "destinations_listing",
+        "destinations_get",
+        "destinations_lock",
+        "destinations_save",
+        "destinations_archive"
+      ],
+      "backend/php/modules/personnel.php": [
+        "personnel_access",
+        "personnel_fields",
+        "personnel_query",
+        "personnel_serialize",
+        "personnel_listing",
+        "personnel_get",
+        "personnel_lock",
+        "personnel_check_transfers",
+        "personnel_save",
+        "personnel_archive"
+      ],
+      "backend/php/modules/transfer-access.php": [
+        "transfer_dispatch",
+        "transfer_require_dispatch",
+        "transfer_scope",
+        "transfer_actor",
+        "transfer_lock_name",
+        "transfer_serialized",
+        "transfer_audit"
+      ]
+    },
+    "backend_bytes": {
+      "before": 21026,
+      "after": 20692
+    },
+    "before_metrics": {
+      "php_files": 90,
+      "significant_tokens": 69699,
+      "semicolon_tokens": 3873,
+      "decision_keyword_operator_tokens": 2104,
+      "function_declarations": 364,
+      "named_function_declarations": 287,
+      "ternary_candidates": 336,
+      "lines": 9111,
+      "lines_over_120": 1463,
+      "maximum_function_lines": 91,
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5251
+    },
+    "after_metrics": {
+      "php_files": 90,
+      "significant_tokens": 69642,
+      "semicolon_tokens": 3866,
+      "decision_keyword_operator_tokens": 2099,
+      "function_declarations": 364,
+      "named_function_declarations": 288,
+      "ternary_candidates": 336,
+      "lines": 9121,
+      "lines_over_120": 1470,
+      "maximum_function_lines": 91,
+      "repeated_16_token_groups": 2509,
+      "repeated_16_token_extra_occurrences": 5137
+    }
+  },
+  "application_scope": {
+    "changed_application_files": [
+      "backend/php/components/shell.php",
+      "backend/php/modules/destinations.php",
+      "backend/php/modules/personnel.php",
+      "backend/php/modules/transfer-access.php",
+      "db/json/en.json",
+      "db/json/es.json",
+      "public/src/css/management/catalogs.css",
+      "public/src/css/theme.css",
+      "public/src/js/management/destinations.js",
+      "public/src/js/management/personnel.js",
+      "public/src/js/ui.js",
+      "public/src/views/management/destinations.php",
+      "public/src/views/management/personnel.php"
+    ],
+    "unchanged_application_files": 253,
+    "files_added": [],
+    "files_removed": [],
+    "api_entries_byte_identical": true,
+    "sql_files_byte_identical": true
+  },
+  "functional": {
+    "before": [
+      {
+        "module": "destinations",
+        "status": "passed",
+        "checks": 92,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 8.9
+      },
+      {
+        "module": "personnel",
+        "status": "passed",
+        "checks": 92,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 11.44
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 21,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 4.95
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 21.47
+      },
+      {
+        "module": "release_fixes",
+        "status": "passed",
+        "checks": 27,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 6.45
+      }
+    ],
+    "after": [
+      {
+        "module": "destinations",
+        "status": "passed",
+        "checks": 92,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 8.93
+      },
+      {
+        "module": "personnel",
+        "status": "passed",
+        "checks": 92,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 11.09
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 21,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 5.0
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 21.09
+      },
+      {
+        "module": "release_fixes",
+        "status": "passed",
+        "checks": 27,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 8.05
+      }
+    ]
+  },
+  "functional_checks_per_run": 308,
+  "new_checks": 150,
+  "api_comparison": {
+    "outcome_signatures_equal": true,
+    "actions": 12,
+    "entries": [
+      {
+        "domain": "destinations",
+        "action": "archive",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "DESTINATION_NOT_FOUND",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VERSION_CONFLICT",
+          "VERSION_REQUIRED"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 14,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "destinations",
+        "action": "create",
+        "statuses": [
+          201,
+          401,
+          403,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "DESTINATION_CONFLICT",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VALIDATION_FAILED"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 14,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "destinations",
+        "action": "get",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          422
+        ],
+        "error_codes": [
+          "DESTINATION_NOT_FOUND",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "UNAUTHENTICATED",
+          "VALIDATION_FAILED"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 9,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "destinations",
+        "action": "list",
+        "statuses": [
+          200,
+          401,
+          403,
+          405,
+          422
+        ],
+        "error_codes": [
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 10,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "destinations",
+        "action": "restore",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "DESTINATION_NOT_FOUND",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VERSION_CONFLICT",
+          "VERSION_REQUIRED"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 13,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "destinations",
+        "action": "update",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "DESTINATION_CONFLICT",
+          "DESTINATION_NOT_FOUND",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VERSION_CONFLICT",
+          "VERSION_REQUIRED"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 18,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "personnel",
+        "action": "archive",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "PERSONNEL_IN_USE",
+          "PERSONNEL_NOT_FOUND",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VERSION_CONFLICT",
+          "VERSION_REQUIRED"
+        ],
+        "role_contexts": [
+          "admin",
+          "admin,dispatcher,records_manager",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 16,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "personnel",
+        "action": "create",
+        "statuses": [
+          201,
+          401,
+          403,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "PERSONNEL_CONFLICT",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VALIDATION_FAILED"
+        ],
+        "role_contexts": [
+          "admin",
+          "admin,dispatcher,records_manager",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 17,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "personnel",
+        "action": "get",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          422
+        ],
+        "error_codes": [
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "PERSONNEL_NOT_FOUND",
+          "UNAUTHENTICATED",
+          "VALIDATION_FAILED"
+        ],
+        "role_contexts": [
+          "admin",
+          "admin,dispatcher,records_manager",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 11,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "personnel",
+        "action": "list",
+        "statuses": [
+          200,
+          401,
+          403,
+          405,
+          422
+        ],
+        "error_codes": [
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 11,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "personnel",
+        "action": "restore",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "PERSONNEL_NOT_FOUND",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VERSION_CONFLICT",
+          "VERSION_REQUIRED"
+        ],
+        "role_contexts": [
+          "admin",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 13,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      },
+      {
+        "domain": "personnel",
+        "action": "update",
+        "statuses": [
+          200,
+          401,
+          403,
+          404,
+          405,
+          409,
+          422,
+          503
+        ],
+        "error_codes": [
+          "CSRF_INVALID",
+          "FORBIDDEN",
+          "METHOD_NOT_ALLOWED",
+          "PERSONNEL_CONFLICT",
+          "PERSONNEL_IN_USE",
+          "PERSONNEL_NOT_FOUND",
+          "SERVICE_UNAVAILABLE",
+          "UNAUTHENTICATED",
+          "UNEXPECTED_FIELDS",
+          "VERSION_CONFLICT",
+          "VERSION_REQUIRED"
+        ],
+        "role_contexts": [
+          "admin",
+          "admin,dispatcher,records_manager",
+          "anonymous",
+          "dispatcher",
+          "records_manager",
+          "staff"
+        ],
+        "observed_calls": 22,
+        "successful_response_observed": true,
+        "rejection_observed": true
+      }
+    ]
+  },
+  "ui": {
+    "ui-before": {
+      "checks": 164,
+      "page_theme_viewport_views": 8,
+      "interaction_groups": 13,
+      "unhandled_errors": 0,
+      "asset_errors": 0,
+      "google_fonts_requests": 0
+    },
+    "ui-after": {
+      "checks": 170,
+      "page_theme_viewport_views": 8,
+      "interaction_groups": 13,
+      "unhandled_errors": 0,
+      "asset_errors": 0,
+      "google_fonts_requests": 0
+    },
+    "ui-detail-review": {
+      "checks": 338,
+      "page_theme_viewport_views": 0,
+      "interaction_groups": 21,
+      "unhandled_errors": 0,
+      "asset_errors": 0,
+      "google_fonts_requests": 0
+    },
+    "ui-all-pages": {
+      "checks": 669,
+      "page_theme_viewport_views": 100,
+      "interaction_groups": 0,
+      "unhandled_errors": 0,
+      "asset_errors": 0,
+      "google_fonts_requests": 0
+    }
+  },
+  "ui_intentional_changes": [
+    "Current bordered summary/detail cards with role/type and active/inactive/archived badges.",
+    "44px icon close controls, themed footer Close buttons, current typography, focus/pressed/opening effects and reduced-motion support.",
+    "Contained body scrolling keeps header/footer reachable at narrow/landscape sizes; surrounding page layout and staff header stay unchanged.",
+    "Original name/type/status values move to summary; remaining fields and multiline notes stay in semantic definition rows; empty locality displays a dash.",
+    "Archived destination Edit obeys hidden; modal dismissal explicitly restores row focus or the search fallback."
+  ],
+  "ui_detail_scope": {
+    "cases": 20,
+    "domains": [
+      "personnel",
+      "destinations"
+    ],
+    "themes": [
+      "dark/es-UY",
+      "light/en"
+    ],
+    "viewports": [
+      "1440x900",
+      "390x844",
+      "320x640",
+      "768x1024",
+      "844x390"
+    ],
+    "values": "Real fictional records plus intercepted archived/long-text responses; no browser writes to catalog records.",
+    "behaviors": "All supplied values, native footer/Escape/outside dismissal, keyboard focus/return, hidden archived Edit, literal markup, live language and reachable footer."
+  },
+  "visual_comparison": {
+    "method": "Compare all affected-page and navigation PNGs without masks. The twelve detail-dialog captures are intentional design changes and are reviewed separately.",
+    "screenshots": 12,
+    "maximum_exact_difference_percent": 0.00015432098765432098,
+    "maximum_pixels_over_channel_delta_12": 0
+  },
+  "redesigned_detail_captures_reviewed_separately": 12,
+  "inspected_private_captures": [
+    "ui-after-initial-design/personnel-detail-1440-dark.png",
+    "ui-after-initial-design/destinations-detail-390-light.png",
+    "ui-after-initial-design/personnel-detail-320-light.png",
+    "ui-detail-review/destinations-detail-stress-landscape-light.png",
+    "ui-detail-review/personnel-detail-stress-narrow-dark.png"
+  ],
+  "diagnostics": "Incomplete detail journeys corrected keyboard-focus and asynchronous-reopen assertions, and identified real hidden-Edit and row-focus-return issues that were fixed. Initial diagnostics are retained privately and excluded from accepted suite totals. The all-page matrix checks static layouts/assets; final modal/editor journeys cover the subsequent modal-only fixes.",
+  "syntax": {
+    "php": 90,
+    "application_js": 35,
+    "browser_cjs": 12,
+    "python": 28,
+    "passed": true,
+    "final_modified_sources_rechecked": true
+  },
+  "i18n": {
+    "passed": true,
+    "bilingual_keys": 1853,
+    "literal_references": 1111,
+    "fresh_rendered_pages": 25,
+    "old_dictionary_values_preserved": true,
+    "added_keys": {
+      "es": [
+        "destinations.ubicacion_contacto_y_acceso"
+      ],
+      "en": [
+        "destinations.ubicacion_contacto_y_acceso"
+      ]
+    },
+    "intentional_fallback_replacements": [
+      {
+        "path": "public/src/views/management/personnel.php",
+        "element_id": "dialog-close",
+        "removed_fallback_text": "\u00d7",
+        "reason": "User-authorized detail-dialog design replaces the text cross with the existing SVG icon; aria-label and ID are retained."
+      },
+      {
+        "path": "public/src/views/management/destinations.php",
+        "element_id": "detail-close",
+        "removed_fallback_text": "\u00d7",
+        "reason": "User-authorized detail-dialog design replaces the text cross with the existing SVG icon; aria-label and ID are retained."
+      }
+    ],
+    "preservation": "Original IDs/attributes and other Spanish fallback text are retained; exactly two text crosses were replaced with SVG icons under the approved dialog redesign. Original baseline captures were not modified."
+  },
+  "preflight": {
+    "healthy": true,
+    "php": "8.0.28",
+    "database_version": "10.4.28-MariaDB",
+    "missing_migrations": []
+  },
+  "cleanup": {
+    "verification_schemas": 0,
+    "verification_accounts": 0,
+    "8113_closed": true,
+    "demonstration_status": 200,
+    "disposable_suite_runs": 10,
+    "all_suite_fixtures_cleaned": true,
+    "temporary_storage_removed": true
+  },
+  "application_measurements": {
+    "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+    "before": {
+      "files": 266,
+      "bytes": 12497546,
+      "code_files": 170,
+      "code_bytes": 2208286,
+      "pages": 25,
+      "repeated_8_line_groups": 507,
+      "repeated_8_line_extra_occurrences": 534
+    },
+    "after": {
+      "files": 266,
+      "bytes": 12505673,
+      "code_files": 170,
+      "code_bytes": 2216413,
+      "pages": 25,
+      "repeated_8_line_groups": 501,
+      "repeated_8_line_extra_occurrences": 528
+    },
+    "delta": {
+      "files": 0,
+      "bytes": 8127,
+      "code_files": 0,
+      "code_bytes": 8127,
+      "pages": 0,
+      "repeated_8_line_groups": -6,
+      "repeated_8_line_extra_occurrences": -6
+    }
+  },
+  "cumulative_measurements": {
+    "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+    "before": {
+      "files": 358,
+      "bytes": 12552303,
+      "code_files": 262,
+      "code_bytes": 2263043,
+      "pages": 25,
+      "repeated_8_line_groups": 1154,
+      "repeated_8_line_extra_occurrences": 1424
+    },
+    "after": {
+      "files": 266,
+      "bytes": 12505673,
+      "code_files": 170,
+      "code_bytes": 2216413,
+      "pages": 25,
+      "repeated_8_line_groups": 501,
+      "repeated_8_line_extra_occurrences": 528
+    },
+    "delta": {
+      "files": -92,
+      "bytes": -46630,
+      "code_files": -92,
+      "code_bytes": -46630,
+      "pages": 0,
+      "repeated_8_line_groups": -653,
+      "repeated_8_line_extra_occurrences": -896
+    }
+  },
+  "private_evidence": "tests/.runtime/simplification/checkpoint5/",
+  "not_repeated": [
+    "Full core suite",
+    "Fresh installation",
+    "Standalone recovery/document-link suites",
+    "New visual comparison of all 25 pages against the original project"
+  ],
+  "unchanged_limits": [
+    "Real email delivery",
+    "Live mapping-provider configuration",
+    "Physical devices/Safari",
+    "Eventual Apache-user deployment"
+  ],
+  "next_proposed_checkpoint": "Strengthen Ambulances/Routes write-rejection and rollback coverage before assessing further small consolidation; preserve their different conflict behavior."
+}

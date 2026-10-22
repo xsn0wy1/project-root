@@ -1,0 +1,686 @@
+{
+  "checkpoint": 2,
+  "date": "2026-10-22",
+  "status": "complete; paused for review",
+  "scope": "Whitespace formatting of Destinations/Personnel PHP handlers and modules; domain logic and public interfaces remain unchanged.",
+  "changed_application_files": [
+    "backend/api/v1/destinations.php",
+    "backend/api/v1/personnel.php",
+    "backend/php/modules/destinations.php",
+    "backend/php/modules/personnel.php"
+  ],
+  "other_application_files_unchanged": 262,
+  "token_proof": {
+    "php_files_checked": 90,
+    "significant_tokens_equal": true,
+    "changed_application_files": [
+      "backend/api/v1/destinations.php",
+      "backend/api/v1/personnel.php",
+      "backend/php/modules/destinations.php",
+      "backend/php/modules/personnel.php"
+    ],
+    "unchanged_application_files": 262,
+    "before": {
+      "php_files": 90,
+      "significant_tokens": 69699,
+      "semicolon_tokens": 3873,
+      "decision_keyword_operator_tokens": 2104,
+      "function_declarations": 364,
+      "named_function_declarations": 287,
+      "ternary_candidates": 336,
+      "lines": 8285,
+      "lines_over_120": 1638,
+      "maximum_function_lines": 68,
+      "longest_functions": [
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_profile",
+          "start": 379,
+          "end": 1180,
+          "line": 35,
+          "end_line": 102,
+          "lines": 68
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_locations_resolve",
+          "start": 2079,
+          "end": 3070,
+          "line": 112,
+          "end_line": 169,
+          "lines": 58
+        },
+        {
+          "path": "backend/php/components/shell.php",
+          "name": "staff_page_head",
+          "start": 129,
+          "end": 568,
+          "line": 26,
+          "end_line": 77,
+          "lines": 52
+        },
+        {
+          "path": "backend/php/Config.php",
+          "name": "load",
+          "start": 17,
+          "end": 656,
+          "line": 7,
+          "end_line": 53,
+          "lines": 47
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_fields",
+          "start": 398,
+          "end": 1464,
+          "line": 39,
+          "end_line": 83,
+          "lines": 45
+        },
+        {
+          "path": "backend/php/modules/ambulances.php",
+          "name": "ambulance_save",
+          "start": 685,
+          "end": 974,
+          "line": 134,
+          "end_line": 175,
+          "lines": 42
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_stage",
+          "start": 23,
+          "end": 674,
+          "line": 9,
+          "end_line": 50,
+          "lines": 42
+        },
+        {
+          "path": "backend/php/Http/FileResponse.php",
+          "name": "send",
+          "start": 17,
+          "end": 499,
+          "line": 7,
+          "end_line": 47,
+          "lines": 41
+        },
+        {
+          "path": "backend/php/modules/auth.php",
+          "name": "auth_login",
+          "start": 573,
+          "end": 1183,
+          "line": 49,
+          "end_line": 88,
+          "lines": 40
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_catalog_import",
+          "start": 425,
+          "end": 1456,
+          "line": 35,
+          "end_line": 74,
+          "lines": 40
+        },
+        {
+          "path": "backend/php/modules/auth.php",
+          "name": "password_request_reset",
+          "start": 4496,
+          "end": 4984,
+          "line": 399,
+          "end_line": 436,
+          "lines": 38
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_office",
+          "start": 791,
+          "end": 1278,
+          "line": 64,
+          "end_line": 101,
+          "lines": 38
+        }
+      ],
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5251
+    },
+    "after": {
+      "php_files": 90,
+      "significant_tokens": 69699,
+      "semicolon_tokens": 3873,
+      "decision_keyword_operator_tokens": 2104,
+      "function_declarations": 364,
+      "named_function_declarations": 287,
+      "ternary_candidates": 336,
+      "lines": 8553,
+      "lines_over_120": 1589,
+      "maximum_function_lines": 91,
+      "longest_functions": [
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "personnel_save",
+          "start": 922,
+          "end": 1486,
+          "line": 157,
+          "end_line": 247,
+          "lines": 91
+        },
+        {
+          "path": "backend/php/modules/personnel.php",
+          "name": "(closure)",
+          "start": 983,
+          "end": 1471,
+          "line": 167,
+          "end_line": 245,
+          "lines": 79
+        },
+        {
+          "path": "backend/php/modules/settings.php",
+          "name": "settings_profile",
+          "start": 379,
+          "end": 1180,
+          "line": 35,
+          "end_line": 102,
+          "lines": 68
+        },
+        {
+          "path": "backend/php/modules/transfers.php",
+          "name": "transfer_locations_resolve",
+          "start": 2079,
+          "end": 3070,
+          "line": 112,
+          "end_line": 169,
+          "lines": 58
+        },
+        {
+          "path": "backend/php/components/shell.php",
+          "name": "staff_page_head",
+          "start": 129,
+          "end": 568,
+          "line": 26,
+          "end_line": 77,
+          "lines": 52
+        },
+        {
+          "path": "backend/php/Config.php",
+          "name": "load",
+          "start": 17,
+          "end": 656,
+          "line": 7,
+          "end_line": 53,
+          "lines": 47
+        },
+        {
+          "path": "backend/php/modules/destinations.php",
+          "name": "destinations_save",
+          "start": 726,
+          "end": 1006,
+          "line": 122,
+          "end_line": 168,
+          "lines": 47
+        },
+        {
+          "path": "backend/php/modules/surveys.php",
+          "name": "survey_input_fields",
+          "start": 398,
+          "end": 1464,
+          "line": 39,
+          "end_line": 83,
+          "lines": 45
+        },
+        {
+          "path": "backend/php/modules/ambulances.php",
+          "name": "ambulance_save",
+          "start": 685,
+          "end": 974,
+          "line": 134,
+          "end_line": 175,
+          "lines": 42
+        },
+        {
+          "path": "backend/php/modules/document-files.php",
+          "name": "document_file_stage",
+          "start": 23,
+          "end": 674,
+          "line": 9,
+          "end_line": 50,
+          "lines": 42
+        },
+        {
+          "path": "backend/php/Http/FileResponse.php",
+          "name": "send",
+          "start": 17,
+          "end": 499,
+          "line": 7,
+          "end_line": 47,
+          "lines": 41
+        },
+        {
+          "path": "backend/php/modules/auth.php",
+          "name": "auth_login",
+          "start": 573,
+          "end": 1183,
+          "line": 49,
+          "end_line": 88,
+          "lines": 40
+        }
+      ],
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5251
+    },
+    "files": {
+      "backend/api/v1/destinations.php": {
+        "before_lines": 44,
+        "after_lines": 57,
+        "before_over_120": 1,
+        "after_over_120": 0
+      },
+      "backend/api/v1/personnel.php": {
+        "before_lines": 44,
+        "after_lines": 57,
+        "before_over_120": 1,
+        "after_over_120": 0
+      },
+      "backend/php/modules/destinations.php": {
+        "before_lines": 98,
+        "after_lines": 197,
+        "before_over_120": 18,
+        "after_over_120": 2
+      },
+      "backend/php/modules/personnel.php": {
+        "before_lines": 140,
+        "after_lines": 283,
+        "before_over_120": 36,
+        "after_over_120": 5
+      }
+    }
+  },
+  "preserved": [
+    "PHP 8.0 compatibility",
+    "All significant tokens, literal bytes and SQL order",
+    "Named booking locks, actor/role revalidation, transaction/conflict behavior",
+    "Personnel legacy profiles, canonical staff links, credential-linked identity and role preservation",
+    "Destination address-change coordinate clearing and existing transfer snapshots",
+    "Field names, envelopes, HTTP methods/statuses/error messages and guard order",
+    "Templates, CSS, JS, image bytes, locale dictionaries and private configuration"
+  ],
+  "functional": {
+    "before": [
+      {
+        "module": "destinations",
+        "status": "passed",
+        "checks": 17,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 2.62
+      },
+      {
+        "module": "personnel",
+        "status": "passed",
+        "checks": 17,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 2.44
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 21,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 3.53
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 18.34
+      }
+    ],
+    "after": [
+      {
+        "module": "destinations",
+        "status": "passed",
+        "checks": 17,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 2.93
+      },
+      {
+        "module": "personnel",
+        "status": "passed",
+        "checks": 17,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 2.58
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 21,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 3.67
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 18.71
+      }
+    ],
+    "checks_each": 131
+  },
+  "api_contracts": {
+    "target_actions": 12,
+    "outcome_signatures_match": true,
+    "before_requests": 286,
+    "after_requests": 287,
+    "differences": []
+  },
+  "browser": {
+    "checks_before": 164,
+    "checks_after": 164,
+    "page_views_each": 8,
+    "interaction_groups_each": 13,
+    "pages": [
+      "destinations.php",
+      "personnel.php"
+    ],
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "languages": [
+      "es-UY",
+      "en"
+    ],
+    "page_viewports": [
+      "1440x900",
+      "390x844"
+    ],
+    "additional_interaction_width": 320,
+    "cases": [
+      "Navigation and natural page scrolling",
+      "Details in both themes at three widths",
+      "Shared select operation in editors",
+      "Reachable save actions",
+      "Retained draft name after intercepted 503 update",
+      "Editor cancellation and destination archive cancellation"
+    ],
+    "unhandled_script_errors": 0,
+    "missing_local_assets": 0,
+    "google_font_requests": 0,
+    "screenshots_inspected": true,
+    "updates_in_browser_journey": "503 responses intercepted; the existing fictional catalog fixture was not edited."
+  },
+  "visual_comparison": {
+    "comparisons": 24,
+    "unmasked": true,
+    "maxChangedOver12Percent": 0,
+    "maxExactChangedPercent": 0.00015432098765432098,
+    "rows": [
+      {
+        "name": "destinations-detail-1440-dark.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "destinations-detail-1440-light.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "destinations-detail-320-dark.png",
+        "pixels": 204800,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "destinations-detail-320-light.png",
+        "pixels": 204800,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "destinations-detail-390-dark.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "destinations-detail-390-light.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "personnel-detail-1440-dark.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "personnel-detail-1440-light.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "personnel-detail-320-dark.png",
+        "pixels": 204800,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "personnel-detail-320-light.png",
+        "pixels": 204800,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "personnel-detail-390-dark.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "personnel-detail-390-light.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_destinations.php-desktop-dark.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0.00015432098765432098,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_destinations.php-desktop-light.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_destinations.php-mobile-dark.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_destinations.php-mobile-light.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_destinations.php_desktop_dark-navigation.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_destinations.php_desktop_light-navigation.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_personnel.php-desktop-dark.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_personnel.php-desktop-light.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_personnel.php-mobile-dark.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_personnel.php-mobile-light.png",
+        "pixels": 329160,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_personnel.php_desktop_dark-navigation.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      },
+      {
+        "name": "src_views_management_personnel.php_desktop_light-navigation.png",
+        "pixels": 1296000,
+        "exactChangedPercent": 0,
+        "changedOver12Percent": 0
+      }
+    ]
+  },
+  "syntax": {
+    "php_syntax": 90,
+    "modified_browser_test_syntax": true,
+    "python_syntax": 27,
+    "remaining_long_lines": [
+      {
+        "path": "backend/php/modules/destinations.php",
+        "line": 141,
+        "characters": 126,
+        "reason": "Unchanged SQL literal"
+      },
+      {
+        "path": "backend/php/modules/destinations.php",
+        "line": 157,
+        "characters": 132,
+        "reason": "Unchanged SQL literal"
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "line": 72,
+        "characters": 179,
+        "reason": "Unchanged SQL literal"
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "line": 75,
+        "characters": 141,
+        "reason": "Unchanged SQL literal"
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "line": 146,
+        "characters": 199,
+        "reason": "Unchanged SQL literal"
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "line": 184,
+        "characters": 223,
+        "reason": "Unchanged SQL literal"
+      },
+      {
+        "path": "backend/php/modules/personnel.php",
+        "line": 227,
+        "characters": 132,
+        "reason": "Unchanged SQL literal"
+      }
+    ]
+  },
+  "i18n": {
+    "bilingual_keys": 1852,
+    "literal_key_references": 1119,
+    "page_bindings": 25,
+    "fresh_rendered_pages": 2,
+    "unchanged_render_baseline_reused_for": 23,
+    "original_spanish_text_attributes_ids_preserved": true
+  },
+  "preflight": {
+    "healthy": true,
+    "php": "8.0.28",
+    "database_version": "10.4.28-MariaDB",
+    "missing_migrations": []
+  },
+  "source_measurement": {
+    "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+    "before": {
+      "files": 266,
+      "bytes": 12486607,
+      "code_files": 170,
+      "code_bytes": 2197347,
+      "pages": 25,
+      "repeated_8_line_groups": 489,
+      "repeated_8_line_extra_occurrences": 509
+    },
+    "after": {
+      "files": 266,
+      "bytes": 12490058,
+      "code_files": 170,
+      "code_bytes": 2200798,
+      "pages": 25,
+      "repeated_8_line_groups": 497,
+      "repeated_8_line_extra_occurrences": 518
+    },
+    "delta": {
+      "files": 0,
+      "bytes": 3451,
+      "code_files": 0,
+      "code_bytes": 3451,
+      "pages": 0,
+      "repeated_8_line_groups": 8,
+      "repeated_8_line_extra_occurrences": 9
+    }
+  },
+  "formatting_neutral_duplication": {
+    "before_groups": 2534,
+    "after_groups": 2534,
+    "before_extra_occurrences": 5251,
+    "after_extra_occurrences": 5251,
+    "note": "The overlapping eight-line indicator grows as existing dense statements become separate lines. Significant token windows and application logic are unchanged; no reuse reduction is claimed."
+  },
+  "cleanup": {
+    "temporary_schemas_remaining": 0,
+    "temporary_accounts_remaining": 0,
+    "verification_port_closed": true,
+    "demonstration_http_status": 200
+  },
+  "private_evidence": "tests/.runtime/simplification/checkpoint2/",
+  "limits": [
+    "Focused suites were used; the full core set, fresh install and separate recovery/document-link suites were not repeated for this formatting-only change.",
+    "The browser review covers affected pages rather than a new full 25-page visual matrix.",
+    "Physical devices/Safari and actual Apache-user deployment remain separate environment checks."
+  ],
+  "next_checkpoint": "Review first, then format Doctors and Routes PHP handlers/modules with the same baseline/token/functional/visual gates. Broad semantic helpers, JS/CSS consolidation and packaging remain separate."
+}

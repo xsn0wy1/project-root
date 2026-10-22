@@ -12,7 +12,7 @@ staff_page_open([
     'title' => 'Documentos',
     'theme_styles' => 'main-menu documents',
     'stylesheets' => ['documents/documents.css?v=20261012-documents'],
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;1,400;1,500&display=swap',
+    'font_stylesheet' => 'documents',
     'nav_section' => 'documents',
     'main_class' => 'app-shell',
     'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../js/documents/documents.js?v=stage4'],

@@ -11,7 +11,7 @@ import urllib.request
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, sql
+from auth_integration import manage_account, Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, sql
 
 assert os.environ["HOSPITAL_DB_NAME"].endswith("_test")
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,7 +99,7 @@ def main():
         status, payload, _ = client.call("/api/v1/auth.php?action=register", "POST", {"username": username, "email": username+"@hospital.example", "national_id": str(80000000+secrets.randbelow(9999999)), "password": PASSWORD})
         assert status == 201, payload
         uid = payload["data"]["user_id"]
-        assert admin.call("/api/v1/accounts.php?action=approve", "POST", {"user_id": uid, "role": role})[0] == 200
+        assert manage_account(admin, 'approve', {"user_id": uid, "role": role})[0] == 200
         assert client.login(username, PASSWORD)[0] == 200
         accounts.append((client, uid, username))
     first, uid, username = accounts[0]; second, other_uid, _ = accounts[1]; manager, _, _ = accounts[2]
@@ -246,7 +246,7 @@ def main():
     check(first.call("/api/v1/documents.php?action=bulk-archive","POST",{"documents":duplicate})[0]==422 and detail(first,id)["archived_at"] is None, "invalid bulk selections are rejected before any mutation")
     check(int(sql("SELECT COUNT(*) AS n FROM audit_events WHERE resource_type='document' AND resource_id="+id)[0]["n"])>=10, "document reads and mutations are audited with record IDs")
     check(sql("SELECT version FROM schema_migrations WHERE version='003_documents'")!=[], "fresh setup records the document migration")
-    check(admin.call('/api/v1/accounts.php?action=disable','POST',{'user_id':uid})[0]==200 and binary(first,id)[0]==401, "disabling an uploader revokes that account's document session")
+    check(manage_account(admin, 'disable', {'user_id':uid})[0]==200 and binary(first,id)[0]==401, "disabling an uploader revokes that account's document session")
     check(binary(manager,id)[0]==200, "retained hospital documents remain available to records managers after uploader disable")
     print(f"Completed {checks} document checks.")
 

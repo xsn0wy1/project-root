@@ -37,6 +37,28 @@ function transfer_serialized(PDO $db, array $config, callable $work, string $nam
     finally { $stmt=$db->prepare('SELECT RELEASE_LOCK(?)'); $stmt->execute([$key]); }
 }
 
+// Catalog writes share the transfer lock and recheck dispatch access inside the transaction.
+function transfer_catalog_transaction(
+    PDO $db, array $config, string $actor, callable $work, string $conflictCode, string $messageKey
+)
+{
+    return transfer_serialized($db, $config, function () use ($actor, $work, $db, $conflictCode, $messageKey) {
+        $db->beginTransaction();
+        try {
+            transfer_actor($db, $actor);
+            $result = $work();
+            $db->commit();
+            return $result;
+        } catch (\Throwable $error) {
+            if ($db->inTransaction())
+                $db->rollBack();
+            if ($error instanceof \PDOException && ($error->errorInfo[1] ?? 0) === 1062)
+                throw new ApiException(409, $conflictCode, \Hospital\I18n::t($messageKey));
+            throw $error;
+        }
+    });
+}
+
 function transfer_audit(PDO $db, ?string $actor,string $action,?string $id,string $type='transfer'): void
 {
     $s=$db->prepare('INSERT INTO audit_events (actor_user_id,action,resource_type,resource_id,request_id) VALUES (?,?,?,?,?)');

@@ -4,6 +4,12 @@ namespace Hospital\Http;
 
 final class Request
 {
+    public static function version($value): int
+    {
+        if ((!is_int($value) && !is_string($value)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $value)) throw new ApiException(422, 'VERSION_REQUIRED', \Hospital\I18n::t('errors.se_requiere_la_revision_actual'));
+        return (int) $value;
+    }
+
     public static function method(string ...$expected): void
     {
         if (!in_array($_SERVER['REQUEST_METHOD'] ?? '', $expected, true)) {

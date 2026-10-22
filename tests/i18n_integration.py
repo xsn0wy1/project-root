@@ -1,6 +1,6 @@
 """Focused localization API checks. Requires the existing disposable *_test environment."""
 import json,os,secrets,subprocess,sys
-from auth_integration import Client,ADMIN_PASSWORD,PHP,ROOT
+from auth_integration import manage_account, Client,ADMIN_PASSWORD,PHP,ROOT
 assert os.environ.get('HOSPITAL_DB_NAME','').endswith('_test'),'Use disposable data only.'
 checks=0
 def check(value,label):
@@ -8,6 +8,17 @@ def check(value,label):
  assert value,label
  checks+=1;print('PASS',label,flush=True)
 def language(client,locale):client.opener.addheaders=[('X-Hospital-Locale',locale)];return client
+for locale in ['es', 'en']:
+ public = Client()
+ status, payload, headers = public.call('/api/v1/translations.php?lang=' + locale)
+ expected = json.loads((ROOT / 'db/json' / (locale + '.json')).read_text())
+ check(status == 200 and payload == expected and headers.get('Content-Language') == ('en' if locale == 'en' else 'es-UY') and
+       headers.get('Set-Cookie') is None, 'public translation endpoint preserves raw dictionary and language without a session: ' + locale)
+check(all(Client().call('/api/v1/translations.php?' + query)[0] == 400 for query in
+          ['lang=fr', 'lang[]=es', 'lang=../en']), 'translation endpoint rejects unsupported, array and path language inputs')
+status, payload, headers = Client().call('/api/v1/translations.php?lang=en', 'POST', {})
+check(status == 405 and headers.get('Allow') == 'GET' and payload['error']['code'] == 'METHOD_NOT_ALLOWED',
+      'public translation endpoint rejects writes before any session is required')
 spanish=language(Client(),'es-UY');english=language(Client(),'en')
 a=spanish.call('/api/v1/auth.php?action=me');b=english.call('/api/v1/auth.php?action=me')
 check(a[0]==b[0]==401 and a[1]['error']['code']==b[1]['error']['code']=='UNAUTHENTICATED','localization preserves anonymous authentication status/code')
@@ -20,6 +31,8 @@ def save(c,path,fields):return c.call('/api/v1/'+path,'POST',{'version':profile(
 original=profile(spanish);saved=save(spanish,'settings.php?action=profile-update',{'full_name':'Inicio Guardar'})
 check(saved[0]==200 and profile(english)['user']['full_name']=='Inicio Guardar','interface-like record text is never automatically translated')
 check(save(english,'settings.php?action=preferences-update',{'locale':'en'})[0]==200 and profile(spanish)['settings']['locale']=='en','language preference persists in shared SQL settings')
+status,html,headers=english.call('/src/views/settings.php')
+check(status==200 and 'lang="en"' in html and headers.get('Content-Language')=='en' and headers.get('Content-Security-Policy')=="frame-ancestors 'self'",'staff HTML uses the saved locale and frame protection before browser hydration')
 version=profile(english)['settings']['version'];bad=save(english,'settings.php?action=preferences-update',{'locale':'fr'})
 check(bad[0]==422 and bad[1]['error']['message']=='Invalid preference.' and profile(english)['settings']['version']==version,'invalid locale preserves SQL preference/revision')
 bad=save(english,'settings.php?action=profile-update',{'email':'invalid'})
@@ -40,7 +53,7 @@ suffix=secrets.token_hex(4);password=secrets.token_urlsafe(20)
 new=language(Client(),'en');new.csrf()
 status,body,_=new.call('/api/v1/auth.php?action=register','POST',{'username':'i18n_'+suffix,'email':'i18n_'+suffix+'@hospital.example','password':password,'national_id':str(81000000+secrets.randbelow(8999999))})
 check(status==201 and body['data']['status']=='pending','English registration still creates a pending account')
-check(english.call('/api/v1/accounts.php?action=approve','POST',{'user_id':body['data']['user_id'],'role':'staff'})[0]==200,'existing administrator approval still works')
+check(manage_account(english, 'approve', {'user_id':body['data']['user_id'],'role':'staff'})[0]==200,'existing administrator approval still works')
 check(new.login('i18n_'+suffix,password)[0]==200 and profile(new)['settings']['locale']=='es-UY','new accounts begin with the Spanish SQL default')
 check(save(new,'settings.php?action=preferences-update',{'locale':'en'})[0]==200 and save(spanish,'settings.php?action=preferences-update',{'locale':'es-UY'})[0]==200 and profile(new)['settings']['locale']=='en','separate account preferences do not overwrite one another')
 check(new.call('/api/v1/auth.php?action=logout','POST',{})[0]==200 and new.call('/api/v1/auth.php?action=me')[0]==401,'localized accounts retain the existing logout/session boundary')

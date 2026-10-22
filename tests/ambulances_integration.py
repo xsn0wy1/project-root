@@ -5,7 +5,7 @@ import secrets
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, ROOT, check, sql
+from auth_integration import manage_account, Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, ROOT, check, sql
 
 
 def contract_checks(client):
@@ -34,7 +34,7 @@ def page_guard_checks(dispatcher, admin):
     status, body, _ = clinical.call('/api/v1/auth.php?action=register', 'POST', dict(username=name,
         email=name+'@hospital.example', national_id=str(91000000+secrets.randbelow(8999999)), password=PASSWORD))
     assert status == 201, body
-    assert admin.call('/api/v1/accounts.php?action=approve', 'POST', dict(user_id=body['data']['user_id'], role='records_manager'))[0] == 200
+    assert manage_account(admin, 'approve', dict(user_id=body['data']['user_id'], role='records_manager'))[0] == 200
     assert clinical.login(name, PASSWORD)[0] == 200
     permissions = {'management/management':None, 'management/ambulances':'dispatcher', 'management/patients':'records_manager',
                    'management/doctors':'records_manager', 'management/personnel':'dispatcher', 'management/destinations':'dispatcher',

@@ -11,7 +11,7 @@ staff_page_open([
     'title' => 'Traslado · Hospital de Clínicas',
     'stylesheets' => ['traces/trace-view.css?v=20261008-route-preview'],
     'vendor_styles' => [['href' => '../../../assets/vendor/leaflet/leaflet.css', 'integrity' => 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=']],
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap',
+    'font_stylesheet' => 'interface',
     'body_class' => '',
     'meta' => ['carto-basemap-key' => ''],
     'background' => true,

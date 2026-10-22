@@ -5,7 +5,7 @@ import secrets
 import select
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, PHP, ROOT, SUFFIX, check, sql
+from auth_integration import manage_account, Client, PASSWORD, ADMIN_PASSWORD, PHP, ROOT, SUFFIX, check, sql
 
 
 def post(client, path, body, expected=200):
@@ -25,7 +25,7 @@ def account(admin, index):
     ci = str(70000000 + secrets.randbelow(9999999))
     client = Client(); client.csrf()
     row = post(client, 'auth.php?action=register', dict(username=username, email=username+'@hospital.example', national_id=ci, password=PASSWORD), 201)
-    post(admin, 'accounts.php?action=approve', dict(user_id=row['user_id'], role='staff'))
+    manage_account(admin, 'approve', dict(user_id=row['user_id'], role='staff'))[1]['data']
     assert client.login(username, PASSWORD)[0] == 200
     return client, username, ci
 

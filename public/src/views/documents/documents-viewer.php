@@ -12,7 +12,7 @@ staff_page_open([
     'title' => 'Documento médico · Visor de documentos',
     'theme_styles' => 'main-menu documents-viewer',
     'stylesheets' => ['documents/documents-viewer.css?v=20261012-documents'],
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap',
+    'font_stylesheet' => 'interface',
     'nav_section' => 'document-viewer',
     'main_class' => 'app-shell document-viewer-shell',
     'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../../assets/vendor/qrcode/qrcode.js', '../../../assets/vendor/qrcode/qrcode_UTF8.js', '../../js/documents/documents-viewer.js?v=stage4'],

@@ -32,16 +32,16 @@ function tracking_status(PDO $db):array
     return ['version'=>(int)$row['state_version'],'run_id'=>$row['id']===null?null:(string)$row['id'],'status'=>$row['status']??'stopped','speed'=>$row['speed']===null?1:(float)$row['speed'],'generation'=>$row['generation']===null?1:(int)$row['generation'],'heartbeat_at'=>users_date($row['heartbeat_at']),'stale'=>$heartbeat===null||time()-$heartbeat>15,'source'=>'simulated'];
 }
 
-function tracking_control(PDO $db, array $config, string $command,$version,$speed=1,?string $actor=null):array
+function tracking_control(PDO $db, array $config, string $command,$version,$speed=1):array
 {
+    if (PHP_SAPI !== 'cli') throw new ApiException(403, 'FORBIDDEN', Hospital\I18n::t('errors.operacion_no_permitida'));
     transfer_input_choice($command,['start','pause','resume','stop','reset']);
     if((!is_int($speed)&&!is_float($speed))||!is_finite((float)$speed)||$speed<0.1||$speed>100)throw new ApiException(422,'VALIDATION_FAILED',\Hospital\I18n::t("errors.velocidad_de_simulacion_no_valida"));
-    transfer_serialized($db, $config, function() use ($command, $version, $speed, $actor, $db) {
+    transfer_serialized($db, $config, function() use ($command, $version, $speed, $db) {
         $db->beginTransaction();
         try{
-            if($actor!==null){$user=users_by_id($db, $actor,true);if(!$user||$user['status']!=='active'||$user['staff_status']!=='active'||(int)$user['auth_version']!==(int)($_SESSION['auth_version']??0))throw new ApiException(401,'SESSION_EXPIRED',\Hospital\I18n::t("errors.la_sesion_vencio"));if(!in_array('admin',users_roles($db, $actor),true))throw new ApiException(403,'FORBIDDEN',\Hospital\I18n::t("errors.se_requiere_administracion"));}
             $state=$db->query('SELECT * FROM simulation_state WHERE id=1 FOR UPDATE')->fetch();
-            if((int)$state['version']!==transfer_input_version($version))throw new ApiException(409,'VERSION_CONFLICT',\Hospital\I18n::t("errors.la_simulacion_cambio"));
+            if((int)$state['version']!==\Hospital\Http\Request::version($version))throw new ApiException(409,'VERSION_CONFLICT',\Hospital\I18n::t("errors.la_simulacion_cambio"));
             $run=null;if($state['current_run_id']!==null){$s=$db->prepare('SELECT * FROM simulation_runs WHERE id=? FOR UPDATE');$s->execute([$state['current_run_id']]);$run=$s->fetch();}
             if($command==='start'){
                 if($run&&$run['status']!=='stopped')throw new ApiException(409,'SIMULATION_STATE',\Hospital\I18n::t("errors.la_simulacion_ya_esta_iniciada"));
@@ -56,7 +56,7 @@ function tracking_control(PDO $db, array $config, string $command,$version,$spee
                 }
                 $db->exec('UPDATE simulation_state SET version=version+1 WHERE id=1');
             }
-            transfer_audit($db, $actor,'simulation.'.$command,null,'simulation');$db->commit();
+            transfer_audit($db, null,'simulation.'.$command,null,'simulation');$db->commit();
         }catch(\Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
     });return tracking_status($db);
 }
@@ -96,15 +96,6 @@ function tracking_snapshot(PDO $db, string $actor,array $query):array
     return ['transfers'=>$data,'next_cursor'=>$more?(string)$rows[count($rows)-1]['id']:null,'server_time'=>gmdate('Y-m-d\TH:i:s\Z'),'simulation'=>tracking_status($db)];
 }
 
-function tracking_history(PDO $db, string $actor,array $query):array
-{
-    if(array_diff(array_keys($query),['transfer_id','after_id','limit']))throw new ApiException(422,'UNEXPECTED_FIELDS',\Hospital\I18n::t("errors.filtro_no_permitido"));
-    $id=Request::id($query['transfer_id']??null);transfers_row($db, $actor,$id);
-    $after=isset($query['after_id'])?Request::id($query['after_id']):'0';$limit=$query['limit']??'100';
-    if(!is_scalar($limit)||!preg_match('/^[1-9][0-9]{0,3}$/',(string)$limit)||(int)$limit>1000)throw new ApiException(422,'VALIDATION_FAILED',\Hospital\I18n::t("errors.limite_no_valido"));
-    $s=$db->prepare('SELECT * FROM transfer_positions WHERE transfer_id=? AND id>? ORDER BY id LIMIT '.((int)$limit+1));$s->execute([$id,$after]);$rows=$s->fetchAll();$more=count($rows)>(int)$limit;$rows=array_slice($rows,0,(int)$limit);
-    return ['positions'=>array_map(fn(array $row):array=>tracking_position($row),$rows),'next_cursor'=>$more?(string)$rows[count($rows)-1]['id']:null,'source'=>'simulated'];
-}
 
 function tracking_prune(PDO $db):int
 {

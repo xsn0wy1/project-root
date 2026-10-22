@@ -11,7 +11,9 @@ date_default_timezone_set('UTC');
 
 // Procedural domains; definitions only. Dependencies receive the current PDO/config explicitly.
 require_once __DIR__ . '/modules/auth.php';
+require_once __DIR__ . '/modules/mail.php';
 require_once __DIR__ . '/modules/settings.php';
+require_once __DIR__ . '/modules/ambulances.php';
 require_once __DIR__ . '/modules/patients.php';
 require_once __DIR__ . '/modules/doctors.php';
 require_once __DIR__ . '/modules/personnel.php';

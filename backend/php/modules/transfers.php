@@ -178,7 +178,7 @@ function transfers_row(PDO $db, string $actor,string $id,bool $lock=false): arra
 
 function transfers_revision(array $row,$version):void
 {
-    if((int)$row['version']!==transfer_input_version($version))throw new ApiException(409,'VERSION_CONFLICT',\Hospital\I18n::t("errors.el_traslado_cambio_volve_a_abrirlo_antes_de_guardar"));
+    if((int)$row['version']!==\Hospital\Http\Request::version($version))throw new ApiException(409,'VERSION_CONFLICT',\Hospital\I18n::t("errors.el_traslado_cambio_volve_a_abrirlo_antes_de_guardar"));
 }
 
 function transfers_transaction(PDO $db, array $config, string $actor,callable $work)
@@ -284,7 +284,7 @@ function transfers_create(PDO $db, array $config, string $actor,array $input):ar
         $end=transfers_reserve($db, $config, $f,$c,$id,$f['scheduled_at']);$s=$db->prepare('UPDATE transfers SET reserved_until=? WHERE id=?');$s->execute([$end,$id]);
         transfers_crew($db, $id,$f,$c);transfers_event($db, $id,$actor,'created',null,'scheduled');transfer_audit($db, $actor,'transfer.created',$id);
         tracking_sample($db, $id,json_decode($route['geometry'],true),0,null,1);
-        if(isset($input['draft_version'])){$version=transfer_input_version($input['draft_version']);$s=$db->prepare("UPDATE transfer_drafts SET payload='{}',version=version+1 WHERE user_id=? AND version=?");$s->execute([$actor,$version]);}
+        if(isset($input['draft_version'])){$version=\Hospital\Http\Request::version($input['draft_version']);$s=$db->prepare("UPDATE transfer_drafts SET payload='{}',version=version+1 WHERE user_id=? AND version=?");$s->execute([$actor,$version]);}
         return $id;
     });return transfers_get($db, $actor,$id);
 }

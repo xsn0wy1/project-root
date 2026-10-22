@@ -3,7 +3,7 @@ import hashlib,json,os,subprocess
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from urllib.parse import urlencode
-from auth_integration import Client,PASSWORD,ADMIN_PASSWORD,SUFFIX,PHP,ROOT,check,sql
+from auth_integration import simulation_control, Client,PASSWORD,ADMIN_PASSWORD,SUFFIX,PHP,ROOT,check,sql
 
 
 def cache(url,data):
@@ -17,9 +17,9 @@ def cache_path(places):
     for index,place in enumerate(places):
         point=dict(latitude=round(-34.89-index*.005,7),longitude=round(-56.16-index*.01,7));points.append(point)
         query=place['address'] or place['name']
-        cache('https://photon.komoot.io/api/?'+urlencode(dict(q=query,countrycode='UY',limit=1)),dict(features=[dict(geometry=dict(coordinates=[point['longitude'],point['latitude']]))]))
+        cache('https://127.0.0.1:9/api/?'+urlencode(dict(q=query,countrycode='UY',limit=1)),dict(features=[dict(geometry=dict(coordinates=[point['longitude'],point['latitude']]))]))
     coordinates=';'.join(format(p['longitude'],'.12g')+','+format(p['latitude'],'.12g') for p in points)
-    cache('https://router.project-osrm.org/route/v1/driving/'+coordinates+'?overview=full&geometries=geojson&steps=false',dict(code='Ok',routes=[dict(distance=5600,duration=900,geometry=dict(coordinates=[[p['longitude'],p['latitude']] for p in points]))]))
+    cache('https://127.0.0.1:9/route/v1/driving/'+coordinates+'?overview=full&geometries=geojson&steps=false',dict(code='Ok',routes=[dict(distance=5600,duration=900,geometry=dict(coordinates=[[p['longitude'],p['latitude']] for p in points]))]))
     return points
 
 
@@ -79,7 +79,7 @@ def run():
     custom=payload['data']
     check(custom['route_template_id'] is None and custom['geometry']==manual_points and custom['duration_seconds']==900 and custom['position'] is not None,'manual entry maps directly without creating a preset or a center')
     unknown='Dirección ficticia sin coincidencias 123'
-    cache('https://photon.komoot.io/api/?'+urlencode(dict(q=unknown,countrycode='UY',limit=1)),dict(features=[]))
+    cache('https://127.0.0.1:9/api/?'+urlencode(dict(q=unknown,countrycode='UY',limit=1)),dict(features=[]))
     fallback=fields(2,route_template_id=None,origin_facility_id=None,origin_name=unknown,origin_address='',destination_facility_id=None,destination_name='Otro destino ficticio',destination_address='')
     status,payload,_=dispatcher.call('/api/v1/transfers.php?action=create','POST',fallback);assert status==201,payload
     check(payload['data']['geometry']==[] and payload['data']['position'] is None and payload['data']['duration_seconds'] is None,'unresolved lookups still save with no invented map, movement or ETA')
@@ -99,8 +99,8 @@ def run():
     status,payload,_=dispatcher.call('/api/v1/transfers.php?action=draft','POST',dict(version=draft['version'],payload=dict(routeTemplate=rid,routeVersion=str(route['version']),origin=record['origin_address'],destination=record['destination_address'])))
     check(status==200 and dispatcher.call('/api/v1/transfers.php?action=draft')[1]['data']['payload']['routeTemplate']==rid,'SQL drafts retain the optional preset and its selected revision')
 
-    simulation=admin.call('/api/v1/tracking.php?action=control')[1]['data']
-    status,payload,_=admin.call('/api/v1/tracking.php?action=control','POST',dict(command='start',version=simulation['version']));assert status==200,payload
+    simulation=simulation_control()[1]['data']
+    status,payload,_=simulation_control(dict(command='start',version=simulation['version']));assert status==200,payload
     program=r"require 'backend/php/autoload.php';$c=Hospital\Config::load();echo tracking_tick(Hospital\Database::connect($c), $c);"
     tick=subprocess.run([PHP,'-r',program],cwd=ROOT,capture_output=True,text=True,check=True)
     check(tick.stdout=='1','the existing server simulator accepts mapped preset traces')

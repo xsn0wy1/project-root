@@ -51,13 +51,19 @@ function auth_login(PDO $db, array $config, array $input) : array
     $username = is_string($input['username'] ?? null) ? strtolower(trim($input['username'])) : '';
     $password = is_string($input['password'] ?? null) ? $input['password'] : '';
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'local';
-    (new RateLimiter($db, $config['app_key']))->consume('login-ip:' . $ip, 60, 900);
-    (new RateLimiter($db, $config['app_key']))->consume('login-account:' . $username, 10, 900);
+    $limiter = new RateLimiter($db, $config['app_key']);
+    $source = 'login-failure-source:' . $ip . ':' . $username;
+    $limiter->check('login-failure-ip:' . $ip, 60);
+    $limiter->check($source, 10);
     // A valid dummy hash gives unknown accounts the same verification work.
     $dummy = '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi';
     $row = strlen($username) <= 50 ? users_by_username($db, $username) : null;
     $valid = strlen($password) <= 72 && !str_contains($password, "\0") && password_verify($password, $row['password_hash'] ?? $dummy);
-    if (!$row || !$valid) throw new ApiException(401, 'INVALID_CREDENTIALS', \Hospital\I18n::t("errors.usuario_o_contrasena_incorrectos"));
+    if (!$row || !$valid) {
+        $limiter->consume('login-failure-ip:' . $ip, 60, 900);
+        $limiter->consume($source, 10, 900);
+        throw new ApiException(401, 'INVALID_CREDENTIALS', \Hospital\I18n::t("errors.usuario_o_contrasena_incorrectos"));
+    }
     if ($row['status'] === 'pending') throw new ApiException(403, 'ACCOUNT_PENDING', \Hospital\I18n::t("errors.tu_cuenta_esta_pendiente_de_aprobacion_por_un_administrador"));
     if ($row['status'] !== 'active' || !$row['staff_id']) throw new ApiException(403, 'ACCOUNT_DISABLED', \Hospital\I18n::t("errors.tu_cuenta_no_tiene_acceso_al_sistema"));
     $verified = $row;
@@ -75,6 +81,7 @@ function auth_login(PDO $db, array $config, array $input) : array
         $stmt = $db->prepare('DELETE FROM user_notifications WHERE user_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM user_notifications WHERE user_id = ? ORDER BY id DESC LIMIT 100) recent)'); $stmt->execute([$row['id'], $row['id']]);
         $db->commit();
     } catch (\Throwable $e) { $db->rollBack(); throw $e; }
+    $limiter->clear($source);
     if (!session_regenerate_id(true)) throw new \RuntimeException('Session rotation failed.');
     $_SESSION = ['user_id' => (string) $row['id'], 'auth_version' => (int) $row['auth_version'], '_created_at' => time(), '_auth_started' => time(), '_last_activity' => time(), '_idle_seconds' => auth_idle_seconds($db, $config, (string) $row['id'])];
     return auth_payload($db, $config, users_by_id($db, (string) $row['id']));
@@ -355,18 +362,6 @@ function accounts_activate(PDO $db, array $user, string $role, ?string $actor, s
     users_audit($db, $actor, 'account.approved', (string) $user['id'], $request);
 }
 
-function accounts_approve(PDO $db, string $id, string $role, ?string $actor, string $request) : void
-{
-    $db->beginTransaction();
-    try {
-        accounts_lock_admin_role($db);
-        accounts_assert_actor($db, $actor);
-        $user = users_by_id($db, $id, true);
-        if (!$user) throw new ApiException(404, 'USER_NOT_FOUND', \Hospital\I18n::t("errors.no_se_encontro_la_cuenta"));
-        accounts_activate($db, $user, $role, $actor, $request); $db->commit();
-    } catch (\Throwable $e) { $db->rollBack(); throw $e; }
-}
-
 function accounts_create_first_admin(PDO $db, array $input, int $cost, string $request) : string
 {
     $fields = auth_registration_fields($input);
@@ -378,23 +373,6 @@ function accounts_create_first_admin(PDO $db, array $input, int $cost, string $r
         $id = users_create_pending($db, $fields, $hash);
         accounts_activate($db, users_by_id($db, $id, true), 'admin', null, $request);
         $db->commit(); return $id;
-    } catch (\Throwable $e) { $db->rollBack(); throw $e; }
-}
-
-function accounts_disable(PDO $db, string $id, ?string $actor, string $request) : void
-{
-    $db->beginTransaction();
-    try {
-        accounts_lock_admin_role($db);
-        accounts_assert_actor($db, $actor);
-        $user = users_by_id($db, $id, true);
-        if (!$user) throw new ApiException(404, 'USER_NOT_FOUND', \Hospital\I18n::t("errors.no_se_encontro_la_cuenta"));
-        if ($user['status'] === 'active' && in_array('admin', users_roles($db, $id), true) && accounts_active_admin_count($db) <= 1) {
-            throw new ApiException(409, 'LAST_ADMIN', \Hospital\I18n::t("errors.no_se_puede_desactivar_al_ultimo_administrador"));
-        }
-        $stmt = $db->prepare("UPDATE users SET status = 'disabled', auth_version = auth_version + 1, version = version + 1 WHERE id = ?"); $stmt->execute([$id]);
-        sessions_revoke_all($db, $id);
-        users_audit($db, $actor, 'account.disabled', $id, $request); $db->commit();
     } catch (\Throwable $e) { $db->rollBack(); throw $e; }
 }
 
@@ -418,7 +396,7 @@ function password_recovery_eligible(?array $user) : bool
     return $user!==null && ($user['status']==='pending' || ($user['status']==='active' && $user['staff_status']==='active'));
 }
 
-function password_request_reset(PDO $db, array $config, array $input, ?callable $transport = null) : array
+function password_request_reset(PDO $db, array $config, array $input, ?callable $transport = null, ?callable $defer = null) : array
 {
 
     $email=is_string($input['email']??null)?strtolower(trim($input['email'])):'';
@@ -443,12 +421,17 @@ function password_request_reset(PDO $db, array $config, array $input, ?callable 
         $db->commit();
     } catch (\Throwable $e) { if ($db->inTransaction())$db->rollBack();throw $e; }
     $url=$config['app_url'].'src/views/register-restore/restore-password.php'.(I18n::locale()==='en'?'?lang=en':'').'#token='.$token;
-    try { mail_send_reset($config, $email, $url, $transport); }
-    catch (\Throwable $e) {
-        // A slower failed send must never delete a newer request's token.
-        $s=$db->prepare('DELETE FROM password_reset_tokens WHERE user_id=? AND token_hash=?');$s->execute([$id,$hash]);
-        error_log('Hospital password recovery delivery failed; request '.($GLOBALS['request_id']??'cli'));
-    }
+    $deliver = static function() use ($db,$config,$id,$email,$url,$hash,$transport): void {
+        try {
+            if ($transport !== null) mail_send_reset($config, $email, $url, $transport);
+            else mail_queue_reset($config, (string)$id, $email, $url, $hash);
+        } catch (\Throwable $error) {
+            // A failed older delivery must never delete a newer request's token.
+            $stmt=$db->prepare('DELETE FROM password_reset_tokens WHERE user_id=? AND token_hash=?');$stmt->execute([$id,$hash]);
+            error_log('Hospital password recovery delivery failed; request '.($GLOBALS['request_id']??'cli'));
+        }
+    };
+    if ($defer !== null) $defer($deliver); else $deliver();
     return $result;
 }
 
@@ -476,6 +459,9 @@ function password_change(PDO $db, array $config, ?string $actor,string $id,array
 {
     if ($actor===null && (PHP_SAPI!=='cli'||!$admin)) throw new ApiException(403,'FORBIDDEN',\Hospital\I18n::t("errors.operacion_no_permitida"));
     if (!$admin && $actor!==$id) throw new ApiException(403,'FORBIDDEN',\Hospital\I18n::t("errors.operacion_no_permitida"));
+    $limiter = new RateLimiter($db, $config['app_key']);
+    $bucket = 'current-password-failure:' . $id . ':' . ($_SERVER['REMOTE_ADDR'] ?? 'local');
+    if (!$admin) $limiter->check($bucket, 5);
     $hash=password_password_hash($config, $input['new_password']??null);
     if ($admin && $actor===$id) throw new ApiException(422,'USE_PASSWORD_CHANGE',\Hospital\I18n::t("errors.cambia_tu_contrasena_desde_configuracion"));
 
@@ -487,50 +473,14 @@ function password_change(PDO $db, array $config, ?string $actor,string $id,array
         $user=$actor===$id?$acting:users_by_id($db, $id, true);
         if (!$user) throw new ApiException(404,'USER_NOT_FOUND',\Hospital\I18n::t("errors.no_se_encontro_la_cuenta"));
         if ($admin) {
-            if ((int)$user['version']!==transfer_input_version($input['version']??null)) throw new ApiException(409,'VERSION_CONFLICT',\Hospital\I18n::t("errors.la_cuenta_cambio_volve_a_abrirla"));
+            if ((int)$user['version']!==\Hospital\Http\Request::version($input['version']??null)) throw new ApiException(409,'VERSION_CONFLICT',\Hospital\I18n::t("errors.la_cuenta_cambio_volve_a_abrirla"));
             if ($user['status']==='pending') throw new ApiException(409,'ACCOUNT_PENDING',\Hospital\I18n::t("errors.aproba_primero_la_cuenta"));
-        } elseif (!is_string($input['current_password']??null) || !password_verify($input['current_password'],$user['password_hash'])) throw new ApiException(422,'INVALID_CURRENT_PASSWORD',\Hospital\I18n::t("errors.la_contrasena_actual_no_coincide"));
+        } elseif (!is_string($input['current_password']??null) || strlen($input['current_password']) > 72 || str_contains($input['current_password'], "\0") || !password_verify($input['current_password'],$user['password_hash'])) {
+            $db->rollBack();
+            $limiter->consume($bucket, 5, 900);
+            throw new ApiException(422,'INVALID_CURRENT_PASSWORD',\Hospital\I18n::t("errors.la_contrasena_actual_no_coincide"));
+        }
         password_replace_password($db, $id, $hash, $actor, $admin?'account.password_reset':'account.password_changed');$db->commit();
+        if (!$admin) $limiter->clear($bucket);
     } catch (\Throwable $e) { if ($db->inTransaction())$db->rollBack();throw $e; }
-}
-
-// Transactional recovery email; an optional transport keeps focused checks offline.
-function mail_require_configuration(array $config) : void
-{
-    $url = parse_url($config['app_url'] ?? '');
-    if (trim($config['brevo_api_key'] ?? '') === '' ||
-        preg_match('/[\r\n]/', $config['brevo_api_key']) ||
-        !filter_var($config['mail_from_email'] ?? '', FILTER_VALIDATE_EMAIL) ||
-        !$url || !in_array($url['scheme'] ?? '', ['http', 'https'], true) || empty($url['host']) ||
-        isset($url['user']) || isset($url['pass']) || isset($url['query']) || isset($url['fragment']) ||
-        rtrim($url['path'] ?? '', '/') !== ($config['base_path'] ?? '')) {
-        throw new ApiException(503, 'RECOVERY_UNAVAILABLE', I18n::t('recovery.unavailable'));
-    }
-}
-
-function mail_send_reset(array $config, string $email, string $url, ?callable $transport = null) : void
-{
-    $payload = [
-        'sender' => ['email' => $config['mail_from_email'], 'name' => $config['mail_from_name']],
-        'to' => [['email' => $email]],
-        'subject' => I18n::t('recovery.email_subject'),
-        // Plain text keeps the recovery URL readable/copyable without an HTML template.
-        'textContent' => I18n::t('recovery.email_body', ['url' => $url]),
-    ];
-    if ($transport !== null) { ($transport)($payload); return; }
-    $handle = curl_init('https://api.brevo.com/v3/smtp/email');
-    curl_setopt_array($handle, [
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
-        CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json', 'api-key: ' . $config['brevo_api_key']],
-        CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_CONNECTTIMEOUT => 3, CURLOPT_TIMEOUT => 10,
-    ]);
-    $response = curl_exec($handle);
-    $status = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
-    curl_close($handle);
-    if ($response === false || $status !== 201 || !is_string(json_decode($response, true)['messageId'] ?? null)) {
-        // Provider responses may contain addresses or request details; never log them.
-        throw new \RuntimeException('Email delivery was not accepted.');
-    }
 }

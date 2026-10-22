@@ -1,7 +1,7 @@
 /* SQL-backed transfer and survey journeys using the existing fictional browser fixtures. */
 'use strict';
 const fs = require('fs'), path = require('path'), assert = require('assert');
-const {spawn} = require('child_process');
+const {spawn, spawnSync} = require('child_process');
 const {once} = require('events');
 const {chromium} = require('playwright');
 const root = path.join(__dirname, '..');
@@ -14,6 +14,12 @@ const mountedBase = process.env.HOSPITAL_WORKFLOW_MOUNT_URL || 'http://127.0.0.1
 let checks = 0;
 const check = (ok, label) => { assert(ok, label); checks++; console.log('PASS', label); };
 const endpoint = (domain, action) => `${domain}.php?action=${action}`;
+function simulation(command = 'status', speed = 1) {
+  const result = spawnSync(env.HOSPITAL_TEST_PHP || '/Applications/XAMPP/xamppfiles/bin/php',
+    ['backend/php/cli/simulate-transfers.php', command, String(speed)], {cwd:root, env:process.env, encoding:'utf8'});
+  assert.strictEqual(result.status, 0, 'CLI simulation command succeeds');
+  return JSON.parse(result.stdout);
+}
 async function ready(page) {
   await page.waitForFunction(() => Boolean(window.HospitalI18n));
   await page.evaluate(async () => { await HospitalI18n.ready; if (window.HospitalAuth) await HospitalAuth.ready; });
@@ -88,16 +94,14 @@ async function transferJourney(browser, context, page, base) {
   let worker;
   try {
     const second = await observer.newPage(); await second.goto(base + '/src/views/traces/trace-map.php?transfer=' + id); await ready(second);
-    const state = await api(page, endpoint('tracking', 'control'));
-    await api(page, endpoint('tracking', 'control'), {command: 'start', version: state.version, speed: 100});
+    simulation('start', 100);
     worker = spawn(env.HOSPITAL_TEST_PHP || '/Applications/XAMPP/xamppfiles/bin/php', ['backend/php/cli/simulate-transfers.php', 'worker', '20'], {cwd: root, env: process.env, stdio: 'ignore'});
     for (const target of [page, second]) await target.waitForFunction(id => window.TraceMap?.transfers.find(item => item.id === id)?.lifecycle === 'arrived', id, {timeout: 25000});
     const positions = await Promise.all([page, second].map(target => target.evaluate(id => {
       const item = TraceMap.transfers.find(item => item.id === id); return [item.positionId, item.currentPosition, item.sampledAt];
     }, id)));
     check(JSON.stringify(positions[0]) === JSON.stringify(positions[1]), 'independent staff browsers display the same server-generated position and timestamp');
-    const stateNow = await api(page, endpoint('tracking', 'control'));
-    await api(page, endpoint('tracking', 'control'), {command: 'stop', version: stateNow.version});
+    simulation('stop');
   } finally {
     if (worker && worker.exitCode === null) { worker.kill(); await once(worker, 'exit'); }
     await observer.close();

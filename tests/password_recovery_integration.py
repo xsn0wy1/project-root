@@ -1,6 +1,7 @@
 """Focused recovery checks in a disposable SQL database; optional --browser adds Chrome checks."""
 import hashlib
 import http.cookiejar
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 import re
@@ -9,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import time
+import threading
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -24,6 +26,10 @@ env=dict(os.environ)
 env.setdefault('NODE_PATH',str(Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules'))
 env.update(HOSPITAL_DB_NAME='hospital_recovery_'+secrets.token_hex(4)+'_test',HOSPITAL_DB_USER='recovery_'+secrets.token_hex(4),HOSPITAL_DB_PASSWORD=secrets.token_hex(24),HOSPITAL_DB_SOCKET='/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock',HOSPITAL_APP_KEY=secrets.token_hex(32),HOSPITAL_STORAGE_PATH=str(RUNTIME/'storage'),HOSPITAL_BASE_PATH='',HOSPITAL_SECURE_COOKIES='false',HOSPITAL_BCRYPT_COST='10',HOSPITAL_BREVO_API_KEY='offline-test-key',HOSPITAL_MAIL_FROM_EMAIL='sender@hospital.example',HOSPITAL_APP_URL='http://127.0.0.1:8881/',HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24))
 servers=[]
+mail_peer=None
+mail_started=threading.Event()
+mail_requests=[]
+mail_status=201
 checks=0
 PASSWORD=secrets.token_urlsafe(20)
 NEW_PASSWORD=secrets.token_urlsafe(20)
@@ -61,6 +67,7 @@ def token(result,index=-1):
     return re.search(r'#token=([a-f0-9]{64})',result['mails'][index]['textContent'])[1]
 
 class Client:
+    api_base_path = ''
     def __init__(self,base='http://127.0.0.1:8881'):
         self.base=base
         self.opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
@@ -96,6 +103,21 @@ def serve(port,mount='',configured=True):
     raise RuntimeError('Disposable server timed out.')
 
 def run():
+    os.environ.update(env)
+    global manage_account
+    from auth_integration import manage_account
+    global mail_peer
+    class MockMail(BaseHTTPRequestHandler):
+        def log_message(self,*args):pass
+        def do_POST(self):
+            status=mail_status
+            mail_requests.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))))
+            mail_started.set();time.sleep(3)
+            body=b'{"messageId":"offline-mock-message"}'
+            self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+    mail_peer=ThreadingHTTPServer(('127.0.0.1',0),MockMail)
+    threading.Thread(target=mail_peer.serve_forever,daemon=True).start()
+    env['HOSPITAL_MAIL_API_URL']='http://127.0.0.1:'+str(mail_peer.server_address[1])+'/email'
     for args in [['setup.php','--no-config'],['users.php','create-admin','system_admin','admin@hospital.example','99000111']]:
         subprocess.run([PHP,'backend/php/cli/'+args[0],*args[1:]],cwd=ROOT,env=env,check=True,stdout=subprocess.DEVNULL)
     check(sql("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1")[0]['version']=='014_settings_centers','fresh schema includes all current migrations')
@@ -112,7 +134,7 @@ def run():
         result=c.call('auth.php?action=register',{'username':status+'_fixture','email':status+'@hospital.example','national_id':str(99000200+n),'password':PASSWORD})
         ids[status]=result[1]['data']['user_id']
         if status!='pending':
-            assert admin.call('accounts.php?action=approve',{'user_id':ids[status],'role':'staff'})[0]==200
+            assert manage_account(admin, 'approve', {'user_id':ids[status],'role':'staff'})[0]==200
         if status=='disabled':sql("UPDATE users SET status='disabled',auth_version=auth_version+1 WHERE id="+ids[status])
     check(c.call('auth.php?action=reset-request',{'email':'active@hospital.example'},csrf=False)[0]==403,'request requires CSRF')
     check(c.call('auth.php?action=reset-password',{'token':'a'*64,'new_password':NEW_PASSWORD},csrf=False)[0]==403,'redemption requires CSRF')
@@ -187,6 +209,25 @@ def run():
     check('http://127.0.0.1:8882/hospital/src/views/register-restore/restore-password.php?lang=en#token=' in result['mails'][0]['textContent'],'mounted recovery links use configured root and language')
     bad=dict(env,HOSPITAL_APP_URL='https://attacker.example/wrong/')
     check(service('request',override=bad,email='unknown@hospital.example')['status']==503,'misconfigured application path rejected before lookup')
+    sql('DELETE FROM auth_rate_limits');mail_started.clear()
+    started=time.monotonic();accepted=c.call('auth.php?action=reset-request',{'email':'active@hospital.example'});known_seconds=time.monotonic()-started
+    assert mail_started.wait(timeout=3),'Detached mail worker did not reach the local mock provider.'
+    started=time.monotonic();unknown=c.call('auth.php?action=reset-request',{'email':'absent-timing@hospital.example'});unknown_seconds=time.monotonic()-started
+    check(accepted[0]==unknown[0]==202 and accepted[1]['data']==unknown[1]['data'] and known_seconds<1.5 and unknown_seconds<1.5 and abs(known_seconds-unknown_seconds)<1,'slow provider cannot reveal account existence through the 202 response or occupy the web worker')
+    queued=list((RUNTIME/'storage/mail').glob('*.bin'))
+    check(bool(queued) and all(path.stat().st_mode&0o777==0o600 for path in queued) and (RUNTIME/'storage/mail').stat().st_mode&0o777==0o700,'pending mail credentials stay in owner-only private storage')
+    deadline=time.monotonic()+6
+    while time.monotonic()<deadline and list((RUNTIME/'storage/mail').glob('*.bin')):time.sleep(.05)
+    check(not list((RUNTIME/'storage/mail').glob('*.bin')) and len(mail_requests)==1 and mail_requests[0]['to']==[{'email':'active@hospital.example'}],'detached worker delivers only the matching account and removes its temporary job')
+    global mail_status
+    mail_status=500;mail_started.clear();sql('DELETE FROM auth_rate_limits')
+    assert c.call('auth.php?action=reset-request',{'email':'active@hospital.example'})[0]==202
+    assert mail_started.wait(timeout=3)
+    newer=request();newer_hash=hashlib.sha256(token(newer).encode()).hexdigest()
+    deadline=time.monotonic()+6
+    while time.monotonic()<deadline and list((RUNTIME/'storage/mail').glob('*.bin')):time.sleep(.05)
+    check(sql('SELECT token_hash FROM password_reset_tokens WHERE user_id='+ids['active'])[0]['token_hash']==newer_hash and not list((RUNTIME/'storage/mail').glob('*.bin')),'a failed older background delivery cannot revoke a newer reset credential')
+    mail_status=201
     (RUNTIME/'browser.json').write_text(json.dumps({'env':{k:v for k,v in env.items() if k.startswith('HOSPITAL_')},'password':NEW_PASSWORD}))
     (RUNTIME/'browser.json').chmod(0o600)
     if '--browser' in sys.argv:
@@ -199,6 +240,9 @@ if __name__=='__main__':
     try:run()
     finally:
         for p,log in servers:p.terminate();p.wait(timeout=10);log.close()
+        deadline=time.monotonic()+12
+        while time.monotonic()<deadline and list((RUNTIME/'storage/mail').glob('*.bin')):time.sleep(.05)
+        if mail_peer is not None:mail_peer.shutdown();mail_peer.server_close()
         php('require "backend/php/autoload.php";$c=Hospital\\Config::load();$name=$c["db"]["name"];$user=$c["db"]["user"];if(!preg_match("/^hospital_recovery_[a-f0-9]{8}_test$/",$name))exit(2);$c["db"]["user"]=getenv("HOSPITAL_SETUP_DB_USER")?:"root";$c["db"]["password"]=getenv("HOSPITAL_SETUP_DB_PASSWORD")?:"";$db=Hospital\\Database::connect($c,false);$db->exec("DROP DATABASE IF EXISTS `".$name."`");foreach(["localhost","127.0.0.1"] as $h)$db->exec("DROP USER IF EXISTS ".$db->quote($user)."@".$db->quote($h));echo "true";')
         shutil.rmtree(RUNTIME/'storage',ignore_errors=True)
         (RUNTIME/'browser.json').unlink(missing_ok=True)

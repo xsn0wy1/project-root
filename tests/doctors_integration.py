@@ -28,6 +28,15 @@ def run():
     assert status == 201, payload
     doctor = payload['data']; did = doctor['id']
     check(doctor['national_id'] == '98001235' and doctor['start_time'] == '22:00' and doctor['notes'] == record['notes'], 'SQL doctor identity, overnight schedule and notes persist')
+    status, payload, _ = call('catalogs')
+    check(status == 200 and set(payload['data']) == {'specialties', 'departments'} and
+          all(isinstance(value, str) for group in payload['data'].values() for value in group),
+          'doctor editor catalogs preserve their named string-list contract')
+    check(Client().call('/api/v1/doctors.php?action=catalogs')[0] == 401 and
+          admin.call('/api/v1/doctors.php?action=catalogs')[0] == 403,
+          'doctor editor catalogs require the explicit records_manager role')
+    status, payload, headers = call('catalogs', {})
+    check(status == 405 and headers['Allow'] == 'GET', 'doctor editor catalogs reject writes')
     check(sql('SELECT COUNT(*) AS n FROM users WHERE staff_id=' + did)[0]['n'] == 0, 'creating a doctor does not create a login account')
     check(call('create.php', record)[0] == 409 and call('create.php', {**record, 'national_id':'98001236'})[0] == 409, 'duplicate identity and license are rejected')
     check(call('create.php', {**record, 'national_id':'98001237', 'license':'MSP98766', 'email':'invalid'})[0] == 422, 'server validates email')

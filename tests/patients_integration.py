@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from pathlib import Path
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, sql
+from auth_integration import manage_account, Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, sql
 from documents_integration import upload, fields as document_fields, pdf_bytes, detail as document_detail, admin_sql
 
 assert os.environ['HOSPITAL_DB_NAME'].endswith('_test')
@@ -54,7 +54,7 @@ def main():
         c=Client(); c.csrf(); name=f'patient_{SUFFIX}_{index}'
         code,body,_=c.call('/api/v1/auth.php?action=register','POST',dict(username=name,email=name+'@hospital.example',national_id=str(80000000+secrets.randbelow(9999999)),password=PASSWORD))
         assert code==201,body
-        assert admin.call('/api/v1/accounts.php?action=approve','POST',{'user_id':body['data']['user_id'],'role':role})[0]==200
+        assert manage_account(admin, 'approve', {'user_id':body['data']['user_id'],'role':role})[0]==200
         assert c.login(name,PASSWORD)[0]==200
         actors.append(c)
     first,second,staff,dispatcher=actors
@@ -182,7 +182,7 @@ def main():
         item=trip_result[1]['data']
         assert dispatcher.call('/api/v1/transfers.php?action=status','POST',{'id':item['id'],'version':item['version'],'status':'cancelled'})[0]==200
     uid=second.call('/api/v1/auth.php?action=me')[1]['data']['user']['id']
-    assert admin.call('/api/v1/accounts.php?action=disable','POST',{'user_id':uid})[0]==200
+    assert manage_account(admin, 'disable', {'user_id':uid})[0]==200
     check(call(second,'get.php?id='+id)[0]==401 and call(second,'archive.php',{'id':id,'version':1})[0] in [401,403],'revocation removes patient reads and writes immediately')
     print(f'{checks} patient checks passed.',flush=True)
 

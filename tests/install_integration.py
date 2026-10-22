@@ -94,6 +94,7 @@ def run(output, browser):
         cli('setup.php')
         check(local.exists() and local.stat().st_mode & 0o777 == 0o600, 'setup creates private configuration with owner-only permissions')
         config = php('echo json_encode(Hospital\\Config::load());')
+        check(config['route_mapping_enabled'] is False and config['geocoder_url'] == config['router_url'] == '', 'fresh defaults never send addresses to public lookup services')
         check(len(config['app_key']) == 64 and len(config['db']['password']) == 48, 'setup generates an application key and database password')
         storage = Path(config['storage_path']).resolve()
         check(storage == source/'storage' and not storage.is_relative_to(source/'public'), 'generated storage is private to the fresh installation')
@@ -104,7 +105,7 @@ def run(output, browser):
         counts = php("$db=Hospital\\Database::connect(Hospital\\Config::load());$out=[];foreach(['users','staff','stored_files','documents','ambulances','transfers','surveys'] as $table)$out[$table]=(int)$db->query('SELECT COUNT(*) FROM '.$table)->fetchColumn();$out['migrations']=(int)$db->query('SELECT COUNT(*) FROM schema_migrations')->fetchColumn();echo json_encode($out);")
         check(all(value == 0 for name, value in counts.items() if name != 'migrations'), 'fresh setup fabricates no accounts, records, uploads or surveys')
         check(counts['migrations'] == 1+len(list((source/'db/sql/migrations').glob('*.sql'))), 'every current migration is recorded once')
-        for area in ['users', 'documents', 'quarantine']:
+        for area in ['users', 'documents', 'quarantine', 'mail']:
             check((storage/area).is_dir(), 'setup prepares private '+area+' storage')
         cli('users.php', 'create-admin', 'system_admin', 'install@hospital.example', '77009999')
         cli('preflight.php')

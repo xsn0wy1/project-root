@@ -9,6 +9,24 @@ final class RateLimiter
     private string $key;
     public function __construct(\PDO $db, string $key) { $this->db = $db; $this->key = $key; }
 
+    /** Check failure buckets without charging successful authentication attempts. */
+    public function check(string $name, int $limit): void
+    {
+        $stmt = $this->db->prepare('SELECT attempts, resets_at FROM auth_rate_limits WHERE bucket_key = ?');
+        $stmt->execute([hash_hmac('sha256', $name, $this->key)]);
+        $row = $stmt->fetch();
+        if ($row && (int)$row['attempts'] >= $limit && strtotime($row['resets_at'] . ' UTC') > time()) {
+            header('Retry-After: ' . max(1, strtotime($row['resets_at'] . ' UTC') - time()));
+            throw new ApiException(429, 'RATE_LIMITED', \Hospital\I18n::t('errors.demasiados_intentos_espera_unos_minutos'));
+        }
+    }
+
+    public function clear(string $name): void
+    {
+        $stmt = $this->db->prepare('DELETE FROM auth_rate_limits WHERE bucket_key = ?');
+        $stmt->execute([hash_hmac('sha256', $name, $this->key)]);
+    }
+
     public function consume(string $name, int $limit, int $seconds): void
     {
         $bucket = hash_hmac('sha256', $name, $this->key);

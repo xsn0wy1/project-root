@@ -140,6 +140,27 @@ async function navigate(pair, file, theme, bases) {
         for (const base of bases) {
             const staff = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             const publicContext = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
+            if (process.env.BASELINE_LOCAL_FONTS === '1') {
+                const fonts = path.join(root, 'public/assets/vendor/fonts');
+                const sources = JSON.parse(fs.readFileSync(path.join(fonts, 'sources.json')));
+                const profileKey = url => new URL(url).searchParams.getAll('family').sort().join('|');
+                const profiles = new Map(Object.entries(sources.profiles).map(([name,url]) => [profileKey(url),name]));
+                const binaries = new Map(Object.entries(sources.fonts).map(([name,info]) => [info.source,name]));
+                for (const context of [staff,publicContext]) {
+                    // Reference CSS keeps its original profiles/URLs; mirror the exact downloaded binaries for bounded offline comparison.
+                    await context.route('https://fonts.googleapis.com/**', route => {
+                        const name = profiles.get(profileKey(route.request().url()));
+                        assert(name, 'Reference font profile was mirrored');
+                        let css = fs.readFileSync(path.join(fonts,name+'.css'),'utf8');
+                        for (const [file,info] of Object.entries(sources.fonts)) css = css.replaceAll(file,info.source);
+                        return route.fulfill({status:200,contentType:'text/css',body:css});
+                    });
+                    await context.route('https://fonts.gstatic.com/**', route => {
+                        const name = binaries.get(route.request().url()); assert(name, 'Reference font binary was mirrored');
+                        return route.fulfill({status:200,contentType:'font/woff2',body:fs.readFileSync(path.join(fonts,name)),headers:{'Access-Control-Allow-Origin':'*'}});
+                    });
+                }
+            }
             for (const context of [staff, publicContext]) await context.route(/\/api\/v1\/settings(?:\/diagnostics\.php|\.php\?action=diagnostics)$/, route => route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({success: true, data: {recorded: true}})}));
             const login = await staff.newPage(); await login.goto(base + '/', {waitUntil: 'domcontentloaded'}); await ready(login);
             await login.evaluate(async ({password, endpoint}) => HospitalApi.post(endpoint, {username: 'system_admin', password}), {password: env.HOSPITAL_ADMIN_PASSWORD, endpoint: base === bases[0] && !referencePhp ? 'auth/login.php' : 'auth.php?action=login'});

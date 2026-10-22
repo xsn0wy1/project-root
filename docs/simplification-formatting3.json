@@ -1,0 +1,476 @@
+{
+  "checkpoint": 3,
+  "date": "2026-10-22",
+  "status": "complete; paused for review",
+  "scope": "Whitespace formatting of Doctors/Routes PHP handlers and modules; domain logic, SQL and public interfaces remain unchanged.",
+  "changed_application_files": [
+    "backend/api/v1/doctors.php",
+    "backend/api/v1/routes.php",
+    "backend/php/modules/doctors.php",
+    "backend/php/modules/routes.php"
+  ],
+  "other_application_files_unchanged": 262,
+  "token_proof": {
+    "php_files_checked": 90,
+    "significant_tokens_equal": true,
+    "changed_application_files": [
+      "backend/api/v1/doctors.php",
+      "backend/api/v1/routes.php",
+      "backend/php/modules/doctors.php",
+      "backend/php/modules/routes.php"
+    ],
+    "unchanged_application_files": 262,
+    "before": {
+      "php_files": 90,
+      "significant_tokens": 69699,
+      "semicolon_tokens": 3873,
+      "decision_keyword_operator_tokens": 2104,
+      "function_declarations": 364,
+      "named_function_declarations": 287,
+      "ternary_candidates": 336,
+      "lines": 8553,
+      "lines_over_120": 1589,
+      "maximum_function_lines": 91,
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5251
+    },
+    "after": {
+      "php_files": 90,
+      "significant_tokens": 69699,
+      "semicolon_tokens": 3873,
+      "decision_keyword_operator_tokens": 2104,
+      "function_declarations": 364,
+      "named_function_declarations": 287,
+      "ternary_candidates": 336,
+      "lines": 8878,
+      "lines_over_120": 1517,
+      "maximum_function_lines": 91,
+      "repeated_16_token_groups": 2534,
+      "repeated_16_token_extra_occurrences": 5251
+    },
+    "files": {
+      "backend/api/v1/doctors.php": {
+        "before": {
+          "bytes": 1840,
+          "lines": 47,
+          "lines_over_120": 2
+        },
+        "after": {
+          "bytes": 1961,
+          "lines": 58,
+          "lines_over_120": 0
+        }
+      },
+      "backend/api/v1/routes.php": {
+        "before": {
+          "bytes": 1574,
+          "lines": 41,
+          "lines_over_120": 1
+        },
+        "after": {
+          "bytes": 1684,
+          "lines": 49,
+          "lines_over_120": 0
+        }
+      },
+      "backend/php/modules/doctors.php": {
+        "before": {
+          "bytes": 11126,
+          "lines": 168,
+          "lines_over_120": 33
+        },
+        "after": {
+          "bytes": 12856,
+          "lines": 291,
+          "lines_over_120": 5
+        }
+      },
+      "backend/php/modules/routes.php": {
+        "before": {
+          "bytes": 14306,
+          "lines": 190,
+          "lines_over_120": 45
+        },
+        "after": {
+          "bytes": 16947,
+          "lines": 373,
+          "lines_over_120": 4
+        }
+      }
+    }
+  },
+  "functional": {
+    "before": [
+      {
+        "module": "doctors",
+        "status": "passed",
+        "checks": 18,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 2.32
+      },
+      {
+        "module": "patients",
+        "status": "passed",
+        "checks": 66,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 5.32
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 21,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 3.71
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 19.32
+      },
+      {
+        "module": "audit_corrections",
+        "status": "passed",
+        "checks": 26,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 17.23
+      }
+    ],
+    "after": [
+      {
+        "module": "doctors",
+        "status": "passed",
+        "checks": 18,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 2.08
+      },
+      {
+        "module": "patients",
+        "status": "passed",
+        "checks": 66,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 5.23
+      },
+      {
+        "module": "routes",
+        "status": "passed",
+        "checks": 21,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 3.61
+      },
+      {
+        "module": "transfers",
+        "status": "passed",
+        "checks": 76,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 18.46
+      },
+      {
+        "module": "audit_corrections",
+        "status": "passed",
+        "checks": 26,
+        "cleaned": true,
+        "exit_code": 0,
+        "seconds": 17.04
+      }
+    ]
+  },
+  "functional_checks_per_run": 207,
+  "api_comparison": {
+    "actions": 12,
+    "outcome_signatures_equal": true,
+    "comparisons": [
+      {
+        "action": "doctors:archive",
+        "signatures_equal": true,
+        "before_calls": 1,
+        "after_calls": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "action": "doctors:catalogs",
+        "signatures_equal": true,
+        "before_calls": 4,
+        "after_calls": 4,
+        "statuses": [
+          200,
+          401,
+          403,
+          405
+        ]
+      },
+      {
+        "action": "doctors:create",
+        "signatures_equal": true,
+        "before_calls": 6,
+        "after_calls": 6,
+        "statuses": [
+          201,
+          403,
+          409,
+          422
+        ]
+      },
+      {
+        "action": "doctors:get",
+        "signatures_equal": true,
+        "before_calls": 1,
+        "after_calls": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "action": "doctors:list",
+        "signatures_equal": true,
+        "before_calls": 3,
+        "after_calls": 3,
+        "statuses": [
+          200,
+          401,
+          403
+        ]
+      },
+      {
+        "action": "doctors:restore",
+        "signatures_equal": true,
+        "before_calls": 1,
+        "after_calls": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "action": "doctors:update",
+        "signatures_equal": true,
+        "before_calls": 6,
+        "after_calls": 6,
+        "statuses": [
+          200,
+          409
+        ]
+      },
+      {
+        "action": "routes:archive",
+        "signatures_equal": true,
+        "before_calls": 1,
+        "after_calls": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "action": "routes:create",
+        "signatures_equal": true,
+        "before_calls": 7,
+        "after_calls": 7,
+        "statuses": [
+          201,
+          403,
+          409,
+          422
+        ]
+      },
+      {
+        "action": "routes:list",
+        "signatures_equal": true,
+        "before_calls": 3,
+        "after_calls": 3,
+        "statuses": [
+          200,
+          401,
+          403
+        ]
+      },
+      {
+        "action": "routes:restore",
+        "signatures_equal": true,
+        "before_calls": 1,
+        "after_calls": 1,
+        "statuses": [
+          200
+        ]
+      },
+      {
+        "action": "routes:update",
+        "signatures_equal": true,
+        "before_calls": 6,
+        "after_calls": 6,
+        "statuses": [
+          200,
+          409
+        ]
+      }
+    ]
+  },
+  "ui": {
+    "before": {
+      "checks": 212,
+      "page_theme_viewport_comparisons": 8,
+      "interaction_groups": 13,
+      "unhandled_script_errors": 0,
+      "missing_local_assets": 0,
+      "google_fonts_requests": 0
+    },
+    "after": {
+      "checks": 212,
+      "page_theme_viewport_comparisons": 8,
+      "interaction_groups": 13,
+      "unhandled_script_errors": 0,
+      "missing_local_assets": 0,
+      "google_fonts_requests": 0
+    }
+  },
+  "ui_scope": {
+    "journey": "doctorsRoutes",
+    "themes_and_languages": [
+      "dark/es-UY",
+      "light/en"
+    ],
+    "sizes": [
+      [
+        1440,
+        900
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        640
+      ]
+    ],
+    "checks": "Page/header containment, navigation, route-sort outlines, new forms, doctor/route details, shared selects, reachable save actions, console-only failed-save retention, edit and archive cancellation.",
+    "persistence": "Update failures are intercepted at 503; no catalog records are changed by these browser checks.",
+    "initial_diagnostics": "Three incomplete baseline attempts exposed timing/selector mistakes in the newly added browser journey. They were corrected before application changes and are excluded from passed totals."
+  },
+  "visual_comparison": {
+    "method": "All captured PNGs compared at matching dimensions without masks; exact RGBA differences and channel delta >12 are recorded.",
+    "screenshots": 40,
+    "maximum_exact_difference_percent": 0,
+    "maximum_pixels_over_channel_delta_12": 0
+  },
+  "inspected_private_captures": [
+    "doctors-failed-save-320-light.png",
+    "routes-new-1440-dark.png",
+    "routes-failed-save-390-dark.png",
+    "doctors-new-1440-light.png"
+  ],
+  "syntax": {
+    "php_sources": 90,
+    "modified_browser_test": "passed",
+    "passed": true,
+    "python_sources": 27
+  },
+  "i18n": {
+    "passed": true,
+    "bilingual_keys": 1852,
+    "page_bindings_and_assets": 25,
+    "literal_key_references": 1119,
+    "fresh_page_renders": 2,
+    "unchanged_cached_page_renders": 23,
+    "spanish_fallback_attributes_ids_preserved": true
+  },
+  "preflight": {
+    "healthy": true,
+    "php": "8.0.28",
+    "database_version": "10.4.28-MariaDB",
+    "missing_migrations": []
+  },
+  "cleanup": {
+    "verification_schemas": 0,
+    "verification_accounts": 0,
+    "8113_closed": true,
+    "8879_closed": true,
+    "demonstration_status": 200,
+    "temporary_storage_removed": true,
+    "disposable_suite_runs": 10
+  },
+  "application_measurements": {
+    "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+    "before": {
+      "files": 266,
+      "bytes": 12490058,
+      "code_files": 170,
+      "code_bytes": 2200798,
+      "pages": 25,
+      "repeated_8_line_groups": 497,
+      "repeated_8_line_extra_occurrences": 518
+    },
+    "after": {
+      "files": 266,
+      "bytes": 12494660,
+      "code_files": 170,
+      "code_bytes": 2205400,
+      "pages": 25,
+      "repeated_8_line_groups": 496,
+      "repeated_8_line_extra_occurrences": 522
+    },
+    "delta": {
+      "files": 0,
+      "bytes": 4602,
+      "code_files": 0,
+      "code_bytes": 4602,
+      "pages": 0,
+      "repeated_8_line_groups": -1,
+      "repeated_8_line_extra_occurrences": 4
+    }
+  },
+  "cumulative_measurements": {
+    "method": "Application files under public/backend/db, excluding vendor, private config and generated files. Eight-line duplicate windows overlap; they are a comparison indicator, not removable lines.",
+    "before": {
+      "files": 358,
+      "bytes": 12552303,
+      "code_files": 262,
+      "code_bytes": 2263043,
+      "pages": 25,
+      "repeated_8_line_groups": 1154,
+      "repeated_8_line_extra_occurrences": 1424
+    },
+    "after": {
+      "files": 266,
+      "bytes": 12494660,
+      "code_files": 170,
+      "code_bytes": 2205400,
+      "pages": 25,
+      "repeated_8_line_groups": 496,
+      "repeated_8_line_extra_occurrences": 522
+    },
+    "delta": {
+      "files": -92,
+      "bytes": -57643,
+      "code_files": -92,
+      "code_bytes": -57643,
+      "pages": 0,
+      "repeated_8_line_groups": -658,
+      "repeated_8_line_extra_occurrences": -902
+    }
+  },
+  "not_repeated": [
+    "Full core suite",
+    "Fresh installation",
+    "Standalone recovery/document-link suites",
+    "Full 25-page browser matrix"
+  ],
+  "external_checks_unchanged": [
+    "Real email delivery",
+    "Live mapping providers",
+    "Physical devices/Safari",
+    "Eventual Apache-user deployment"
+  ],
+  "private_evidence": "tests/.runtime/simplification/checkpoint3/",
+  "next_proposed_checkpoint": "Patients PHP handler/module formatting with the same baseline, token, focused functional and UI verification gates; pause for review first."
+}

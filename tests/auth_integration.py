@@ -13,6 +13,7 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from contract_inventory import record_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = os.environ.get('HOSPITAL_AUTH_TEST_URL', 'http://127.0.0.1:8871').rstrip('/')
@@ -46,6 +47,7 @@ class Client:
         for cookie in self.jar:
             other.jar.set_cookie(cookie)
         other.token = self.token
+        other._contract_roles = getattr(self, '_contract_roles', ['anonymous'])
         return other
 
     def call(self, path, method='GET', body=None, csrf=True, raw=None):
@@ -66,6 +68,7 @@ class Client:
         data_object = payload.get('data') if isinstance(payload, dict) else None
         if isinstance(data_object, dict) and data_object.get('csrf_token'):
             self.token = data_object['csrf_token']
+        record_contract(self, path, method, response.status, payload, response.headers)
         return response.status, payload, response.headers
 
     def csrf(self):
@@ -93,8 +96,32 @@ def sql(statement):
     return json.loads(result.stdout)
 
 
+def manage_account(client, action, body, csrf=True):
+    prefix = getattr(client, 'api_base_path', '/api/v1/')
+    status, payload, headers = client.call(prefix+'accounts.php?action=directory')
+    if status != 200:
+        return status, payload, headers
+    account = next(row for row in payload['data'] if row['id'] == body['user_id'])
+    roles = [body.get('role', 'staff')] if action == 'approve' else []
+    return client.call(prefix+'accounts.php?action=manage', method='POST',
+                       body={'user_id':body['user_id'], 'version':account['version'], 'action':action, 'roles':roles}, csrf=csrf)
+
+
+def simulation_control(body=None):
+    program = r"""require 'backend/php/autoload.php';$c=Hospital\Config::load();$db=Hospital\Database::connect($c);$body=json_decode(stream_get_contents(STDIN),true);
+    try {$data=$body===null?tracking_status($db):tracking_control($db,$c,$body['command'],$body['version'],$body['speed']??1);echo json_encode(['status'=>200,'data'=>$data]);}
+    catch(Hospital\Http\ApiException $error){echo json_encode(['status'=>$error->status,'error'=>['code'=>$error->errorCode]]);}"""
+    result = subprocess.run([PHP, '-r', program], input=json.dumps(body), text=True,
+                            cwd=ROOT, capture_output=True, check=True)
+    payload = json.loads(result.stdout)
+    return payload.pop('status'), payload, {}
+
+
 def run():
     anon = Client()
+    for page in ['/index.php?lang=en', '/src/views/register-restore/restore-password.php?lang=en', '/src/views/surveys/user-view/survey-user.php?lang=en']:
+        status, html, headers = anon.call(page)
+        check(status == 200 and 'lang="en"' in html and headers.get('Content-Security-Policy') == "frame-ancestors 'self'" and headers.get('X-Frame-Options') == 'SAMEORIGIN', 'public page language and framing protection: '+page)
     check(anon.call('/api/v1/auth.php?action=me')[0] == 401, 'anonymous current-user access denied')
     code, _, headers = anon.call('/src/views/main-menu.php')
     check(code == 303 and 'index.php' in headers['Location'], 'private HTML is guarded on the server')
@@ -123,9 +150,11 @@ def run():
 
     admin = Client()
     check(admin.login('system_admin', ADMIN_PASSWORD)[0] == 200, 'bootstrapped administrator can log in')
-    pending = admin.call('/api/v1/accounts.php?action=list')[1]['data']
+    pending = admin.call('/api/v1/accounts.php?action=directory')[1]['data']
+    check(admin.call('/api/v1/accounts.php?action=approve', 'POST', {'user_id':user_id})[0] == 404 and admin.call('/api/v1/accounts.php?action=disable', 'POST', {'user_id':user_id})[0] == 404 and admin.call('/api/v1/accounts.php?action=list')[0] == 404, 'unused duplicate account actions are removed')
+    check(manage_account(admin, 'disable', {'user_id':user_id})[0] == 409 and sql('SELECT status FROM users WHERE id='+user_id)[0]['status'] == 'pending', 'the single disable path cannot strand a pending application')
     check(any(u['id'] == user_id for u in pending) and all(isinstance(u['id'], str) for u in pending), 'administrator can find pending applications with canonical IDs')
-    check(admin.call('/api/v1/accounts.php?action=approve', 'POST', {'user_id': user_id, 'role': 'staff'})[0] == 200, 'approval links staff and grants an explicit role')
+    check(manage_account(admin, 'approve', {'user_id': user_id, 'role': 'staff'})[0] == 200, 'approval links staff and grants an explicit role')
     staff = Client(); staff.csrf(); old_cookie = staff.cookie(); old_token = staff.token
     code, body, _ = staff.call('/api/v1/auth.php?action=login', 'POST', {'username': USERNAME, 'password': PASSWORD})
     check(code == 200 and staff.cookie() != old_cookie and staff.token != old_token, 'login rotates session ID and CSRF token')
@@ -136,7 +165,7 @@ def run():
     check(code == 200 and map_headers.get('Referrer-Policy') == 'strict-origin', 'protected maps identify the site origin to tiles without exposing private paths')
     check(staff.call('/src/views/documents/documents.php')[2].get('Referrer-Policy') == 'same-origin', 'other protected pages retain their existing referrer policy')
     check(staff.call('/api/v1/settings.php?action=get')[1]['data']['user']['id'] == user_id, 'future settings reads the same authenticated account')
-    check(staff.call('/api/v1/accounts.php?action=list')[0] == 403, 'ordinary staff cannot access account administration')
+    check(staff.call('/api/v1/accounts.php?action=directory')[0] == 403, 'ordinary staff cannot access account administration')
     check(staff.call('/api/v1/auth.php?action=login')[0] == 405, 'GET cannot invoke login')
 
     second = Client(); check(second.login()[0] == 200, 'same staff account can have a second browser session')
@@ -167,9 +196,9 @@ def run():
     sql('UPDATE user_sessions SET expires_at=UTC_TIMESTAMP()-INTERVAL 1 SECOND WHERE user_id=' + user_id + ' AND revoked_at IS NULL')
     check(active.call('/api/v1/auth.php?action=me')[0] == 401, 'expired SQL session is rejected')
     active = Client(); check(active.login()[0] == 200, 'account remains usable after session expiry')
-    check(admin.call('/api/v1/accounts.php?action=disable', 'POST', {'user_id': user_id})[0] == 200 and active.call('/api/v1/auth.php?action=me')[0] == 401, 'disabling account revokes its existing sessions')
+    check(manage_account(admin, 'disable', {'user_id': user_id})[0] == 200 and active.call('/api/v1/auth.php?action=me')[0] == 401, 'disabling account revokes its existing sessions')
     check(Client().login(USERNAME, PASSWORD)[0] == 403, 'disabled account cannot log in again')
-    check(admin.call('/api/v1/accounts.php?action=disable', 'POST', {'user_id': '1'})[0] == 409, 'last active administrator cannot be disabled')
+    check(manage_account(admin, 'disable', {'user_id': '1'})[0] == 409, 'last active administrator cannot be disabled')
     bad = Client(); bad.csrf()
     responses = [bad.call('/api/v1/auth.php?action=login', 'POST', {'username': 'unknown_' + SUFFIX, 'password': 'incorrect-password'})[0] for _ in range(11)]
     check(responses[:10] == [401] * 10 and responses[-1] == 429, 'repeated login attempts are rate limited')
@@ -200,6 +229,19 @@ def run():
             check(statuses[0] == 200 and 401 in statuses, f'activity cannot extend absolute session lifetime ({statuses})')
         finally:
             process.terminate(); process.wait(timeout=5)
+    failures_before = sum(int(row['attempts']) for row in sql('SELECT attempts FROM auth_rate_limits'))
+    check(all(admin.login('system_admin', ADMIN_PASSWORD)[0] == 200 for _ in range(61)) and sum(int(row['attempts']) for row in sql('SELECT attempts FROM auth_rate_limits')) <= failures_before, '61 successful logins do not consume username or shared-network failure limits')
+    program = r"require 'backend/php/autoload.php';$c=Hospital\Config::load();$db=Hospital\Database::connect($c);$s=$db->prepare('INSERT INTO auth_rate_limits (bucket_key,attempts,resets_at) VALUES (?,10,UTC_TIMESTAMP()+INTERVAL 15 MINUTE)');$s->execute([hash_hmac('sha256','login-failure-source:203.0.113.17:system_admin',$c['app_key'])]);"
+    subprocess.run([PHP, '-r', program], cwd=ROOT, check=True, capture_output=True)
+    check(admin.login('system_admin', ADMIN_PASSWORD)[0] == 200, 'a different source cannot lock an account simply by knowing its username')
+    staff_id = admin.call('/api/v1/auth.php?action=me')[1]['data']['user']['id']
+    sql("UPDATE users SET status='pending' WHERE id="+staff_id)
+    check(admin.call('/src/views/settings.php')[0] == 303, 'a now-pending account receives a login redirect instead of page JSON')
+    sql("UPDATE users SET status='active' WHERE id="+staff_id)
+    assert admin.login('system_admin', ADMIN_PASSWORD)[0] == 200
+    sql("UPDATE users SET status='disabled' WHERE id="+staff_id)
+    check(admin.call('/src/views/settings.php')[0] == 303, 'a now-disabled account receives a login redirect instead of page JSON')
+    sql("UPDATE users SET status='active' WHERE id="+staff_id)
     print(f'Completed {checks} integration checks against the disposable test database.')
 
 

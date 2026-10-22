@@ -51,6 +51,11 @@ def run():
     changed=secrets.token_urlsafe(20);post(system,'accounts.php?action=reset-password',dict(user_id=record(person)['id'],version=record(person)['version'],new_password=changed))
     check(target.call('/api/v1/auth.php?action=me')[0]==401 and target.login(person,PASSWORD)[0]==401 and target.login(person,changed)[0]==200,'administrator password reset revokes sessions and replaces the old password')
     check(target.call('/api/v1/auth.php?action=change-password','POST',dict(current_password='wrong',new_password=PASSWORD))[0]==422,'incorrect current passwords fail without changing credentials')
+    before_hash=sql('SELECT password_hash,auth_version FROM users WHERE id='+record(person)['id'])
+    for _ in range(4):assert target.call('/api/v1/auth.php?action=change-password','POST',dict(current_password='wrong',new_password=PASSWORD))[0]==422
+    limited=target.call('/api/v1/auth.php?action=change-password','POST',dict(current_password='wrong',new_password=PASSWORD))
+    check(limited[0]==429 and limited[2].get('Retry-After') and before_hash==sql('SELECT password_hash,auth_version FROM users WHERE id='+record(person)['id']),'current-password verification is bounded after five failures without changing credentials')
+    sql('DELETE FROM auth_rate_limits')
     again=secrets.token_urlsafe(20);post(target,'auth.php?action=change-password',dict(current_password=changed,new_password=again))
     check(target.call('/api/v1/auth.php?action=me')[0]==401 and target.login(person,again)[0]==200,'own password change logs out old sessions and accepts the new password')
     before=data(target,'auth.php?action=me')

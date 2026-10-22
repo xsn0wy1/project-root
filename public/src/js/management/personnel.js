@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const archiveToggle = document.getElementById("personnel-archive-toggle");
   let activeRole = 'driver';
   let currentPage = 1;
-  let editingId = null;
+  let editingId = null, detailId = null;
 
   const report = error => api.report(error,'personnel');
   function upsert(data) {
@@ -184,18 +184,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function showPerson(person) {
-    const details = document.getElementById('dialog-details');
-    details.replaceChildren();
-    [
-      [window.HospitalI18n.t("settings.nombre"), person.name], [window.HospitalI18n.t("personnel.rol"), roleLabels[person.role]], [window.HospitalI18n.t("destinations.telefono"), person.phone],
-      [window.HospitalI18n.t("documents_viewer.documento"), person.document || '—'], [window.HospitalI18n.t("personnel.licencia"), person.license || '—'], [window.HospitalI18n.t("trace_view.estado"), statusLabels[person.status]]
-    ].forEach(([label, value]) => {
-      const term = document.createElement('dt');
-      const description = document.createElement('dd');
-      window.HospitalI18n.bindText(term, () => label);
-      window.HospitalI18n.bindText(description, () => value);
-      details.append(term, description);
-    });
+    detailId = person.id;
+    window.HospitalI18n.bindText(document.getElementById('person-detail-name'), () => person.name);
+    window.HospitalI18n.bindText(document.getElementById('person-detail-role'), () => roleLabels[person.role]);
+    document.getElementById('person-detail-icon').src = iconBase + (person.role === 'driver' ? 'steering-wheel.svg' : 'person-icon.svg');
+    const status = document.getElementById('person-detail-status');
+    status.classList.toggle('is-active', !person.archived && person.status === 'active');
+    window.HospitalI18n.bindText(status, () => person.archived ? window.HospitalI18n.t('personnel.archivado') : statusLabels[person.status]);
+    window.HospitalUI.detailRows(document.getElementById('dialog-details'), [
+      ['personnel.rol', () => roleLabels[person.role]],
+      ['destinations.telefono', person.phone],
+      ['documents_viewer.documento', person.document || '—'],
+      ['personnel.licencia', person.license || '—']
+    ]);
     dialog.showModal();
   }
 
@@ -301,6 +302,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('dialog-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    const trigger = rows.querySelector(`[data-action="view"][data-id="${CSS.escape(detailId || '')}"]`);
+    (trigger || search).focus({preventScroll: true});
+  });
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   form.addEventListener('input',()=>{dirty=true;});
   form.addEventListener('change',()=>{dirty=true;});

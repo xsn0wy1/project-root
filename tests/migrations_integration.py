@@ -32,7 +32,7 @@ try {
     $db->beginTransaction();
     $id=users_create_pending($db, ['username'=>'upgrade_staff','email'=>'upgrade@hospital.example','national_id'=>'98880001'],password_hash('Upgrade-Test-2026!',PASSWORD_BCRYPT,['cost'=>10]));
     $db->commit();
-    accounts_approve($db, $id,'staff',null,'test-upgrade');
+    accounts_manage($db, $id,(int)users_by_id($db,$id)['version'],'approve',['staff'],null,'test-upgrade');
     $db->exec("UPDATE staff SET full_name='Existing profile' WHERE id=1");
     $db->exec("UPDATE user_settings SET security_notifications=0 WHERE user_id=1");
     $before=$db->query('SELECT u.id,u.username,u.email,u.password_hash,u.staff_id,s.full_name,p.security_notifications FROM users u JOIN staff s ON s.id=u.staff_id JOIN user_settings p ON p.user_id=u.id')->fetchAll();

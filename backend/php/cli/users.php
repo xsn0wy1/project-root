@@ -29,8 +29,8 @@ try {
         $user = users_by_username($db, strtolower($argv[2] ?? ''));
         if (!$user) throw new RuntimeException('Account not found.');
         $id = (string) $user['id'];
-        if ($command === 'approve') accounts_approve($db, $id, $argv[3] ?? 'staff', null, $request);
-        if ($command === 'disable') accounts_disable($db, $id, null, $request);
+        if ($command === 'approve') accounts_manage($db, $id, (int)$user['version'], 'approve', [$argv[3] ?? 'staff'], null, $request);
+        if ($command === 'disable') accounts_manage($db, $id, (int)$user['version'], 'disable', [], null, $request);
         if (in_array($command,['roles','reactivate','revoke-sessions'],true)) accounts_manage($db, $id,(int)$user['version'],$command==='revoke-sessions'?'revoke_sessions':$command,$command==='roles'?explode(',',$argv[3]??''):[],null,$request);
         if ($command==='reset-password') password_change($db, $config, null,$id,['version'=>(int)$user['version'],'new_password'=>getenv('HOSPITAL_NEW_PASSWORD')],true);
         if ($command === 'sessions') echo json_encode(sessions_list_own($db, $id, ''), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";

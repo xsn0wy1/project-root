@@ -217,19 +217,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showDestination(destination) {
     detailId = destination.id;
     document.getElementById('detail-edit').hidden=destination.archived;
-    const details = document.getElementById('dialog-details');
-    details.replaceChildren();
-    [
-      [window.HospitalI18n.t("settings.nombre"), destination.name], [window.HospitalI18n.t("shared.tipo"), typeLabels[destination.type]], [window.HospitalI18n.t("destinations.direccion"), destination.address],
-      [window.HospitalI18n.t("destinations.localidad"), destination.locality], [window.HospitalI18n.t("destinations.telefono"), destination.phone || window.HospitalI18n.t("destinations.sin_telefono_registrado")],
-      [window.HospitalI18n.t("trace_view.estado"), destination.archived?window.HospitalI18n.t("personnel.archivado"):statusLabels[destination.status]], [window.HospitalI18n.t("shared.acceso"), destination.notes || window.HospitalI18n.t("destinations.sin_referencia_de_acceso")]
-    ].forEach(([label, value]) => {
-      const term = document.createElement('dt');
-      const description = document.createElement('dd');
-      window.HospitalI18n.bindText(term, () => label);
-      window.HospitalI18n.bindText(description, () => value);
-      details.append(term, description);
-    });
+    window.HospitalI18n.bindText(document.getElementById('destination-detail-name'), () => destination.name);
+    window.HospitalI18n.bindText(document.getElementById('destination-detail-type'), () => typeLabels[destination.type]);
+    const status = document.getElementById('destination-detail-status');
+    status.classList.toggle('is-active', !destination.archived && destination.status === 'active');
+    window.HospitalI18n.bindText(status, () => destination.archived ? window.HospitalI18n.t('personnel.archivado') : statusLabels[destination.status]);
+    window.HospitalUI.detailRows(document.getElementById('dialog-details'), [
+      ['destinations.direccion', destination.address],
+      ['destinations.localidad', destination.locality || '—'],
+      ['destinations.telefono', () => destination.phone || window.HospitalI18n.t('destinations.sin_telefono_registrado')],
+      ['shared.acceso', () => destination.notes || window.HospitalI18n.t('destinations.sin_referencia_de_acceso')]
+    ]);
     detailDialog.showModal();
   }
 
@@ -301,6 +299,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('detail-close').addEventListener('click', () => detailDialog.close());
+  detailDialog.addEventListener('close', () => {
+    const trigger = rows.querySelector(`[data-action="view"][data-id="${CSS.escape(detailId || '')}"]`);
+    (trigger || search).focus({preventScroll: true});
+  });
   document.getElementById('detail-edit').addEventListener('click',()=>{detailDialog.close();current(detailId,'edit');});
   ['delete-close', 'delete-cancel'].forEach(id => {
     document.getElementById(id).addEventListener('click', () => deleteDialog.close());

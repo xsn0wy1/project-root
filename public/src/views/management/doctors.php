@@ -9,7 +9,7 @@ staff_page_open([
     'stylesheet' => 'management/doctors.css?v=20261019-i18n',
     'background' => false,
     'described_nav' => false,
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&display=swap',
+    'font_stylesheet' => 'inclusive-variable',
     'script' => 'management/doctors.js?v=20261020-pilot',
 ]);
 ?>

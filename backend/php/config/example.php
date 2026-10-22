@@ -11,11 +11,12 @@ return [
     'brevo_api_key' => '', // Private Brevo API key; HOSPITAL_BREVO_API_KEY also supported.
     'mail_from_email' => '', // Mailbox verified as a sender in Brevo; HOSPITAL_MAIL_FROM_EMAIL.
     'mail_from_name' => 'Hospital — Proyecto educativo',
+    'mail_api_url' => 'https://api.brevo.com/v3/smtp/email', // HTTPS provider/relay; loopback HTTP is available for offline tests.
     'storage_path' => dirname(__DIR__, 3) . '/storage', // Private writable directory, outside public/.
     'document_scanner' => '', // Optional absolute path to local clamscan; configured scans fail closed.
-    'route_mapping_enabled' => true, // User-triggered cached demo address/road lookup; saves remain usable offline.
-    'geocoder_url' => 'https://photon.komoot.io/api/',
-    'router_url' => 'https://router.project-osrm.org/route/v1/driving',
+    'route_mapping_enabled' => false, // Addresses stay local unless explicitly enabled with trusted/self-hosted services.
+    'geocoder_url' => '', // For example a private Photon deployment: https://geocoder.example/api/
+    'router_url' => '', // Private OSRM deployment: https://router.example/route/v1/driving
     'unmapped_duration_seconds' => 3600, // Conservative booking interval only; not a displayed ETA.
     'map_country' => 'UY',
     'db' => [

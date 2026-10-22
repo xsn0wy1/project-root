@@ -10,7 +10,7 @@ final class PrivateStorage
 
     public function directory(string $area, bool $create = false): string
     {
-        if (!in_array($area, ['users', 'documents', 'quarantine'], true)) throw new \RuntimeException('Invalid storage area.');
+        if (!in_array($area, ['users', 'documents', 'quarantine', 'mail'], true)) throw new \RuntimeException('Invalid storage area.');
         $path = rtrim($this->config['storage_path'], '/\\') . '/' . $area;
         if ($create && !is_dir($path) && !mkdir($path, 0700, true) && !is_dir($path)) throw new \RuntimeException('Private storage unavailable.');
         $real = realpath($path); $public = realpath(dirname(__DIR__, 3) . '/public');

@@ -11,7 +11,9 @@ final class StorageMaintenance
     public function check(): array
     {
         $storage=new PrivateStorage($this->config);$result=['checked_as'=>function_exists('posix_geteuid')?(posix_getpwuid(posix_geteuid())['name']??'unknown'):PHP_SAPI,'areas'=>[],'missing'=>[],'mismatched'=>[]];
-        foreach (['users','documents','quarantine'] as $area) {
+        $areas = ['users','documents','quarantine'];
+        if (($this->config['brevo_api_key'] ?? '') !== '' || is_dir(rtrim($this->config['storage_path'],'/').'/mail')) $areas[] = 'mail';
+        foreach ($areas as $area) {
             $path=rtrim($this->config['storage_path'],'/').'/'.$area;
             $result['areas'][$area]=['exists'=>is_dir($path),'readable'=>is_readable($path),'writable'=>is_writable($path)];
         }
@@ -31,16 +33,16 @@ final class StorageMaintenance
             if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$/',$webUser) || !function_exists('posix_getpwnam') || !($identity=posix_getpwnam($webUser))) throw new \RuntimeException('Unknown web-server user.');
         }
         $storage=new PrivateStorage($this->config);
-        foreach (['users','documents','quarantine'] as $area) { $path=$storage->directory($area,true);if(!chmod($path,0700))throw new \RuntimeException('Cannot protect storage area.'); }
+        foreach (['users','documents','quarantine','mail'] as $area) { $path=$storage->directory($area,true);if(!chmod($path,0700))throw new \RuntimeException('Cannot protect storage area.'); }
         $root=realpath($this->config['storage_path']);if(!chmod($root,0700))throw new \RuntimeException('Cannot protect storage root.');
         if ($webUser===null) return;
         if (PHP_OS_FAMILY==='Darwin') {
             $this->acl($root,'user:'.$webUser.' allow search,readattr,readsecurity');
-            foreach (['users','documents','quarantine'] as $area) $this->acl($storage->directory($area),'user:'.$webUser.' allow list,search,add_file,add_subdirectory,delete_child,readattr,readextattr,readsecurity');
-            foreach (['users'=>'png','documents'=>'bin'] as $area=>$extension) foreach (glob($storage->directory($area).'/*.'.$extension) as $file) if (!is_link($file)) $this->acl($file,'user:'.$webUser.' allow read,readattr,readextattr,readsecurity');
+            foreach (['users','documents','quarantine','mail'] as $area) $this->acl($storage->directory($area),'user:'.$webUser.' allow list,search,add_file,add_subdirectory,delete_child,readattr,readextattr,readsecurity');
+            foreach (['users'=>'png','documents'=>'bin','mail'=>'bin'] as $area=>$extension) foreach (glob($storage->directory($area).'/*.'.$extension) as $file) if (!is_link($file)) $this->acl($file,'user:'.$webUser.' allow read,readattr,readextattr,readsecurity');
         } else {
             if (!chown($root,$identity['uid'])) throw new \RuntimeException('Run storage preparation with ownership-changing privileges.');
-            foreach (['users'=>'png','documents'=>'bin','quarantine'=>'bin'] as $area=>$extension) {
+            foreach (['users'=>'png','documents'=>'bin','quarantine'=>'bin','mail'=>'bin'] as $area=>$extension) {
                 if (!chown($storage->directory($area),$identity['uid'])) throw new \RuntimeException('Cannot set storage ownership.');
                 foreach (glob($storage->directory($area).'/*.'.$extension) as $file) if (!is_link($file)&&!chown($file,$identity['uid'])) throw new \RuntimeException('Cannot set file ownership.');
             }

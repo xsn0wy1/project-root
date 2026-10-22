@@ -29,6 +29,9 @@ function require_staff_page(string $view): void
             exit;
         }
     }
+    $locale = $db->prepare('SELECT locale FROM user_settings WHERE user_id = ?');
+    $locale->execute([(string)$user['id']]);
+    $GLOBALS['page_locale'] = $locale->fetchColumn() === 'en' ? 'en' : 'es-UY';
     session_write_close();
     if (in_array($page, ['traces/trace-view', 'traces/trace-map'], true)) header('Referrer-Policy: strict-origin');
     header('Content-Type: text/html; charset=utf-8');

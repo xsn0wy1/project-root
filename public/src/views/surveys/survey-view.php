@@ -9,7 +9,7 @@ staff_page_open([
     'title_key' => 'survey_view.detalle_de_encuesta_hospital_de_clinicas',
     'title' => 'Detalle de encuesta | Hospital de Clínicas',
     'stylesheets' => ['surveys/survey.css?v=stage6', 'surveys/survey-view.css?v=20261015-details'],
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:wght@400;500;600;700&display=swap',
+    'font_stylesheet' => 'inclusive-regular',
     'body_class' => 'surveys-page survey-view-page',
     'background' => false,
     'described_nav' => false,

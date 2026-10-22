@@ -1,0 +1,35 @@
+# Catalog detail design and write verification
+
+Complete; paused for review. The user approved the Patients checkpoint and added modernization of the Personnel/Destinations detail views to this stage. The private baseline preserves the previously accepted working tree; no Git commit, tag or reset was made.
+
+## Changes
+
+Both detail dialogs now use the current management design: bordered summary/information cards, role/type and status badges, themed icon close controls, footer Close actions, current heading hierarchy and bounded body scrolling. Header/footer actions remain reachable on narrow and landscape screens. Existing name/type/status information moves into the summary; contact, identity, license, location and multiline access information remains visible in semantic definition rows. Empty locality is shown as a dash. Both themes and live Spanish/English translation are supported, with keyboard focus, pressed/opening effects and reduced-motion preferences.
+
+The existing destination Edit action is retained. An archived-state check exposed CSS overriding its `hidden` attribute; the detail component now respects it. Personnel dismissal lacked reliable focus return, so both dialogs explicitly return focus to the opening row, falling back to search if that row no longer exists. Original dialog/control IDs, edit/archive rules, surrounding layouts and the 100px desktop staff header are preserved.
+
+A small `HospitalUI.detailRows` helper replaces the duplicate safe label/value construction. Existing browser infrastructure and existing SVG assets are reused; no image bytes, framework or dependency changed.
+
+On the backend, Personnel and Destinations now share `transfer_catalog_transaction`. It retains the original order: acquire the shared transfer lock, begin, recheck the actor/dispatcher, perform the work, commit; failures roll back before propagation. The two domain wrappers retain their distinct duplicate-conflict codes and translation keys. All other named functions in these modules and transfer-access retain their PHP tokens. API handlers and SQL/migrations are byte-identical; no schema/configuration/routing change was made.
+
+## Verification
+
+- **308 focused functional checks pass before and after extraction:** Destinations 92, Personnel 92, Routes 21, Transfers 76 and Release fixes 27. This adds **150 checks** to the existing suites through a small shared test utility. They cover anonymous/admin/staff/records-manager rejection on all actions, methods/Allow headers, CSRF, unexpected fields, invalid/missing IDs and revisions, SQL failures and retries. Failing the final audit insert verifies aggregate rollback; injected duplicate failures also prove earlier identity/profile writes roll back. Only committed writes produce the original actor/resource audit events and Spanish conflict messages. All **12 affected API action signatures match**, with success and rejection observations for every action.
+- The catalog browser suite passes **170 checks**, eight page/theme/viewport views and 13 groups, including failed-save retention, archive cancellation and the destination detail-to-edit path at desktop/390px/320px. Its initial baseline passed 164 checks; six checks were added for detail-to-edit behavior.
+- The new detail journey passes **338 checks across 20 domain/theme/size cases**, plus navigation search. It covers real fixture values, 44px close targets, keyboard/footer/Escape/outside dismissal, focus return, archived read-only states, long content, literal supplied markup and live language. Sizes are 1440×900, 390×844, 320×640, 768×1024 and 844×390. Long/archived responses and failed updates are intercepted; browser checks do not edit catalog records.
+- All **25 pages × two themes × desktop/phone** pass the existing **669-check, 100-view layout/asset matrix**. Final modal/editor replays cover the later modal-only focus/hidden-state fixes. No missing local assets, unhandled script errors or Google Fonts requests occurred.
+- **12 surrounding-page/navigation screenshots** compare without masks: maximum exact pixel difference **0.000155%**, with no pixel changing by more than 12 in a color channel. The twelve redesigned dialog captures are intentional changes and were reviewed separately, along with representative narrow/landscape stress captures.
+- Syntax passes for **90 PHP, 35 application JS, 12 browser CJS and 28 Python files**. The i18n check passes **1,853 bilingual keys, 25 fresh page bindings/assets and 1,111 literal references**. All prior dictionary values remain unchanged. Original IDs/attributes and other Spanish fallbacks are preserved; exactly two old text-cross fallbacks are explicitly excepted because the approved redesign replaces them with SVG icons. Original baseline captures remain unchanged.
+- Preflight is healthy on PHP 8.0.28/MariaDB 10.4.28. Ten disposable suite schemas and their accounts/storage were cleaned; read-only verification finds zero remaining verification schemas/accounts. Port 8113 is closed and the demonstration responds on port 8091.
+
+Initial incomplete browser diagnostics corrected keyboard-focus/asynchronous-reopen assertions and identified the actual hidden-Edit/focus-return issues above. They remain private and are excluded from accepted suite totals. The full core suite, fresh install, standalone recovery/document-link suites and a new all-page pixel comparison with the original project were not repeated. Real delivery/providers, physical devices/Safari and eventual Apache-user deployment remain the existing external checks.
+
+## Measurements and continuation
+
+The three backend modules shrink **21,026 → 20,692 bytes** (334 removed). PHP significant tokens fall **69,699 → 69,642**; repeated 16-token groups fall **2,534 → 2,509**, extra occurrences **5,251 → 5,137**. This removes one duplicate transaction implementation while retaining local error policies.
+
+Overall first-party files remain **266**. The requested UI work makes code/dictionaries **2,208,286 → 2,216,413 bytes** (+8,127 net). The overlapping eight-line indicator falls **507 → 501 groups / 534 → 528 extras**. No overall size or runtime-performance reduction is claimed for this combined UI checkpoint. Cumulative versus the original: **92 fewer files and 46,630 fewer first-party bytes**. Vendor/generated files, development tests and private evidence are excluded.
+
+The scope manifest verifies **253 other application files unchanged**; 84 PHP token streams are identical. See `simplification-checkpoint5.json`, `simplification-checkpoint5-source-metrics.json` and `source-metrics.json`. Baselines, sanitized contracts, fictional credentials, screenshots and logs remain ignored under `tests/.runtime/simplification/checkpoint5/`.
+
+Review the updated detail dialogs first. The next proposed bounded pass strengthens Ambulances/Routes write-rejection and rollback coverage before assessing further small consolidation, preserving their different conflict behavior. Broader changes and submission packaging remain separate; no archive was produced. Original private configuration/data and global Apache settings were unchanged.

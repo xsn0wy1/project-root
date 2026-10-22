@@ -12,7 +12,7 @@ staff_page_open([
     'title' => $title,
     'theme_styles' => 'main-menu documents documents-upload',
     'stylesheets' => ['documents/documents.css?v=20261012-documents', 'documents/documents-upload.css?v=20261020-category-dropdown'],
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap',
+    'font_stylesheet' => 'forms',
     'nav_section' => 'document-form',
     'main_class' => 'app-shell document-workspace',
     'extra_scripts' => ['../../js/documents/document-api.js?v=stage4', '../../js/documents/document-form.js?v=stage4'],

@@ -4,7 +4,7 @@ from html.parser import HTMLParser
 from collections import Counter
 import argparse,json,re
 ROOT=Path(__file__).resolve().parents[1]
-parser=argparse.ArgumentParser();parser.add_argument('--baseline',type=Path);parser.add_argument('--rendered-pages',type=Path);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--baseline',type=Path);parser.add_argument('--rendered-pages',type=Path);parser.add_argument('--allow-added-ids',action='store_true',help='Preserve every baseline ID while permitting explicitly added UI controls.');args=parser.parse_args()
 def load(path):
  def unique(pairs):
   result={}
@@ -59,10 +59,10 @@ for path in files:
   before=Page();before.feed(baseline[relative if relative in baseline else relative.replace('.php','.html')])
   assert not (Counter(before.text)-Counter(page.text)),('Spanish fallback changed',path,Counter(before.text)-Counter(page.text))
   assert not (Counter(before.attrs)-Counter(page.attrs)),('Spanish attribute changed',path)
-  assert Counter(before.ids)==Counter(page.ids),('Static IDs changed',path)
+  assert not (Counter(before.ids)-Counter(page.ids)) if args.allow_added_ids else Counter(before.ids)==Counter(page.ids),('Static IDs changed',path)
 used=set()
 for path in [*(ROOT/'public/src').rglob('*.js'),*(ROOT/'backend').rglob('*.php')]:
  if path.name=='local.php':continue
- used.update(re.findall(r'(?:HospitalI18n\.(?:t|mark|html)|I18n::t)\([\'\"]([^\'\"]+)',path.read_text()))
+ used.update(re.findall(r'(?:HospitalI18n\.(?:t|mark|html)|I18n::t)\(\s*[\'\"]([^\'\"]+)',path.read_text()))
 assert not (used-es.keys()),sorted(used-es.keys())
 print(f'PASS {len(es)} bilingual keys, interpolation/plural contracts, {len(files)} page bindings/assets, {len(used)} literal key references'+(' and original Spanish fallback/attribute/ID preservation' if baseline else ''))

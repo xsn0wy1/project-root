@@ -10,7 +10,7 @@ assert(env.HOSPITAL_DB_NAME.endsWith('_test'), 'Only disposable fictional fixtur
 const base = process.env.HOSPITAL_UI_URL || env.HOSPITAL_AUTH_TEST_URL;
 const output = process.env.HOSPITAL_UI_OUTPUT || path.join(__dirname, '.runtime/ui/verified');
 fs.mkdirSync(output, {recursive: true});
-const report = {checks: 0, pages: [], interactions: [], errors: [], assetErrors: []};
+const report = {checks: 0, pages: [], interactions: [], errors: [], assetErrors: [], fontRequests: []};
 const rendered = {};
 const check = (value, label) => {assert(value, label); report.checks++;};
 const ids = {'documents-edit.php': records.document.id, 'documents-viewer.php': records.document.id,
@@ -180,8 +180,9 @@ async function settingsEffects(page) {
       await within(page, menu, theme + ' specialty suggestions');
       const fieldBox = await input.boundingBox(), menuBox = await menu.boundingBox();
       check(menuBox.y >= fieldBox.y + fieldBox.height + 3 || menuBox.y + menuBox.height <= fieldBox.y - 3, theme + ' suggestions stay outside the animated field');
-      await menu.locator('button').first().press('Enter');
-      check(await input.inputValue() === value, theme + ' specialty suggestions preserve keyboard selection');
+      const selected = await menu.locator('[aria-selected="true"]').getAttribute('data-value');
+      await input.press('Enter');
+      check(await input.inputValue() === selected, theme + ' specialty suggestions preserve keyboard selection');
       await input.fill('');
     }
     await input.press('Tab');
@@ -322,6 +323,261 @@ async function dialogs(page) {
   const issues = await overflow(page); check(!issues.length, 'complete transfer list has no horizontal overflow: ' + JSON.stringify(issues));
   report.interactions.push('Management editors, reachable save actions, full-width doctor fields, document share/QR and the complete transfer list.');
 }
+async function catalogEditors(page) {
+  for (const theme of ['dark', 'light']) {
+    for (const domain of ['destinations', 'personnel']) {
+      await visit(page, 'src/views/management/' + domain + '.php');
+      await page.evaluate(async theme => {
+        HospitalTheme.preview(theme); await HospitalI18n.preview(theme === 'light' ? 'en' : 'es-UY');
+      }, theme);
+      const label = domain + ' ' + page.viewportSize().width + 'px ' + theme;
+      const rows = page.locator('#' + domain + '-rows');
+      const view = rows.locator('[data-action=view]').first();
+      await view.waitFor();
+      const id = await view.getAttribute('data-id');
+      const detail = page.locator(domain === 'destinations' ? '#destination-dialog' : '#person-dialog');
+      await view.click(); await within(page, detail, label + ' detail dialog');
+      check(!(await overflow(page)).length, label + ' detail has no horizontal overflow');
+      await page.screenshot({path: path.join(output, domain + '-detail-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+      if (domain === 'destinations' && await detail.locator('.catalog-detail-summary').count()) {
+        const expected = await detail.locator('#destination-detail-name').innerText();
+        await detail.locator('#detail-edit').click();
+        await page.waitForFunction(value => document.querySelector('#destination-name').value === value &&
+          document.activeElement === document.querySelector('#destination-name'), expected);
+        check(!await detail.isVisible(), label + ' detail Edit opens and focuses the existing editor');
+        await page.locator('#form-cancel').click();
+        await rows.locator(`[data-action=view][data-id="${id}"]`).click();
+        await detail.waitFor({state: 'visible'});
+      }
+      await page.keyboard.press('Escape'); check(!await detail.isVisible(), label + ' detail closes');
+      await rows.locator(`[data-action=edit][data-id="${id}"]`).click();
+      const form = '#' + domain + '-form', name = domain === 'destinations' ? '#destination-name' : '#person-name';
+      await page.waitForFunction(selector => !!document.querySelector(selector).value, name);
+      await page.locator(name).fill('Borrador ficticio conservado');
+      if (domain === 'destinations') {
+        await page.locator('#destination-address').fill('Av. Ficticia 123');
+        await page.locator('#destination-locality').fill('Montevideo');
+      } else {
+        await page.locator('#person-phone').fill('099123456');
+        await page.locator('#person-license').fill('UITEST99');
+      }
+      const select = domain === 'destinations' ? '#destination-type' : '#person-role';
+      await choose(page, select, await page.locator(select).inputValue());
+      const route = '**/api/v1/' + domain + '.php?action=update';
+      await page.route(route, request => request.fulfill({status: 503, contentType: 'application/json',
+        body: JSON.stringify({success: false, error: {code: 'TEMPORARY_UNAVAILABLE', message: 'Offline test'}})}));
+      try {
+        const response = page.waitForResponse(response => response.url().endsWith('/' + domain + '.php?action=update') && response.status() === 503);
+        const submit = page.locator(form + ' [type=submit]');
+        await submit.scrollIntoViewIfNeeded(); await within(page, submit, label + ' save action'); await submit.click(); await response;
+        await page.waitForFunction(selector => !document.querySelector(selector + ' [type=submit]').disabled, form);
+        check(await page.locator(name).inputValue() === 'Borrador ficticio conservado', label + ' failed save retains input');
+      } finally { await page.unroute(route); }
+      await page.locator('#form-cancel').click();
+      check(await page.locator(name).inputValue() === '', label + ' cancel resets the editor');
+      if (domain === 'destinations') {
+        await rows.locator(`[data-action=delete][data-id="${id}"]`).click();
+        await within(page, page.locator('#delete-dialog'), label + ' archive confirmation');
+        await page.locator('#delete-cancel').click();
+        check(!await page.locator('#delete-dialog').isVisible(), label + ' archive cancellation leaves the row available');
+      }
+      report.interactions.push(label + ': detail, shared select, failed-save retention and cancellation.');
+    }
+  }
+}
+async function catalogDetails(page) {
+  for (const size of ['desktop', 'mobile', 'narrow', 'tablet', 'landscape']) {
+    await page.setViewportSize(sizes[size]);
+    for (const theme of ['dark', 'light']) for (const domain of ['destinations', 'personnel']) {
+      await visit(page, 'src/views/management/' + domain + '.php');
+      await page.evaluate(async theme => {
+        HospitalTheme.preview(theme); await HospitalI18n.preview(theme === 'light' ? 'en' : 'es-UY');
+      }, theme);
+      const label = domain + ' ' + size + ' ' + theme, destination = domain === 'destinations';
+      const view = page.locator('#' + domain + '-rows [data-action=view]').first(); await view.waitFor();
+      const id = await view.getAttribute('data-id'), data = await api(page, domain + '.php?action=get&id=' + id);
+      const detail = page.locator(destination ? '#destination-dialog' : '#person-dialog');
+      const open = async () => {
+        await page.locator('#' + domain + `-rows [data-action=view][data-id="${id}"]`).click();
+        await detail.waitFor({state: 'visible'});
+        await detail.evaluate(node => Promise.all(node.getAnimations().map(animation => animation.finished)));
+      };
+      await open(); await within(page, detail, label + ' updated detail');
+      const values = destination ? [data.name, data.address, data.locality, data.phone, data.notes] :
+        [data.full_name, data.national_id, data.phone, data.driving_license];
+      const text = await detail.innerText();
+      check(values.filter(Boolean).every(value => text.includes(value)), label + ' preserves every supplied detail value');
+      check(await detail.locator('.catalog-detail-field').count() === 4, label + ' uses the shared detail rows');
+      const close = detail.locator('.catalog-detail-close');
+      const box = await close.boundingBox(); check(box.width >= 43.9 && box.height >= 43.9, label + ' close has a touch target');
+      await close.focus();
+      await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+      check(await close.evaluate(node => getComputedStyle(node).outlineStyle !== 'none'), label + ' close shows keyboard focus');
+      await detail.locator('.dialog-actions [type=submit]').click(); check(!await detail.isVisible(), label + ' footer closes detail');
+      await page.waitForFunction(id => document.activeElement?.dataset.id === id, id, {timeout: 3000});
+      check(await page.evaluate(id => document.activeElement?.dataset.id === id, id), label + ' close restores the row focus');
+      await open(); await page.keyboard.press('Escape'); check(!await detail.isVisible(), label + ' Escape closes detail');
+      await open(); await page.mouse.click(1, 1); check(!await detail.isVisible(), label + ' outside click closes detail');
+      const unsafe = '<img src=x onerror="window.__catalogInjected=true">';
+      const stress = {...data, status: 'archived'};
+      if (destination) Object.assign(stress, {name: unsafe + ' Centro ficticio', address: 'Calle ficticia '.repeat(10).trim(),
+        locality: 'Localidad ficticia '.repeat(4).trim(), notes: 'Referencia ficticia con acceso largo.\n'.repeat(10).trim()});
+      else Object.assign(stress, {full_name: unsafe + ' Personal ficticio', driving_license: 'LICENCIA' + '1'.repeat(22)});
+      const route = '**/api/v1/' + domain + '.php?action=get&id=' + id;
+      await page.route(route, request => request.fulfill({status: 200, contentType: 'application/json',
+        body: JSON.stringify({success: true, data: stress})}));
+      try {
+        await open(); await within(page, detail, label + ' long archived detail');
+        check((await detail.innerText()).includes(unsafe) && await detail.locator('img[src=x]').count() === 0 &&
+          !await page.evaluate(() => window.__catalogInjected), label + ' supplied markup remains literal text');
+        check(await detail.locator('.catalog-detail-status').innerText() === await page.evaluate(() => HospitalI18n.t('personnel.archivado')),
+          label + ' archived status is explicit');
+        check(!await detail.locator('.catalog-detail-status').evaluate(node => node.classList.contains('is-active')), label + ' archived status has no active indicator');
+        if (destination) check(await detail.locator('#detail-edit').isHidden(), label + ' archived destination stays read-only');
+        await page.evaluate(locale => HospitalI18n.preview(locale), theme === 'light' ? 'es-UY' : 'en');
+        check(await detail.locator('dt').first().innerText() === await page.evaluate(key => HospitalI18n.t(key),
+          destination ? 'destinations.direccion' : 'personnel.rol'), label + ' open detail labels follow language changes');
+        await page.evaluate(locale => HospitalI18n.preview(locale), theme === 'light' ? 'en' : 'es-UY');
+        await detail.locator('.catalog-detail-body').evaluate(node => node.scrollTop = node.scrollHeight);
+        await within(page, detail.locator('.dialog-actions'), label + ' footer stays reachable with long content');
+        check(!(await overflow(page)).length, label + ' long content has no horizontal overflow');
+        await page.screenshot({path: path.join(output, domain + '-detail-stress-' + size + '-' + theme + '.png'), animations: 'disabled'});
+        await detail.locator('.dialog-actions [type=submit]').click();
+      } finally { await page.unroute(route); }
+      report.interactions.push(label + ': detail values, keyboard/outside/footer dismissal, focus, archived read-only state, safe long text and live language.');
+    }
+  }
+}
+async function doctorsRoutes(page) {
+  for (const theme of ['dark', 'light']) {
+    for (const domain of ['doctors', 'routes']) {
+      await visit(page, 'src/views/management/' + domain + '.php');
+      await page.evaluate(async theme => {
+        HospitalTheme.preview(theme); await HospitalI18n.preview(theme === 'light' ? 'en' : 'es-UY');
+      }, theme);
+      const doctor = domain === 'doctors', label = domain + ' ' + page.viewportSize().width + 'px ' + theme;
+      const form = doctor ? '#doctor-form' : '#route-form', dialog = doctor ? '#doctor-dialog' : '#route-dialog';
+      await page.locator(doctor ? '#new-doctor-button' : '#new-route').click();
+      await within(page, page.locator(dialog), label + ' new form');
+      check(!(await overflow(page)).length, label + ' new form has no horizontal overflow');
+      await page.screenshot({path: path.join(output, domain + '-new-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+      await page.keyboard.press('Escape'); check(!await page.locator(dialog).isVisible(), label + ' new form closes');
+      if (doctor) {
+        const view = page.locator('#doctor-rows [data-action=view]').first(); await view.waitFor();
+        await view.click();
+        await page.locator('#doctor-detail').waitFor({state: 'visible'});
+        await page.locator('#doctor-detail').evaluate(node => Promise.all(node.getAnimations().map(animation => animation.finished)));
+        await within(page, page.locator('#doctor-detail'), label + ' detail');
+        await page.locator('#edit-from-detail').click();
+      } else {
+        const row = page.locator('#route-list [data-route-id]').first(); await row.waitFor(); await row.click();
+        check(await page.locator('#route-detail-content').innerText() !== '', label + ' selected detail is populated');
+        await page.locator('#edit-route').click();
+      }
+      const name = form + ' [name=name]';
+      await page.waitForFunction(selector => !!document.querySelector(selector).value, name);
+      await page.locator(name).fill('Borrador ficticio conservado');
+      if (doctor) await page.locator(form + ' [name=phone]').fill('099123456');
+      else {
+        await page.locator(form + ' [name=originAddress]').fill('Av. Ficticia 123');
+        await page.locator(form + ' [name=destinationAddress]').fill('Calle Ficticia 456');
+      }
+      const select = form + (doctor ? ' [name=title]' : ' [name=category]');
+      await choose(page, select, await page.locator(select).inputValue());
+      const route = '**/api/v1/' + domain + '.php?action=update';
+      await page.route(route, request => request.fulfill({status: 503, contentType: 'application/json',
+        body: JSON.stringify({success: false, error: {code: 'TEMPORARY_UNAVAILABLE', message: 'Offline test'}})}));
+      try {
+        const response = page.waitForResponse(response => response.url().endsWith('/' + domain + '.php?action=update') && response.status() === 503);
+        const submit = page.locator(form + ' [type=submit]');
+        await submit.scrollIntoViewIfNeeded(); await within(page, submit, label + ' save action'); await submit.click(); await response;
+        await page.waitForFunction(selector => !document.querySelector(selector + ' [type=submit]').disabled, form);
+        check(await page.locator(name).inputValue() === 'Borrador ficticio conservado' && await page.locator(dialog).isVisible(), label + ' failed save retains form and input');
+        check(await page.locator('#form-error').isHidden(), label + ' failure stays console-only');
+        await page.screenshot({path: path.join(output, domain + '-failed-save-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+      } finally { await page.unroute(route); }
+      await page.locator(dialog + ' .secondary-button[data-close-form]').click();
+      check(!await page.locator(dialog).isVisible(), label + ' edit cancellation closes the form');
+      if (doctor) await page.locator('#delete-from-detail').click();
+      else await page.locator('#delete-route').click();
+      await within(page, page.locator('#delete-dialog'), label + ' archive confirmation');
+      await page.locator('#delete-dialog .secondary-button[data-close-delete]').click();
+      check(!await page.locator('#delete-dialog').isVisible(), label + ' archive cancellation closes confirmation');
+      report.interactions.push(label + ': new form, details, shared select, failed-save retention and archive cancellation.');
+    }
+  }
+}
+async function patientEditors(page) {
+  const captureForm = async name => {
+    await page.locator('#patient-dialog').evaluate(async dialog => {
+      document.activeElement?.blur();
+      for (const node of [document.scrollingElement, dialog, dialog.querySelector('.dialog-fields')]) {
+        node.scrollTo({top: 0, left: 0, behavior: 'instant'});
+      }
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await page.screenshot({path: path.join(output, name), animations: 'disabled'});
+  };
+  for (const theme of ['dark', 'light']) {
+    await visit(page, 'src/views/management/patients.php');
+    await page.evaluate(async theme => {
+      HospitalTheme.preview(theme); await HospitalI18n.preview(theme === 'light' ? 'en' : 'es-UY');
+    }, theme);
+    const label = 'patients ' + page.viewportSize().width + 'px ' + theme, form = '#patient-form';
+    await page.locator('#new-patient-button').click();
+    await within(page, page.locator('#patient-dialog'), label + ' new form');
+    check(!(await overflow(page)).length, label + ' new form has no horizontal overflow');
+    check(await page.locator(form + ' [name=status] option[value=discharged]').evaluate(node => node.disabled), label + ' new identity cannot invent a discharge');
+    const sex = form + ' [name=sex]';
+    await choose(page, sex, 'female');
+    const sexButton = '#' + await page.locator(sex).getAttribute('data-hospital-button');
+    await page.locator(sexButton).focus(); await page.keyboard.press('End');
+    await within(page, page.locator('#' + await page.locator(sexButton).getAttribute('aria-controls')), label + ' sex dropdown');
+    await page.keyboard.press('Enter');
+    check(await page.locator(sex).inputValue() === 'unspecified', label + ' sex dropdown preserves keyboard selection');
+    await choose(page, form + ' [name=status]', '');
+    const doctor = form + ' [name=doctor]', doctorButton = '#' + await page.locator(doctor).getAttribute('data-hospital-button');
+    await page.waitForFunction(selector => document.querySelector(selector).disabled, doctorButton);
+    check(await page.locator(doctor).isDisabled(), label + ' absent clinical record disables doctor selection');
+    await choose(page, form + ' [name=status]', 'outpatient');
+    await page.waitForFunction(selector => !document.querySelector(selector).disabled, doctorButton);
+    check(!await page.locator(doctor).isDisabled(), label + ' clinical status enables doctor selection');
+    await page.locator(form + ' [name=dateOfBirth]').fill('1990-01-02');
+    check(await page.locator(form + ' [name=age]').evaluate(node => node.readOnly), label + ' birth date owns the displayed age');
+    await captureForm('patients-new-' + page.viewportSize().width + '-' + theme + '.png');
+    await page.locator('#cancel-patient').click(); check(!await page.locator('#patient-dialog').isVisible(), label + ' new form cancels');
+    const row = page.locator('#patient-list [data-select-id]').first(); await row.waitFor();
+    const id = await row.getAttribute('data-select-id');
+    await row.click();
+    await page.locator('#detail-panel').waitFor({state: 'visible'});
+    await page.locator('#detail-panel').evaluate(node => Promise.all(node.getAnimations().map(animation => animation.finished)));
+    await within(page, page.locator('#detail-panel'), label + ' detail panel');
+    await page.screenshot({path: path.join(output, 'patients-detail-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
+    await page.locator('#edit-from-detail').click();
+    await within(page, page.locator('#patient-dialog'), label + ' edit form');
+    await page.locator(form + ' [name=name]').fill('Borrador ficticio conservado');
+    await page.locator(form + ' [name=phone]').fill('099123456');
+    const route = '**/api/v1/patients.php?action=update';
+    await page.route(route, request => request.fulfill({status: 503, contentType: 'application/json',
+      body: JSON.stringify({success: false, error: {code: 'TEMPORARY_UNAVAILABLE', message: 'Offline test'}})}));
+    try {
+      const response = page.waitForResponse(response => response.url().endsWith('/patients.php?action=update') && response.status() === 503);
+      const submit = page.locator(form + ' [type=submit]');
+      await submit.scrollIntoViewIfNeeded(); await within(page, submit, label + ' save action'); await submit.click(); await response;
+      await page.waitForFunction(() => !document.querySelector('#patient-form [type=submit]').disabled);
+      check(await page.locator(form + ' [name=name]').inputValue() === 'Borrador ficticio conservado' && await page.locator('#patient-dialog').isVisible(), label + ' failed save retains form and input');
+      check(await page.locator('#patient-dialog [role=alert]').count() === 0, label + ' failure stays console-only');
+      await captureForm('patients-failed-save-' + page.viewportSize().width + '-' + theme + '.png');
+    } finally { await page.unroute(route); }
+    await page.locator('#cancel-patient').click();
+    await page.locator(`#patient-list [data-select-id="${id}"]`).click();
+    await page.locator('#delete-from-detail').click();
+    await within(page, page.locator('#delete-dialog'), label + ' archive confirmation');
+    await page.locator('#delete-dialog .cancel-button').click();
+    check(!await page.locator('#delete-dialog').isVisible(), label + ' archive cancellation closes confirmation');
+    report.interactions.push(label + ': new/edit forms, keyboard dropdowns, clinical/age controls, details, failed-save retention and archive cancellation.');
+  }
+}
 async function surveys(page) {
   await visit(page, 'src/views/surveys/survey.php');
   await phoneHeadings(page);
@@ -333,6 +589,80 @@ async function surveys(page) {
   check(await page.locator('#survey-transition').isVisible() && await page.locator('#survey-transition').getAttribute('data-action') === 'close', 'full details retains Close survey');
   report.interactions.push('Survey closing is available only in full details.');
 }
+async function accountSecurity(browser, admin) {
+  const suffix = String(Date.now()), username = 'security_' + suffix;
+  const password = 'Fictional-original-' + suffix, replacement = 'Fictional-changed-' + suffix;
+  const context = await browser.newContext(), other = await browser.newContext();
+  context.setDefaultTimeout(12000); other.setDefaultTimeout(12000);
+  const page = await context.newPage(), second = await other.newPage();
+  for (const target of [page, second]) {
+    target.on('pageerror', error => report.errors.push(error.message));
+    target.on('dialog', async dialog => {report.errors.push('Unexpected security dialog: ' + dialog.type()); await dialog.dismiss();});
+  }
+  let userId;
+  try {
+    await visit(page, 'index.php');
+    userId = (await api(page, 'auth.php?action=register', {username, email:username+'@hospital.example', national_id:'87'+suffix.slice(-8), password})).user_id;
+    const entry = (await api(admin, 'accounts.php?action=directory')).find(row => row.id === userId);
+    await api(admin, 'accounts.php?action=manage', {user_id:userId, version:entry.version, action:'approve', roles:['staff']});
+    await api(page, 'auth.php?action=login', {username,password});
+    await visit(second, 'index.php'); await api(second, 'auth.php?action=login', {username,password});
+    const secondId = (await api(second, 'auth.php?action=sessions')).find(row => row.is_current).id;
+    await visit(page, 'src/views/settings.php');
+    await page.locator('#privacy-tab').click(); await page.locator('.reset-password').click();
+    await page.evaluate(() => HospitalI18n.preview('en'));
+    await page.locator('#password-recovery-link').click(); await page.waitForURL('**/restore-password.php?lang=en'); await ready(page);
+    check(await page.locator('#recovery-request-form').isVisible(), 'Settings retains access to localized email recovery while signed in');
+    await visit(page, 'src/views/settings.php');
+    for (const viewport of [sizes.desktop, sizes.mobile, sizes.narrow]) {
+      await page.setViewportSize(viewport);
+      for (const theme of ['dark','light']) {
+        await page.evaluate(async theme => {HospitalTheme.preview(theme);await HospitalI18n.preview(theme==='light'?'en':'es-UY');},theme);
+        await page.locator('.user-control').click(); await page.locator('[data-sessions]').click();
+        await page.waitForFunction(() => document.querySelector('#session-list').getAttribute('aria-busy') === 'false');
+        await within(page,page.locator('#sessions-dialog'),'session list');
+        check(await page.locator('#session-list [data-session-id]').count() === 2,'session UI lists both independent browsers');
+        await page.screenshot({path:path.join(output,'security-sessions-'+viewport.width+'-'+theme+'.png'),animations:'disabled'}); await page.keyboard.press('Escape');
+        await page.locator('#privacy-tab').click(); await page.locator('.reset-password').click();
+        await within(page,page.locator('#password-dialog'),'password dialog');
+        await page.locator('#password-form [type=submit]').scrollIntoViewIfNeeded();
+        await within(page,page.locator('#password-form [type=submit]'),'password save action');
+        await page.screenshot({path:path.join(output,'security-password-'+viewport.width+'-'+theme+'.png'),animations:'disabled'}); await page.keyboard.press('Escape');
+      }
+    }
+    await page.locator('.user-control').click(); await page.locator('[data-sessions]').click();
+    const revoke=page.locator(`[data-session-id="${secondId}"]`), revokeUrl=base+'/api/v1/auth.php?action=revoke-session';
+    await page.route(revokeUrl,route=>route.fulfill({status:503,contentType:'application/json',body:'{"success":false,"error":{"code":"SERVICE_UNAVAILABLE","message":"Offline fixture"}}'}));
+    await revoke.click(); await page.waitForFunction(id => !document.querySelector(`[data-session-id="${id}"]`).disabled,secondId);
+    check(await revoke.count() === 1 && (await second.request.get(base+'/api/v1/auth.php?action=me')).status() === 200,'failed session revocation retains the session and action');
+    await page.unroute(revokeUrl); await revoke.click(); await revoke.waitFor({state:'detached'});
+    check((await second.request.get(base+'/api/v1/auth.php?action=me')).status() === 401,'UI session revocation invalidates the other browser'); await page.keyboard.press('Escape');
+    await page.locator('.reset-password').click();
+    await page.locator('#current-password').fill('Wrong-current-password'); await page.locator('#new-password').fill(replacement); await page.locator('#confirm-password').fill(replacement);
+    await page.locator('#password-form [type=submit]').click(); await page.waitForFunction(() => !document.querySelector('#password-form').dataset.busy);
+    check(await page.locator('#current-password').inputValue() === 'Wrong-current-password' && await page.locator('#new-password').inputValue() === replacement && await page.locator('#password-dialog').isVisible(),'incorrect current password retains all form input');
+    const changeUrl=base+'/api/v1/auth.php?action=change-password';
+    await page.locator('#current-password').fill(password);
+    await page.route(changeUrl,route=>route.fulfill({status:503,contentType:'application/json',body:'{"success":false,"error":{"code":"SERVICE_UNAVAILABLE","message":"Offline fixture"}}'}));
+    await page.locator('#password-form [type=submit]').click(); await page.waitForFunction(() => !document.querySelector('#password-form').dataset.busy);
+    check(await page.locator('#current-password').inputValue() === password && await page.locator('#new-password').inputValue() === replacement,'failed password save retains current and replacement values');
+    await page.unroute(changeUrl); await page.locator('#password-form [type=submit]').click(); await page.waitForURL('**/index.php');
+    check((await page.request.get(base+'/api/v1/auth.php?action=me')).status() === 401,'successful own password change ends the old session');
+    check((await page.request.post(base+'/api/v1/auth.php?action=login',{data:{username,password},headers:{'X-CSRF-Token':(await api(page,'auth.php?action=csrf')).csrf_token}})).status() === 401,'old password no longer signs in');
+    await api(page,'auth.php?action=login',{username,password:replacement}); await visit(page,'src/views/settings.php');
+    await page.locator('.user-control').click();await page.locator('[data-sessions]').click();
+    const current=(await api(page,'auth.php?action=sessions')).find(row=>row.is_current);
+    await page.locator(`[data-session-id="${current.id}"]`).click();await page.waitForURL('**/index.php');
+    check((await page.request.get(base+'/api/v1/auth.php?action=me')).status() === 401,'current-session revocation also returns to sign-in');
+    report.interactions.push('Real password change/current-password failure/retention, own session listing/revocation, other-browser invalidation and current logout; both themes at desktop/phone/320px.');
+  } finally {
+    if (userId) {
+      const row=(await api(admin,'accounts.php?action=directory')).find(row=>row.id===userId);
+      if (row?.status==='active') await api(admin,'accounts.php?action=manage',{user_id:userId,version:row.version,action:'disable',roles:[]});
+    }
+    await context.close();await other.close();
+  }
+}
 (async () => {
   const browser = await chromium.launch({channel: 'chrome', headless: true});
   const staff = await browser.newContext({hasTouch: true}), anon = await browser.newContext({hasTouch: true});
@@ -343,6 +673,7 @@ async function surveys(page) {
       await context.route(/settings\.php\?action=diagnostics/, route => route.fulfill({status: 200, contentType: 'application/json', body: '{"success":true,"data":{"recorded":true}}'}));
       context.on('page', page => {
         page.on('pageerror', error => report.errors.push(error.message));
+        page.on('request', request => {if (['fonts.googleapis.com','fonts.gstatic.com'].includes(new URL(request.url()).hostname)) report.fontRequests.push(new URL(request.url()).hostname);});
         page.on('response', response => {
           const url = new URL(response.url());
           if (url.origin === new URL(base).origin && response.status() >= 400 &&
@@ -365,6 +696,7 @@ async function surveys(page) {
         if (!rendered['public/' + file]) {
           const response = await page.context().request.get(base + '/' + file + (id ? '?id=' + id : ''));
           check(response.status() === 200, file + ' renders through its existing access guard');
+          check(response.headers()['content-security-policy'] === "frame-ancestors 'self'" && response.headers()['x-frame-options'] === 'SAMEORIGIN', file + ' blocks cross-origin framing');
           rendered['public/' + file] = await response.text();
         }
         for (const theme of ['dark', 'light']) {
@@ -402,12 +734,26 @@ async function surveys(page) {
         if (journeys.includes('map')) await mapAndControls(page);
         if (journeys.includes('surveys')) await surveys(page);
         if (journeys.includes('dialogs')) await dialogs(page);
+        if (journeys.includes('catalogs')) await catalogEditors(page);
+        if (journeys.includes('doctorsRoutes')) await doctorsRoutes(page);
+        if (journeys.includes('patients')) await patientEditors(page);
         console.log('PASS requested UI interactions:', viewport.width);
       }
       if (journeys.includes('dialogs')) {
         await page.setViewportSize(sizes.narrow); await dialogs(page);
         console.log('PASS narrow-phone forms, share and QR dialogs.');
       }
+      if (journeys.includes('catalogs')) {
+        await page.setViewportSize(sizes.narrow); await catalogEditors(page);
+      }
+      if (journeys.includes('doctorsRoutes')) {
+        await page.setViewportSize(sizes.narrow); await doctorsRoutes(page);
+      }
+      if (journeys.includes('patients')) {
+        await page.setViewportSize(sizes.narrow); await patientEditors(page);
+      }
+      if (journeys.includes('catalogDetails')) await catalogDetails(page);
+      if (journeys.includes('settings') || journeys.includes('security')) await accountSecurity(browser,page);
       if (journeys.includes('settings')) {
         await visit(page, 'src/views/settings.php'); await page.locator('.user-control').click();
         await page.locator('#settings-profile-menu [data-logout]').click();
@@ -417,6 +763,7 @@ async function surveys(page) {
     }
     check(report.errors.length === 0, 'no unhandled script errors: ' + report.errors.join('; '));
     check(report.assetErrors.length === 0, 'all local page assets load: ' + report.assetErrors.join('; '));
+    check(report.fontRequests.length === 0, 'all interface fonts are served locally');
   } catch (error) {
     if (page && !page.isClosed()) {
       await page.screenshot({path: path.join(output, 'failure.png')}).catch(() => {});

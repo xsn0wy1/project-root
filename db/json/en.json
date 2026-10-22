@@ -1857,5 +1857,11 @@
   "accounts.no_accounts": "No users yet",
   "accounts.no_accounts_help": "Staff registration requests will appear here.",
   "accounts.no_matches": "No users found",
-  "accounts.no_matches_help": "Try a different name, email or status."
+  "accounts.no_matches_help": "Try a different name, email or status.",
+  "security.active_sessions": "Active sessions",
+  "security.this_session": "This session",
+  "security.other_device": "Other device",
+  "security.last_seen": "Last active: {date}",
+  "security.no_sessions": "No active sessions.",
+  "destinations.ubicacion_contacto_y_acceso": "Location, contact details and access information."
 }

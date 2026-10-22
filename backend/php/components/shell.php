@@ -1,5 +1,21 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/autoload.php';
+
+function page_language(): string
+{
+    if (isset($GLOBALS['page_locale'])) return $GLOBALS['page_locale'];
+    $language = $_GET['lang'] ?? null;
+    if (in_array($language, ['es', 'es-UY', 'en'], true)) return $language === 'en' ? 'en' : 'es-UY';
+    return Hospital\I18n::locale();
+}
+
+function page_security_headers(): void
+{
+    header("Content-Security-Policy: frame-ancestors 'self'");
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Content-Language: ' . page_language());
+}
 
 function page_escape(string $value): string
 {
@@ -9,14 +25,15 @@ function page_escape(string $value): string
 /** Shared staff head and navigation; each view keeps its content and dialogs. */
 function staff_page_head(array $page): void
 {
+    page_security_headers();
     $module = $page['module'];
     $src = $page['src_prefix'] ?? '../../';
     $assets = $page['assets_prefix'] ?? '../../../assets/';
     $styles = $page['stylesheets'] ?? [$page['stylesheet']];
-    $fonts = $page['fonts'] ?? 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:wght@400;500;600;700&display=swap';
+    $font = $page['font_stylesheet'] ?? 'inclusive-regular';
     ?>
 <!DOCTYPE html>
-<html lang="es" data-theme="dark" data-theme-styles="<?= page_escape($page['theme_styles'] ?? 'main-menu ' . $module) ?>">
+<html lang="<?= page_language() ?>" data-theme="dark" data-theme-styles="<?= page_escape($page['theme_styles'] ?? 'main-menu ' . $module) ?>">
 <head>
   <script src="<?= $src ?>api-connection/theme.js?v=20261019-light"></script>
   <meta charset="UTF-8">
@@ -33,9 +50,7 @@ function staff_page_head(array $page): void
 <?php foreach ($styles as $style): ?>
   <link rel="stylesheet" href="<?= $src ?>css/<?= page_escape($style) ?>">
 <?php endforeach; ?>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="<?= page_escape($fonts) ?>" rel="stylesheet">
+  <link rel="stylesheet" href="<?= $assets ?>vendor/fonts/<?= page_escape($font) ?>.css?v=local-1">
   <script src="<?= $src ?>api-connection/i18n.js?v=20261019-i18n" defer></script>
   <script src="<?= $src ?>api-connection/api-client.js?v=20261019-i18n" defer></script>
   <script src="<?= $src ?>api-connection/auth-session.js?v=20261019-light" defer></script>
@@ -45,7 +60,7 @@ function staff_page_head(array $page): void
 <?php if ($page['search'] ?? true): ?>
   <script src="<?= $src ?>api-connection/universal-search.js?v=stage6" defer></script>
 <?php endif; ?>
-  <script src="<?= $src ?>js/ui.js?v=ui-repairs" defer></script>
+  <script src="<?= $src ?>js/ui.js?v=catalog-details" defer></script>
 <?php if (!empty($page['script'])): ?>
   <script src="<?= $src ?>js/<?= page_escape($page['script']) ?>" defer></script>
 <?php endif; ?>

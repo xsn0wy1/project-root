@@ -1,12 +1,14 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__, 5) . '/backend/php/components/shell.php';
+page_security_headers();
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, private');
 header('Referrer-Policy: no-referrer');
 header('X-Content-Type-Options: nosniff');
 ?>
 <!DOCTYPE html>
-<html lang="es-UY" data-theme="dark" data-theme-styles="survey-user">
+<html lang="<?= page_language() ?>" data-theme="dark" data-theme-styles="survey-user">
 <head>
   <script src="../../../api-connection/theme.js?v=20261019-light"></script>
   <meta charset="UTF-8">
@@ -14,9 +16,7 @@ header('X-Content-Type-Options: nosniff');
   <meta name="referrer" content="no-referrer">
   <title data-i18n="survey.encuestas_hospital_de_clinicas">Encuestas | Hospital de Clínicas</title>
   <link rel="icon" type="image/x-icon" href="../../../../assets/hospital-gradient.ico">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inclusive+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../assets/vendor/fonts/inclusive-regular.css?v=local-1">
   <link rel="stylesheet" href="survey-user.css?v=20261015-icons">
   <script src="../../../api-connection/i18n.js?v=20261019-i18n" defer></script>
   <script src="../../../js/ui.js?v=ui-repairs" defer></script>
@@ -33,7 +33,7 @@ header('X-Content-Type-Options: nosniff');
       <div class="hospital-brand"><span class="hospital-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="currentColor"><path d="M16 4h8a2 2 0 0 1 2 2v8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h8V6a2 2 0 0 1 2-2Z"/></svg></span><span class="hospital-name" data-i18n="main_menu.hospital_de_clinicas">Hospital de Clínicas</span></div>
       <span class="header-purpose"><img src="../../../../assets/Icons/lock-icon.svg" alt=""><i18n-text data-i18n="survey_patient.tu_opinion_nos_ayuda_a_mejorar" style="display:contents">Tu opinión nos ayuda a mejorar</i18n-text></span>
       <div class="reading-controls">
-        <div class="language-control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6.5h14M5 17.5h14"/></svg><select data-language-select aria-label="Idioma de la encuesta" data-i18n-aria-label="survey_patient.idioma_de_la_encuesta" lang="es"><option value="es-UY" data-i18n="settings.espanol">Español</option><option value="en" data-i18n="settings.english">English</option></select><i aria-hidden="true"></i></div>
+        <div class="language-control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6.5h14M5 17.5h14"/></svg><select data-language-select aria-label="Idioma de la encuesta" data-i18n-aria-label="survey_patient.idioma_de_la_encuesta"><option value="es-UY" data-i18n="settings.espanol">Español</option><option value="en" data-i18n="settings.english">English</option></select><i aria-hidden="true"></i></div>
         <div class="text-size-controls" role="group" aria-label="Tamaño del texto" data-i18n-aria-label="survey_patient.tamano_del_texto"><button type="button" class="reading-button" data-text-smaller aria-label="Reducir tamaño del texto" data-i18n-aria-label="survey_patient.reducir_tamano_del_texto"><i18n-text data-i18n="routes.a" style="display:contents">A</i18n-text><span aria-hidden="true">−</span></button><button type="button" class="reading-button" data-text-larger aria-label="Aumentar tamaño del texto" data-i18n-aria-label="survey_patient.aumentar_tamano_del_texto"><i18n-text data-i18n="routes.a" style="display:contents">A</i18n-text><span aria-hidden="true">+</span></button></div>
         <button type="button" class="reading-button accessibility-button" data-open-accessibility aria-label="Opciones de accesibilidad" data-i18n-aria-label="survey_patient.opciones_de_accesibilidad" title="Opciones de accesibilidad" data-i18n-title="survey_patient.opciones_de_accesibilidad"><img src="../../../../assets/Icons/accessibility-icon.svg" alt=""></button>
       </div>

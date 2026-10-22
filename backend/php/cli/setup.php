@@ -32,7 +32,7 @@ try {
         fwrite($handle, "<?php\nreturn " . var_export($config, true) . ";\n"); fclose($handle); umask($old);
     }
     $storage=new Hospital\Storage\PrivateStorage($config);
-    foreach (['users','documents','quarantine'] as $area) $storage->directory($area,true);
+    foreach (['users','documents','quarantine','mail'] as $area) $storage->directory($area,true);
     foreach ($argv as $argument) if (str_starts_with($argument,'--web-user=')) (new Hospital\Storage\StorageMaintenance(Hospital\Database::connect($config),$config))->prepare(substr($argument,11));
     echo "Schema installed and migrations applied. Application DB connection verified.\n";
     echo in_array('--no-config', $argv, true) ? "Configuration supplied by environment; no file written.\n" : "Private configuration: backend/php/config/local.php (existing file preserved).\n";

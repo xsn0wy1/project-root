@@ -967,6 +967,15 @@ transition:
 .settings-dialog-body label { display: block; margin-bottom: 8px; }
 .settings-dialog-body p { margin: 0; overflow-wrap: anywhere; }
 .settings-dialog input { width: 100%; min-width: 0; height: 44px; }
+.password-fields { display: grid; gap: 14px; }
+.password-fields label input { margin-top: 6px; }
+.password-fields a { color: var(--dialog-accent); font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; }
+.password-fields a:focus-visible { outline: 2px solid var(--dialog-accent); outline-offset: 3px; }
+#session-list { padding: 0; margin: 0; list-style: none; }
+.session-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(150, 163, 209, .25); }
+.session-row > div { min-width: 0; }
+.session-row p { font-size: .85rem; overflow-wrap: anywhere; }
+.session-row .settings-dialog-actions { padding: 0; }
 .settings-dialog input, .settings-dialog-actions button {
     font: inherit; color: inherit; background: var(--dialog-control);
     border: 1px solid rgba(150, 163, 209, .4); border-radius: 10px; padding: 10px 14px;

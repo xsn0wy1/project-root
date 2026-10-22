@@ -6,10 +6,10 @@ staff_page_open([
     'module' => 'destinations',
     'title_key' => 'destinations.destinos_hospital_de_clinicas',
     'title' => 'Destinos | Hospital de Clínicas',
-    'stylesheet' => 'management/catalogs.css?v=stage6',
+    'stylesheet' => 'management/catalogs.css?v=catalog-details',
     'background' => false,
     'described_nav' => false,
-    'script' => 'management/destinations.js?v=20261020-pilot',
+    'script' => 'management/destinations.js?v=catalog-details',
 ]);
 ?>
 <div class="destinations-layout">
@@ -148,15 +148,26 @@ staff_page_open([
     </div>
   </main>
 
-  <dialog class="destination-dialog" id="destination-dialog" aria-labelledby="detail-title">
-    <div class="dialog-heading">
-      <h2 id="detail-title" data-i18n="destinations.detalle_del_destino">Detalle del destino</h2>
-      <button type="button" id="detail-close" class="dialog-close" aria-label="Cerrar detalle" data-i18n-aria-label="ambulances.cerrar_detalle" data-i18n="documents_upload.times">×</button>
+  <dialog class="destination-dialog catalog-detail-dialog" id="destination-dialog" aria-labelledby="detail-title" aria-describedby="destination-detail-description">
+    <header class="dialog-heading">
+      <div><h2 id="detail-title" data-i18n="destinations.detalle_del_destino">Detalle del destino</h2><p id="destination-detail-description" data-i18n="destinations.ubicacion_contacto_y_acceso">Ubicación, contacto e indicaciones de acceso.</p></div>
+      <button type="button" id="detail-close" class="dialog-close catalog-detail-close" aria-label="Cerrar detalle" data-i18n-aria-label="ambulances.cerrar_detalle"><img src="../../../assets/Icons/cross-icon.svg" alt=""></button>
+    </header>
+    <div class="catalog-detail-body">
+      <section class="catalog-detail-summary" aria-labelledby="destination-detail-name">
+        <span class="catalog-detail-icon"><img src="../../../assets/Icons/location-icon.svg" alt=""></span>
+        <div class="catalog-detail-identity"><h3 id="destination-detail-name"></h3><p id="destination-detail-type"></p></div>
+        <span class="catalog-detail-status" id="destination-detail-status"></span>
+      </section>
+      <section class="catalog-detail-card" aria-labelledby="destination-detail-section">
+        <h3 id="destination-detail-section" data-i18n="routes.informacion_general">Información general</h3>
+        <dl class="catalog-detail-fields" id="dialog-details"></dl>
+      </section>
     </div>
-    <dl id="dialog-details"></dl>
-    <div class="dialog-actions">
+    <form method="dialog" class="dialog-actions">
+      <button type="submit" class="cancel-button" data-i18n="settings.cerrar">Cerrar</button>
       <button type="button" id="detail-edit" class="save-button"><img src="../../../assets/Icons/pencil-icon.svg" alt=""><span data-i18n="destinations.editar_destino">Editar destino</span></button>
-    </div>
+    </form>
   </dialog>
 
   <dialog class="destination-dialog delete-dialog" id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description">

@@ -7,7 +7,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, sql
+from auth_integration import simulation_control, manage_account, Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, sql
 
 assert os.environ['HOSPITAL_DB_NAME'].endswith('_test')
 ROOT=Path(__file__).resolve().parents[1]
@@ -38,7 +38,7 @@ def main():
         c=Client();c.csrf();name=f'transfer_{SUFFIX}_{index}'
         result=c.call('/api/v1/auth.php?action=register','POST',{'username':name,'email':name+'@hospital.example','national_id':str(87000000+secrets.randbelow(999999)),'password':PASSWORD})
         assert result[0]==201,result[1];uid=result[1]['data']['user_id']
-        assert admin.call('/api/v1/accounts.php?action=approve','POST',{'user_id':uid,'role':role})[0]==200
+        assert manage_account(admin, 'approve', {'user_id':uid,'role':role})[0]==200
         assert c.login(name,PASSWORD)[0]==200
         actors.append((c,uid,name))
     first,uid,name=actors[0];second=actors[1][0];assigned,assigned_uid,_=actors[2];unrelated=actors[3][0];records=actors[4][0]
@@ -80,8 +80,8 @@ def main():
     check(call(unrelated,'get?id='+id)[0]==404 and call(records,'get?id='+id)[0]==404 and call(admin,'get?id='+id)[0]==404,'unrelated roles cannot retrieve transfer details by guessing IDs')
     snap=assigned.call('/api/v1/tracking.php?action=snapshot')[1]['data']
     check([x['id'] for x in snap['transfers']]==[id] and 'patient' not in snap['transfers'][0] and 'crew' not in snap['transfers'][0] and 'notes' not in snap['transfers'][0],'fleet snapshots are scoped and omit patient, crew and notes')
-    check(unrelated.call('/api/v1/tracking.php?action=history&transfer_id='+id)[0]==404,'position history uses identical assignment permissions')
-    check(assigned.call('/api/v1/tracking.php?action=history&transfer_id='+id)[0]==200,'assigned crew can retrieve position history')
+    check(unrelated.call('/api/v1/tracking.php?action=history&transfer_id='+id)[0]==404,'retired history action exposes no assignment data')
+    check(assigned.call('/api/v1/tracking.php?action=history&transfer_id='+id)[0]==404,'unused position-history HTTP action is removed for all roles')
     check(call(first,'create',fields(driver=crew[0]))[0]==409,'overlapping reservations reject a competing vehicle assignment')
     check(call(first,'create',fields(vehicle=1))[0]==409,'overlapping reservations reject a competing crew assignment')
     other=fields(vehicle=1,driver=crew[0]);s,p,_=call(second,'create',other);check(s==201,'independent resources can be scheduled concurrently');other_item=p['data']
@@ -126,10 +126,10 @@ def main():
     finally:admin_sql('DROP TRIGGER '+trigger)
     started=status(first,get(first,id),'in_progress')[1]['data'];check(started['status']=='in_progress' and started['started_at'] is not None,'starting records the actual server start time')
     check(call(first,'update',edit(started))[0]==409,'active transfer assignments cannot be rewritten mid-route')
-    check(first.call('/api/v1/tracking.php?action=control')[0]==403,'dispatchers cannot control the administrator simulation')
-    sim=admin.call('/api/v1/tracking.php?action=control')[1]['data']
-    check(admin.call('/api/v1/tracking.php?action=control','POST',{'command':'start','version':sim['version']},csrf=False)[0]==403,'simulation changes require CSRF')
-    sim=admin.call('/api/v1/tracking.php?action=control','POST',{'command':'start','version':sim['version'],'speed':100})[1]['data'];check(sim['status']=='running','administrator explicitly starts the shared synthetic clock')
+    check(first.call('/api/v1/tracking.php?action=control')[0]==404,'simulation control has no unused HTTP interface')
+    sim=simulation_control()[1]['data']
+    check(admin.call('/api/v1/tracking.php?action=control','POST',{'command':'start','version':sim['version']},csrf=False)[0]==404,'HTTP writes cannot start the CLI-only simulation')
+    sim=simulation_control({'command':'start','version':sim['version'],'speed':100})[1]['data'];check(sim['status']=='running','administrator explicitly starts the shared synthetic clock')
     worker=subprocess.Popen([PHP,'backend/php/cli/simulate-transfers.php','worker','45'],cwd=ROOT,env=os.environ,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
     try:
         deadline=time.monotonic()+8
@@ -139,11 +139,11 @@ def main():
             time.sleep(.2)
         check(snapshot['simulation']['heartbeat_at'] is not None,'the worker persists a shared heartbeat')
         check(cli('backend/php/cli/simulate-transfers.php','worker','1').returncode!=0,'a second worker cannot own the same database')
-        sim=admin.call('/api/v1/tracking.php?action=control','POST',{'command':'pause','version':sim['version']})[1]['data'];before=get(first,id)['position'];time.sleep(3.2)
+        sim=simulation_control({'command':'pause','version':sim['version']})[1]['data'];before=get(first,id)['position'];time.sleep(3.2)
         check(get(first,id)['position']['id']==before['id'],'paused simulation updates heartbeat without moving vehicles')
-        reset=admin.call('/api/v1/tracking.php?action=control','POST',{'command':'reset','version':sim['version']})[1]['data'];check(reset['generation']==sim['generation']+1 and get(first,id)['position']['progress']==0,'reset creates a new simulation generation at the route origin')
-        check(admin.call('/api/v1/tracking.php?action=control','POST',{'command':'resume','version':sim['version']})[0]==409,'stale simulation controls cannot overwrite newer state')
-        sim=admin.call('/api/v1/tracking.php?action=control','POST',{'command':'resume','version':reset['version']})[1]['data']
+        reset=simulation_control({'command':'reset','version':sim['version']})[1]['data'];check(reset['generation']==sim['generation']+1 and get(first,id)['position']['progress']==0,'reset creates a new simulation generation at the route origin')
+        check(simulation_control({'command':'resume','version':sim['version']})[0]==409,'stale simulation controls cannot overwrite newer state')
+        sim=simulation_control({'command':'resume','version':reset['version']})[1]['data']
         deadline=time.monotonic()+15
         while time.monotonic()<deadline:
             current=get(first,id)
@@ -152,7 +152,7 @@ def main():
         check(current['status']=='arrived' and current['position']['progress']==1,'worker reaches the destination and records arrival atomically')
         one=first.call('/api/v1/tracking.php?action=snapshot&transfer_id='+id)[1]['data']['transfers'][0]['position'];two=assigned.call('/api/v1/tracking.php?action=snapshot&transfer_id='+id)[1]['data']['transfers'][0]['position']
         check(one==two,'independent staff sessions observe the same stored position and timestamp')
-        history=assigned.call('/api/v1/tracking.php?action=history&transfer_id='+id+'&limit=1')[1]['data'];check(len(history['positions'])==1 and history['next_cursor'] is not None,'position history is cursor-paginated')
+        check(len(sql('SELECT id FROM transfer_positions WHERE transfer_id='+id)) > 1,'the shared simulator retains position history without an unused HTTP action')
         check(len(sql('SELECT * FROM resource_reservations WHERE transfer_id='+id))==2,'arrival retains vehicle and crew reservations until completion')
         completed=status(first,current,'completed')[1]['data'];check(completed['finished_at'] is not None and not sql('SELECT * FROM resource_reservations WHERE transfer_id='+id),'completion releases resources and records its event')
         check(status(first,completed,'in_progress')[0]==409,'completed transfers cannot be restarted')
@@ -160,13 +160,13 @@ def main():
         worker.terminate();worker.communicate(timeout=10)
     sql("UPDATE simulation_runs SET heartbeat_at=UTC_TIMESTAMP()-INTERVAL 20 SECOND WHERE id="+sim['run_id'])
     check(first.call('/api/v1/tracking.php?action=snapshot')[1]['data']['simulation']['stale'],'a stopped worker is observable as stale rather than fake live motion')
-    check(admin.call('/api/v1/tracking.php?action=control','POST',{'command':'stop','version':sim['version']})[0]==200,'administrator can stop the simulation explicitly')
-    history=assigned.call('/api/v1/tracking.php?action=history&transfer_id='+id)[1]['data']['positions'];old=history[0]['id'];latest=get(first,id)['position']['id']
+    check(simulation_control({'command':'stop','version':sim['version']})[0]==200,'administrator can stop the simulation explicitly')
+    history=sql('SELECT id FROM transfer_positions WHERE transfer_id='+id+' ORDER BY id');old=str(history[0]['id']);latest=get(first,id)['position']['id']
     sql('UPDATE transfer_positions SET recorded_at=UTC_TIMESTAMP()-INTERVAL 8 DAY WHERE transfer_id='+id)
     assert cli('-r',r'require "backend/php/autoload.php";$c=Hospital\Config::load();tracking_prune(Hospital\Database::connect($c));').returncode==0
     check(not sql('SELECT id FROM transfer_positions WHERE id='+old) and sql('SELECT id FROM transfer_positions WHERE id='+latest),'history retention removes old samples while preserving latest pointers')
     check(sql("SELECT id FROM audit_events WHERE resource_type='transfer' AND resource_id="+id) and get(first,id)['events'][-1]['to_status']=='completed','transfer actions and final activity are audited by IDs')
-    assert admin.call('/api/v1/accounts.php?action=disable','POST',{'user_id':assigned_uid})[0]==200
+    assert manage_account(admin, 'disable', {'user_id':assigned_uid})[0]==200
     check(assigned.call('/api/v1/tracking.php?action=snapshot')[0]==401,'account revocation also revokes assigned fleet access')
     print(f'Completed {checks} transfer and tracking checks.',flush=True)
 if __name__=='__main__':main()

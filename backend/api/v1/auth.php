@@ -61,10 +61,12 @@ switch ($action) {
         Response::json(['changed'=>true,'sign_in_required'=>true]);
         break;
     case 'reset-request':
-
-
         $body=Request::body(['email']);
-        Response::json(password_request_reset($db, $config, $body),202);
+        $delivery = null;
+        $result = password_request_reset($db, $config, $body, null, static function(callable $send) use (&$delivery): void { $delivery = $send; });
+        Response::finish($result, 202);
+        try { if ($delivery !== null) $delivery(); }
+        catch (Throwable $error) { error_log('Hospital password recovery dispatch failed.'); }
         break;
     case 'revoke-session':
 

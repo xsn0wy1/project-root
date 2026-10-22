@@ -6,10 +6,11 @@ header('X-Content-Type-Options: nosniff');
 
 function auth_page_open(string $titleKey, string $title, string $src, string $assets, bool $recovery = false): void
 {
+    page_security_headers();
     $style = $recovery ? 'pass-restore' : 'log-reg';
     ?>
 <!DOCTYPE html>
-<html lang="es" data-theme="dark" data-theme-styles="<?= $style ?> auth-interactions">
+<html lang="<?= page_language() ?>" data-theme="dark" data-theme-styles="<?= $style ?> auth-interactions">
 <head>
   <script src="<?= $src ?>api-connection/theme.js?v=20261019-light"></script>
   <meta charset="UTF-8">

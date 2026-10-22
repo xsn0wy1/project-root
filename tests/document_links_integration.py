@@ -22,7 +22,7 @@ os.environ.update(HOSPITAL_DB_NAME='hospital_doclinks_' + secrets.token_hex(4) +
     HOSPITAL_STORAGE_PATH=str(STORAGE), HOSPITAL_BASE_PATH='', HOSPITAL_SECURE_COOKIES='false',
     HOSPITAL_BCRYPT_COST='10', HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24), HOSPITAL_AUTH_TEST_URL='http://127.0.0.1:8884')
 os.environ.setdefault('NODE_PATH', str(Path.home() / '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules'))
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, sql
+from auth_integration import manage_account, Client, PASSWORD, ADMIN_PASSWORD, sql
 from documents_integration import upload, fields, pdf_bytes, docx_bytes, binary, detail
 
 checks = 0
@@ -84,7 +84,7 @@ def run():
         client = Client(); client.csrf(); username = 'file_staff_' + str(index)
         result = client.call('/api/v1/auth.php?action=register', 'POST', dict(username=username, password=PASSWORD, email=username+'@hospital.example', national_id=str(99500200+index)))
         uid = result[1]['data']['user_id']
-        assert admin.call('/api/v1/accounts.php?action=approve', 'POST', dict(user_id=uid, role=role))[0] == 200
+        assert manage_account(admin, 'approve', dict(user_id=uid, role=role))[0] == 200
         assert client.login(username, PASSWORD)[0] == 200
         people.append(client)
     owner, other, manager = people

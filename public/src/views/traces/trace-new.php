@@ -9,7 +9,7 @@ staff_page_open([
     'title_key' => 'trace_new.nuevo_traslado',
     'title' => 'Nuevo Traslado',
     'stylesheets' => ['documents/documents.css?v=20261012-documents', 'traces/trace-new.css?v=20261020-dropdowns'],
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700&display=swap',
+    'font_stylesheet' => 'forms',
     'body_class' => '',
     'background' => true,
     'described_nav' => true,

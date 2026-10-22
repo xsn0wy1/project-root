@@ -38,7 +38,7 @@ def cleanup(env):
     subprocess.run([PHP, '-r', code], cwd=ROOT, env=env, check=True, capture_output=True)
 
 
-def run_module(module, directory, port):
+def run_module(module, directory, port, contracts=False):
     directory.mkdir(parents=True)
     suffix = secrets.token_hex(4)
     env = clean_environment()
@@ -50,7 +50,10 @@ def run_module(module, directory, port):
                HOSPITAL_APP_URL=f'http://127.0.0.1:{port}/', HOSPITAL_AUTH_TEST_URL=f'http://127.0.0.1:{port}',
                HOSPITAL_BCRYPT_COST='10', HOSPITAL_SECURE_COOKIES='false',
                HOSPITAL_BREVO_API_KEY='', HOSPITAL_MAIL_FROM_EMAIL='',
+               HOSPITAL_GEOCODER_URL='https://127.0.0.1:9/api/', HOSPITAL_ROUTER_URL='https://127.0.0.1:9/route/v1/driving',
                HOSPITAL_ROUTE_MAPPING_ENABLED='true' if module in ['routes', 'transfers', 'audit_corrections'] else 'false', HOSPITAL_TEST_PHP=PHP)
+    if contracts:
+        env['HOSPITAL_API_CONTRACT_LOG'] = str(directory / 'contracts.jsonl')
     for domain in ['AUDIT', 'FLEET', 'DOCTOR', 'PERSONNEL', 'DESTINATION', 'ROUTE', 'SURVEY', 'THEME']:
         env['HOSPITAL_'+domain+'_TEST_DIR'] = str(directory)
     private = directory/'env.json'
@@ -115,6 +118,7 @@ def main():
     parser.add_argument('--modules', default=','.join(MODULES))
     parser.add_argument('--output', type=Path)
     parser.add_argument('--port', type=int, default=8113)
+    parser.add_argument('--contracts', action='store_true', help='Inventory sanitized API outcomes using the existing Client.')
     args = parser.parse_args()
     modules = args.modules.split(',')
     if not modules or set(modules)-set(MODULES):
@@ -125,7 +129,7 @@ def main():
     results = []
     for module in modules:
         print('Checking '+module+' with a separate disposable database...', flush=True)
-        result = run_module(module, output/(module+'-'+secrets.token_hex(3)), args.port)
+        result = run_module(module, output/(module+'-'+secrets.token_hex(3)), args.port, args.contracts)
         results.append(result)
         (output/'report.json').write_text(json.dumps(results, indent=2)+'\n')
         print(module+': '+result['status']+'; '+str(result['checks'])+' checks; fixture cleaned.', flush=True)

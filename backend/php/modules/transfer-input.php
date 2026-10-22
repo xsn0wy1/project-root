@@ -12,12 +12,6 @@ function transfer_input_choice($value, array $allowed): string
     return $value;
 }
 
-function transfer_input_version($value): int
-{
-    if ((!is_int($value) && !is_string($value)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $value)) throw new ApiException(422, 'VERSION_REQUIRED', \Hospital\I18n::t("errors.se_requiere_la_revision_actual"));
-    return (int) $value;
-}
-
 function transfer_input_notes($value): string
 {
     if (!is_string($value) || !mb_check_encoding($value, 'UTF-8')) throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.notas_no_validas"));
@@ -32,7 +26,7 @@ function transfer_input_fields(array $input): array
     $route=$input['route_template_id']??null;
     $route=$route===null||$route===''?null:Request::id($route);
     if (array_key_exists('route_template_id',$input)) $fields['route_template_id']=$route===null||$route===''?null:Request::id($route);
-    if (isset($input['route_version'])) $fields['route_version']=transfer_input_version($input['route_version']);
+    if (isset($input['route_version'])) $fields['route_version']=\Hospital\Http\Request::version($input['route_version']);
     foreach (['ambulance_id', 'driver_id'] as $key) $fields[$key] = Request::id($input[$key] ?? null);
     foreach (['companion_id', 'patient_id'] as $key) $fields[$key] = ($input[$key] ?? null) === null || $input[$key] === '' ? null : Request::id($input[$key]);
     foreach (['origin','destination'] as $prefix) {

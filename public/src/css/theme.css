@@ -594,7 +594,6 @@ html[data-theme="light"][data-theme-styles~="destinations"] .form-feedback { col
 html[data-theme="light"][data-theme-styles~="destinations"] .destination-dialog { background: var(--light-canvas); box-shadow: 0 28px 90px rgba(44, 61, 104, 0.138); }
 html[data-theme="light"][data-theme-styles~="destinations"] .destination-dialog::backdrop { background: rgba(245, 248, 255, 0.72); }
 html[data-theme="light"][data-theme-styles~="destinations"] .dialog-heading button { color: var(--light-text); }
-html[data-theme="light"][data-theme-styles~="destinations"] .destination-dialog dt { color: var(--light-accent); }
 html[data-theme="light"][data-theme-styles~="destinations"] .destinations-table tr.is-editing td { background: rgba(225, 233, 250, 0.12); }
 html[data-theme="light"][data-theme-styles~="destinations"] .destinations-table tr.is-editing .destination-avatar { border-color: rgba(88, 108, 151, 0.65); background: rgba(225, 233, 250, 0.18); }
 html[data-theme="light"][data-theme-styles~="destinations"] .row-action[data-action="delete"]:hover { background: rgba(246, 231, 236, 0.16); }
@@ -814,7 +813,6 @@ html[data-theme="light"][data-theme-styles~="personnel"] .form-feedback { color:
 html[data-theme="light"][data-theme-styles~="personnel"] .person-dialog { background: var(--light-canvas); box-shadow: 0 28px 90px rgba(44, 61, 104, 0.138); }
 html[data-theme="light"][data-theme-styles~="personnel"] .person-dialog::backdrop { background: rgba(245, 248, 255, 0.72); }
 html[data-theme="light"][data-theme-styles~="personnel"] .dialog-heading button { color: var(--light-text); }
-html[data-theme="light"][data-theme-styles~="personnel"] .person-dialog dt { color: var(--light-accent); }
 
 /* trace */
 html[data-theme="light"][data-theme-styles~="trace"] { --trace-panel: var(--light-canvas); --trace-card: rgba(245, 248, 255, 0.68); --trace-border: rgba(88, 108, 151, 0.18); --trace-muted: var(--light-muted); }

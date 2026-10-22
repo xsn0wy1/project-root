@@ -10,6 +10,8 @@ Latest user clarification (Stage 3): all website dropdowns must use the existing
 
 Latest accepted UI checkpoint: phone layouts use the shared overlay hamburger drawer and responsive styles at 770px, with narrow-phone and touch-landscape adjustments. The user authorized responsive reflow and the listed specialty, Settings profile/switch, map search, duplicate-control and survey-action repairs. Preserve the desktop design and 100px staff header; these accepted mobile changes supersede the original mobile exceptions.
 
+Latest user clarification: modernize the Personnel and Destinations detail dialogs to the current management design. Preserve their information, permissions and edit/archive behavior. This intentional styling change supersedes exact visual preservation for those two detail dialogs only.
+
 Stage 6 is authorized with an audit focus: consolidate remaining code/styles/files where justified, verify workflows, installation and integrity, and fix concrete issues or inefficiencies. Keep the submission archive separate until requested. Preserve the accepted UI and pause with verification results when this audit is complete.
 
 Target plain PHP includes, procedural domain modules, and small shared JS helpers. No framework, ORM, dependency container or build system. Keep public pages/assets in `public/`, API entry points in `backend/api/v1/`, private PHP in `backend/php/`, shared browser infrastructure in `public/src/api-connection/`, and dictionaries in `db/json/`. Existing classes remain temporarily until their scheduled migration; do not maintain duplicate implementations.

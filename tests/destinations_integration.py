@@ -4,7 +4,8 @@ import os
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from auth_integration import Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, ROOT, check
+from auth_integration import simulation_control, Client, PASSWORD, ADMIN_PASSWORD, SUFFIX, PHP, ROOT, check
+from catalog_write_checks import verify_catalog_writes
 
 
 def run():
@@ -73,14 +74,15 @@ def run():
     assert call('archive.php',dict(id=changed['id'],version=changed['version']))[0]==200
     mapped=state(mapped,'in_progress')
     check(mapped['geometry']==geometry and mapped['origin']['name']==old_name and mapped['position'] is not None,'existing mapped traces retain geometry/history when a center changes or is archived')
-    simulation=admin.call('/api/v1/tracking.php?action=control')[1]['data']
-    code,payload,_=admin.call('/api/v1/tracking.php?action=control','POST',dict(command='start',version=simulation['version']));assert code==200,payload
+    simulation=simulation_control()[1]['data']
+    code,payload,_=simulation_control(dict(command='start',version=simulation['version']));assert code==200,payload
     simulation=payload['data']
     program=r"require 'backend/php/autoload.php';$c=Hospital\Config::load();echo tracking_tick(Hospital\Database::connect($c), $c);"
     tick=subprocess.run([PHP,'-r',program],cwd=ROOT,capture_output=True,text=True,check=True)
     check(tick.stdout=='1' and get(custom['id'])['position'] is None,'simulation continues mapped routes and skips unmapped traces safely')
-    code,payload,_=admin.call('/api/v1/tracking.php?action=control','POST',dict(command='reset',version=simulation['version']));assert code==200,payload
+    code,payload,_=simulation_control(dict(command='reset',version=simulation['version']));assert code==200,payload
     check(get(mapped['id'])['position']['progress']==0 and get(custom['id'])['position'] is None,'simulation reset preserves the distinction between mapped and unmapped traces')
+    verify_catalog_writes('destinations', dispatcher, admin, {**record, 'name': 'Centro de prueba de atomicidad', 'address': 'Calle de prueba 100'})
     proof=Path(os.environ['HOSPITAL_DESTINATION_TEST_DIR'])/'browser.json'
     proof.write_text(json.dumps(dict(username=username,password=PASSWORD,id=cid,trace_id=custom['id'])));proof.chmod(0o600)
 

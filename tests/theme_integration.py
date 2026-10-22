@@ -4,7 +4,7 @@ from pathlib import Path
 RUNTIME=Path(os.environ.get('HOSPITAL_THEME_TEST_DIR', str(Path(__file__).parent/'.runtime/theme'))).resolve()
 if not os.environ.get('HOSPITAL_DB_NAME'):
  os.environ.update(json.loads((RUNTIME/'env.json').read_text()))
-from auth_integration import Client,ADMIN_PASSWORD,sql
+from auth_integration import manage_account, Client,ADMIN_PASSWORD,sql
 assert os.environ['HOSPITAL_DB_NAME'].endswith('_test')
 checks=0
 def check(value,label):
@@ -18,7 +18,7 @@ check(save(a,'light')[0]==200 and data(b)['settings']['theme']=='light','light p
 uid=data(a)['user']['id'];check(sql('SELECT theme FROM user_settings WHERE user_id='+uid)[0]['theme']=='light','SQL stores the canonical light value')
 suffix=secrets.token_hex(4);other=Client();other.csrf();password=secrets.token_urlsafe(24)
 r=other.call('/api/v1/auth.php?action=register','POST',{'username':'theme_'+suffix,'email':'theme_'+suffix+'@hospital.example','national_id':str(82000000+secrets.randbelow(999999)),'password':password})
-assert r[0]==201,r[1];assert a.call('/api/v1/accounts.php?action=approve','POST',{'user_id':r[1]['data']['user_id'],'role':'staff'})[0]==200;assert other.login('theme_'+suffix,password)[0]==200
+assert r[0]==201,r[1];assert manage_account(a, 'approve', {'user_id':r[1]['data']['user_id'],'role':'staff'})[0]==200;assert other.login('theme_'+suffix,password)[0]==200
 record=RUNTIME/'other.json';record.write_text(json.dumps({'username':'theme_'+suffix,'password':password}));record.chmod(0o600)
 check(data(other)['settings']['theme']=='dark','new accounts retain the dark default')
 check(save(other,'light')[0]==200 and save(a,'dark')[0]==200 and data(other)['settings']['theme']=='light','theme preferences remain account-private')

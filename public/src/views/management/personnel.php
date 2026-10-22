@@ -6,10 +6,10 @@ staff_page_open([
     'module' => 'personnel',
     'title_key' => 'personnel.personal_hospital_de_clinicas',
     'title' => 'Personal | Hospital de Clínicas',
-    'stylesheet' => 'management/catalogs.css?v=stage6',
+    'stylesheet' => 'management/catalogs.css?v=catalog-details',
     'background' => false,
     'described_nav' => false,
-    'script' => 'management/personnel.js?v=20261020-pilot',
+    'script' => 'management/personnel.js?v=catalog-details',
 ]);
 ?>
 <div class="personnel-layout">
@@ -142,12 +142,23 @@ staff_page_open([
     </div>
   </main>
 
-  <dialog class="person-dialog" id="person-dialog" aria-labelledby="dialog-title">
-    <div class="dialog-heading">
-      <h2 id="dialog-title" data-i18n="personnel.detalle_del_personal">Detalle del personal</h2>
-      <button type="button" id="dialog-close" aria-label="Cerrar detalle" data-i18n-aria-label="ambulances.cerrar_detalle" data-i18n="documents_upload.times">×</button>
+  <dialog class="person-dialog catalog-detail-dialog" id="person-dialog" aria-labelledby="dialog-title" aria-describedby="person-detail-description">
+    <header class="dialog-heading">
+      <div><h2 id="dialog-title" data-i18n="personnel.detalle_del_personal">Detalle del personal</h2><p id="person-detail-description" data-i18n="doctors.perfil_profesional_y_datos_de_contacto">Perfil profesional y datos de contacto.</p></div>
+      <button type="button" id="dialog-close" class="catalog-detail-close" aria-label="Cerrar detalle" data-i18n-aria-label="ambulances.cerrar_detalle"><img src="../../../assets/Icons/cross-icon.svg" alt=""></button>
+    </header>
+    <div class="catalog-detail-body">
+      <section class="catalog-detail-summary" aria-labelledby="person-detail-name">
+        <span class="catalog-detail-icon"><img id="person-detail-icon" src="../../../assets/Icons/steering-wheel.svg" alt=""></span>
+        <div class="catalog-detail-identity"><h3 id="person-detail-name"></h3><p id="person-detail-role"></p></div>
+        <span class="catalog-detail-status" id="person-detail-status"></span>
+      </section>
+      <section class="catalog-detail-card" aria-labelledby="person-detail-section">
+        <h3 id="person-detail-section" data-i18n="routes.informacion_general">Información general</h3>
+        <dl class="catalog-detail-fields" id="dialog-details"></dl>
+      </section>
     </div>
-    <dl id="dialog-details"></dl>
+    <form method="dialog" class="dialog-actions"><button type="submit" class="cancel-button" data-i18n="settings.cerrar">Cerrar</button></form>
   </dialog>
 </body>
 

@@ -8,7 +8,7 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor
 import urllib.error
 import urllib.request
-from auth_integration import Client, PHP, ROOT, ADMIN_PASSWORD, sql
+from auth_integration import manage_account, Client, PHP, ROOT, ADMIN_PASSWORD, sql
 
 assert os.environ.get('HOSPITAL_DB_NAME', '').endswith('_test')
 checks = 0
@@ -40,7 +40,7 @@ def register(admin, index):
     status, payload, _ = client.call('/api/v1/auth.php?action=register','POST',body)
     assert status == 201, payload
     uid = payload['data']['user_id']
-    assert admin.call('/api/v1/accounts.php?action=approve','POST',{'user_id':uid,'role':'staff'})[0] == 200
+    assert manage_account(admin, 'approve', {'user_id':uid,'role':'staff'})[0] == 200
     assert client.login(username,PASSWORD)[0] == 200
     return client, username, uid
 
@@ -85,6 +85,14 @@ def run():
     check(current['user']['full_name']=='Personal de prueba' and current['settings']['default_facility_id']==center and len(current['settings']['specialties'])==2,'reload reads committed profile relationships')
     check(data(second)['user']['full_name']=='' and data(second)['settings']['specialties']==[] and data(second)['settings']['default_facility_id'] is None,'another account keeps its own empty profile')
     check(current['user']['roles']==['staff'],'self-declared specialties never grant privileges')
+    status, payload, _ = first.call('/api/v1/catalogs.php?action=specialties')
+    check(status == 200 and {'Cirugía', 'Pediatría'} <= {row['name'] for row in payload['data']} and
+          all(set(row) == {'id', 'name'} and isinstance(row['id'], str) for row in payload['data']),
+          'specialty suggestions expose the saved catalog with canonical IDs and labels')
+    check(Client().call('/api/v1/catalogs.php?action=specialties')[0] == 401,
+          'specialty suggestions require an active staff session')
+    status, payload, headers = first.call('/api/v1/catalogs.php?action=specialties', 'POST', {})
+    check(status == 405 and headers['Allow'] == 'GET', 'specialty suggestions reject writes')
     restored=Client(); assert restored.login(username,PASSWORD)[0]==200
     check(data(restored)['user']['full_name']=='Personal de prueba','another browser restores the same saved profile')
     check(first.call('/api/v1/settings.php?action=profile-update','POST',{'version':initial['settings']['version'],'full_name':'Stale'})[0]==409,'stale profile version is rejected')

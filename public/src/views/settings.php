@@ -7,16 +7,16 @@ staff_page_open([
     'title_key' => 'main_menu.configuracion',
     'title' => 'Configuración',
     'theme_styles' => 'main-menu settings',
-    'stylesheet' => 'settings.css?v=ui-review-2',
+    'stylesheet' => 'settings.css?v=security-review',
     'src_prefix' => '../',
     'assets_prefix' => '../../assets/',
     'body_class' => '',
     'background' => true,
     'described_nav' => true,
     'nav_section' => 'settings',
-    'fonts' => 'https://fonts.googleapis.com/css2?family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Krub:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap',
+    'font_stylesheet' => 'interface',
     'search' => false,
-    'script' => 'settings.js?v=ui-repairs',
+    'script' => 'settings.js?v=security-review',
 ]);
 ?>
 
@@ -51,6 +51,7 @@ staff_page_open([
                     </button>
                     <div class="profile-menu" id="settings-profile-menu">
                         <button type="button" class="profile-menu-item" data-security-notifications><img src="../../assets/Icons/guard-icon.svg" alt=""><span data-i18n="settings.notificaciones_de_seguridad_2">Notificaciones de seguridad</span></button>
+                        <button type="button" class="profile-menu-item" data-sessions><img src="../../assets/Icons/person-icon.svg" alt=""><span data-i18n="security.active_sessions">Sesiones activas</span></button>
                         <div class="profile-menu-divider"></div>
                         <button type="button" class="profile-menu-item" data-logout><img src="../../assets/Icons/logout-icon.svg" alt=""><span data-i18n="main_menu.cerrar_sesion">Cerrar sesión</span></button>
                     </div>
@@ -197,6 +198,24 @@ staff_page_open([
             <div class="settings-dialog-body"><p id="specialty-remove-description"></p></div>
             <div class="settings-dialog-actions"><button type="button" class="cancel-button" data-close-dialog autofocus data-i18n="settings.cancelar">Cancelar</button><button type="submit" class="delete-button" data-i18n="settings.quitar_especializacion">Quitar especialización</button></div>
         </form>
+    </dialog>
+    <dialog id="password-dialog" class="settings-dialog" aria-labelledby="password-dialog-title">
+        <form id="password-form" novalidate>
+            <div class="dialog-heading"><h2 id="password-dialog-title" data-i18n="settings.cambiar_contrasena">Cambiar contraseña</h2><button type="button" class="icon-button" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><img src="../../assets/Icons/cross-icon.svg" alt=""></button></div>
+            <div class="settings-dialog-body password-fields">
+                <label><span data-i18n="settings.contrasena_actual">Contraseña actual</span><input id="current-password" type="password" autocomplete="current-password" required maxlength="72"></label>
+                <label><span data-i18n="settings.nueva_contrasena">Nueva contraseña</span><input id="new-password" type="password" autocomplete="new-password" required minlength="12" maxlength="72" aria-describedby="password-help"></label>
+                <label><span data-i18n="recovery.confirm_password">Confirmar contraseña</span><input id="confirm-password" type="password" autocomplete="new-password" required minlength="12" maxlength="72"></label>
+                <p id="password-help" data-i18n="settings.al_guardar_cerraran_tus_sesiones_volve_a_ingresar_con_la_nueva_contrasena">Al guardar, cerrarán tus sesiones. Volvé a ingresar con la nueva contraseña.</p>
+                <a id="password-recovery-link" href="register-restore/restore-password.php" data-i18n="settings.olvidaste_tu_contrasena">¿Olvidaste tu Contraseña?</a>
+            </div>
+            <div class="settings-dialog-actions"><button type="button" class="cancel-button" data-close-dialog data-i18n="settings.cancelar">Cancelar</button><button type="submit" class="save-button" data-i18n="settings.guardar_contrasena">Guardar contraseña</button></div>
+        </form>
+    </dialog>
+    <dialog id="sessions-dialog" class="settings-dialog" aria-labelledby="sessions-title">
+        <div class="dialog-heading"><h2 id="sessions-title" data-i18n="security.active_sessions">Sesiones activas</h2><button type="button" class="icon-button" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><img src="../../assets/Icons/cross-icon.svg" alt=""></button></div>
+        <div class="settings-dialog-body"><ul id="session-list"></ul></div>
+        <div class="settings-dialog-actions"><button type="button" class="cancel-button" data-close-dialog data-i18n="settings.cerrar">Cerrar</button></div>
     </dialog>
     <dialog id="account-dialog" class="settings-dialog" aria-labelledby="account-dialog-title">
         <div class="dialog-heading"><h2 id="account-dialog-title" data-i18n="settings.notificaciones_de_seguridad_2">Notificaciones de seguridad</h2><button type="button" class="icon-button" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><img src="../../assets/Icons/cross-icon.svg" alt=""></button></div>

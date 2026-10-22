@@ -149,11 +149,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.HospitalTheme.settle(choice); render(state);
     }));
 
-    document.querySelector('.reset-password').addEventListener('click', () => {
+    const passwordDialog = byId('password-dialog'), passwordForm = byId('password-form');
+    document.querySelector('.reset-password').addEventListener('click', () => { passwordDialog.showModal(); byId('current-password').focus(); });
+    byId('password-recovery-link').addEventListener('click', event => {
         const url = new URL(api.page('src/views/register-restore/restore-password.php'));
         if (window.HospitalI18n.locale === 'en') url.searchParams.set('lang', 'en');
-        location.assign(url.href);
+        event.currentTarget.href = url.href;
     });
+    passwordDialog.addEventListener('cancel', event => { if (passwordForm.dataset.busy) event.preventDefault(); });
+    passwordDialog.addEventListener('close', () => passwordForm.reset());
+    passwordForm.addEventListener('submit', async event => {
+        event.preventDefault(); if (passwordForm.dataset.busy) return;
+        if (!passwordForm.checkValidity()) {
+            api.report(new Error(window.HospitalI18n.t('errors.revisa_los_campos_indicados')), 'change-password'); return;
+        }
+        if (byId('new-password').value !== byId('confirm-password').value) {
+            api.report(new Error(window.HospitalI18n.t('recovery.password_mismatch')), 'change-password'); return;
+        }
+        const body = {current_password:byId('current-password').value, new_password:byId('new-password').value};
+        passwordForm.dataset.busy = 'true';
+        passwordForm.querySelectorAll('input,button').forEach(control => {control.disabled = true;});
+        try {
+            await api.post('auth.php?action=change-password', body);
+            passwordForm.reset(); location.assign(api.page('index.php'));
+        } catch (error) { api.report(error, 'change-password'); }
+        finally {
+            delete passwordForm.dataset.busy;
+            passwordForm.querySelectorAll('input,button').forEach(control => {control.disabled = false;});
+        }
+    });
+
+    async function showSessions() {
+        const list = byId('session-list'); list.setAttribute('aria-busy', 'true');
+        try {
+            const sessions = await api.get('auth.php?action=sessions');
+            list.replaceChildren();
+            for (const session of sessions) {
+                const item = document.createElement('li'); item.className = 'session-row';
+                const details = document.createElement('div'), label = document.createElement('strong'), seen = document.createElement('p');
+                const browser = ['Edg','Firefox','Chrome','Safari'].find(name => (session.user_agent || '').includes(name));
+                window.HospitalI18n.bindText(label, () => session.is_current ? window.HospitalI18n.t('security.this_session') : browser === 'Edg' ? 'Edge' : browser || window.HospitalI18n.t('security.other_device'));
+                window.HospitalI18n.bindText(seen, () => window.HospitalI18n.t('security.last_seen', {date:new Intl.DateTimeFormat(window.HospitalI18n.locale, {dateStyle:'short',timeStyle:'short',timeZone:'America/Montevideo'}).format(new Date(session.last_seen_at))}));
+                details.append(label, seen);
+                const actions = document.createElement('div'); actions.className = 'settings-dialog-actions';
+                const revoke = document.createElement('button'); revoke.type = 'button'; revoke.className = 'cancel-button'; revoke.dataset.sessionId = session.id;
+                window.HospitalI18n.bindText(revoke, () => window.HospitalI18n.t('main_menu.cerrar_sesion'));
+                revoke.addEventListener('click', async () => {
+                    revoke.disabled = true;
+                    try {
+                        const result = await api.post('auth.php?action=revoke-session', {session_id:session.id});
+                        if (result.current_session_revoked) location.assign(api.page('index.php')); else await showSessions();
+                    } catch (error) { api.report(error, 'sessions'); revoke.disabled = false; }
+                });
+                actions.append(revoke); item.append(details, actions); list.append(item);
+            }
+            if (!sessions.length) {
+                const empty = document.createElement('li'); window.HospitalI18n.bindText(empty, () => window.HospitalI18n.t('security.no_sessions')); list.append(empty);
+            }
+        } catch (error) { api.report(error, 'sessions'); }
+        finally { list.setAttribute('aria-busy', 'false'); }
+    }
+    document.querySelector('[data-sessions]').addEventListener('click', () => { byId('sessions-dialog').showModal(); showSessions(); });
     const specialtyDialog = byId('specialty-dialog');
     document.querySelector('.specialty-add').addEventListener('click', () => { specialtyDialog.showModal(); byId('specialty-name').focus(); });
     async function changeSpecialties(names) {

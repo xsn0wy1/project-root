@@ -99,6 +99,17 @@
     setOpen(false);
   }
 
+  function detailRows(root, fields) {
+    root.replaceChildren(...fields.map(([key, value]) => {
+      const row = document.createElement('div'); row.className = 'catalog-detail-field';
+      const term = document.createElement('dt'), description = document.createElement('dd');
+      window.HospitalI18n.bindText(term, () => window.HospitalI18n.t(key));
+      window.HospitalI18n.bindText(description, typeof value === 'function' ? value : () => value);
+      row.append(term, description);
+      return row;
+    }));
+  }
+
   // Card labels follow the same translated headings as the desktop tables.
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.personnel-table,.destinations-table').forEach(table => {
@@ -110,5 +121,5 @@
       window.addEventListener('hospital:localechange', () => queueMicrotask(labelRows)); labelRows();
     });
   });
-  window.HospitalUI = Object.freeze({escapeHtml, normalize, bindNavigation, bindProfileMenu});
+  window.HospitalUI = Object.freeze({escapeHtml, normalize, bindNavigation, bindProfileMenu, detailRows});
 })();

@@ -1857,5 +1857,11 @@
   "accounts.no_accounts": "Aún no hay usuarios",
   "accounts.no_accounts_help": "Las solicitudes de registro del personal aparecerán aquí.",
   "accounts.no_matches": "No encontramos usuarios",
-  "accounts.no_matches_help": "Prueba con otro nombre, email o estado."
+  "accounts.no_matches_help": "Prueba con otro nombre, email o estado.",
+  "security.active_sessions": "Sesiones activas",
+  "security.this_session": "Esta sesión",
+  "security.other_device": "Otro dispositivo",
+  "security.last_seen": "Última actividad: {date}",
+  "security.no_sessions": "No hay sesiones activas.",
+  "destinations.ubicacion_contacto_y_acceso": "Ubicación, contacto e indicaciones de acceso."
 }

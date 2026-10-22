@@ -4,6 +4,20 @@ namespace Hospital\Http;
 
 final class Response
 {
+    public static function finish($data, int $status): void
+    {
+        ignore_user_abort(true);
+        ini_set('zlib.output_compression', '0');
+        ob_start();
+        self::json($data, $status);
+        $body = ob_get_clean();
+        header('Content-Length: ' . strlen($body));
+        header('Connection: close');
+        echo $body;
+        if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+        else { while (ob_get_level() > 0) ob_end_flush(); flush(); }
+    }
+
     public static function json($data, int $status = 200, array $meta = []): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
