@@ -43,6 +43,7 @@ function staff_page_head(array $page): void
 <?php endforeach; ?>
   <title data-i18n="<?= page_escape($page['title_key']) ?>"><?= page_escape($page['title']) ?></title>
   <link rel="icon" type="image/x-icon" href="<?= $assets ?>hospital-dark.ico">
+  <link rel="stylesheet" href="<?= $src ?>css/base.css">
 <?php foreach ($page['vendor_styles'] ?? [] as $style): ?>
   <link rel="stylesheet" href="<?= page_escape($style['href']) ?>" integrity="<?= page_escape($style['integrity']) ?>" crossorigin="anonymous">
 <?php endforeach; ?>

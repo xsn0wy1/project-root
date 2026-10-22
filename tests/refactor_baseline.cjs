@@ -186,21 +186,39 @@ async function navigate(pair, file, theme, bases, locale) {
     try {
         const currentBase = process.env.BASELINE_CURRENT_URL || 'http://127.0.0.1:8091';
         const proxy = process.env.BASELINE_REFERENCE_PROXY_URL;
+        const addedBaseSheet = process.env.BASELINE_ADDED_BASE_SHEET === '1';
+        assert(!addedBaseSheet || (fullStyles && proxy), 'An empty base-sheet counterpart requires the strict same-origin gate');
         const bases = [proxy ? currentBase : process.env.BASELINE_REFERENCE_URL || 'http://127.0.0.1:8092', currentBase];
         const contexts = [];
-        const requestedMatrix = {sizes: matrix, locales, themes: ['dark', 'light'], pixelLimit, fullStyles};
+        const requestedMatrix = {sizes: matrix, locales, themes: ['dark', 'light'], pixelLimit, fullStyles, addedBaseSheet};
         if (process.argv.includes('--resume') && report.matrix) assert.deepEqual(report.matrix, requestedMatrix, 'Resume matrix changed');
         report.matrix = requestedMatrix;
         report.browser = browser.version();
         report.externalTileFixture = fullStyles;
+        report.referenceBaseSheetPlaceholder = addedBaseSheet;
         for (const [copy, base] of bases.entries()) {
             const staff = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             const publicContext = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             if (proxy && copy === 0) for (const context of [staff, publicContext]) {
                 // Present both copies at one browser origin, so real QR/link data stays equal.
                 await context.route(base + '/**', async route => {
-                    const response = await route.fetch({url: route.request().url().replace(base, proxy), maxRedirects: 0});
-                    await route.fulfill({response});
+                    const request = route.request();
+                    if (addedBaseSheet && new URL(request.url()).pathname === '/src/css/base.css') {
+                        await route.fulfill({status: 200, contentType: 'text/css', body: '/* Empty reference counterpart for the authorized new base sheet. */'});
+                        return;
+                    }
+                    const response = await route.fetch({url: request.url().replace(base, proxy), maxRedirects: 0});
+                    if (addedBaseSheet && request.isNavigationRequest() && response.status() === 200 &&
+                        response.headers()['content-type']?.includes('text/html')) {
+                        const html = await response.text();
+                        assert(!html.includes('css/base.css'), 'Reference already has the new base sheet');
+                        assert(html.includes('<link rel="stylesheet"'), 'Reference must have a stylesheet insertion point');
+                        // Compare every computed property, including the new non-rendered link.
+                        // Only the candidate receives real base-sheet rules; the reference stays empty.
+                        const body = html.replace('<link rel="stylesheet"',
+                            '<link rel="stylesheet" href="' + base + '/src/css/base.css">\n  <link rel="stylesheet"');
+                        await route.fulfill({response, body});
+                    } else await route.fulfill({response});
                 });
             }
             if (fullStyles) for (const context of [staff, publicContext]) {

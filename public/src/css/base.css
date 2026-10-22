@@ -1,0 +1,86 @@
+/* Shared rules. Page sheets keep their page-specific values and overrides. */
+i18n-text { display: contents; }
+
+[hidden] {
+  display: none !important;
+}
+
+.form-message.error {
+  color: #ef7b85;
+}
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+.tarjeta button:enabled:hover {
+
+    background-color: #1d4ed8;
+
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 88px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  flex: none;
+}
+
+.metric-card div { min-width: 0; display: flex; flex-direction: column; }
+
+.directory-panel {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 11px;
+  overflow: hidden;
+}
+
+.directory-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(0, 520px);
+  justify-content: space-between;
+  gap: 24px;
+  flex: none;
+  margin: 12px 0 9px;
+}
+
+.filter-button.is-active {
+  background: #4b6dde url("../../assets/special-bg.png") center / cover no-repeat;
+  color: #fff;
+}
+
+.status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+.row-action .chevron-icon { transform: rotate(180deg); }
+
+.empty-state[hidden] { display: none; }
+
+.pagination { display: flex; align-items: center; gap: 4px; }
+
+.pagination button.is-active {
+  border-color: #6689ef;
+  background: #4b6dde url("../../assets/special-bg.png") center / cover no-repeat;
+  color: #fff;
+}
+
+.has-selection .detail-panel { visibility: visible; transform: translateX(0); }
+
+.detail-hero-text { min-width: 0; flex: 1; }
+
+.detail-hero .status-pill { align-self: flex-start; }
+
+.detail-card dd { margin: 0; overflow-wrap: anywhere; }
+
+.field-control select { cursor: pointer; }
+
+.field-control:hover { border-color: rgba(171, 186, 234, .5); }
+
+.delete-dialog-content { padding: 22px; }
+
+.delete-button { border: 1px solid rgba(244, 63, 94, .4); background: rgba(244, 63, 94, .12); color: #ff9eae; }
+
+.full-width { grid-column: 1 / -1; }

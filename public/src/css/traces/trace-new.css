@@ -21,10 +21,6 @@
     box-sizing: border-box;
 }
 
-[hidden] {
-    display: none !important;
-}
-
 /* The reference trace panel leaves 34px below the card. */
 .app-shell {
     padding-bottom: 34px;
@@ -585,10 +581,6 @@ input[type="time"] {
 
 .form-message:empty {
     visibility: hidden;
-}
-
-.form-message.error {
-    color: #ef7b85;
 }
 
 .form-actions {

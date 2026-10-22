@@ -88,7 +88,6 @@
 .filter-button { min-width: 0; flex: 1; padding: 0 7px; border: 0; border-right: 1px solid var(--doctor-line); background: transparent; color: #bec6da; font-size: 11px !important; white-space: nowrap; transition: background .2s ease, color .2s ease; }
 .filter-button:last-child { border-right: 0; }
 .filter-button:hover { background: rgba(171, 186, 234, .11); color: #fff; }
-.filter-button.is-active { background: #4b6dde url("../../../assets/special-bg.png") center / cover no-repeat; color: #fff; }
 
 .doctor-table-container { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: visible; }
 .doctor-table { width: 100%; height: 100%; min-width: 0; min-height: 0; display: flex; flex-direction: column; border-collapse: separate; border-spacing: 0; font-size: 13px; }
@@ -164,7 +163,7 @@
 .detail-card h3 img { width: 15px; height: 15px; }
 .detail-card dl { display: grid; grid-template-columns: 115px minmax(0, 1fr); gap: 10px 12px; margin: 0; font-size: 11px; line-height: 1.4; }
 .detail-card dt { color: var(--doctor-muted); }
-.detail-card dd { margin: 0; overflow-wrap: anywhere; }
+
 .detail-card p { margin: 0; font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; color: #bec7dd; }
 .detail-actions { display: flex; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 1px solid var(--doctor-line); flex: none; }
 
@@ -193,8 +192,7 @@
 .field-control { height: 40px; min-width: 0; display: flex; align-items: center; gap: 9px; padding: 0 11px; border: 1px solid var(--doctor-line-bright); border-radius: 10px; background: var(--doctor-control); transition: border-color .24s ease, background .24s ease, box-shadow .24s ease; }
 .field-control img { width: 16px; height: 16px; opacity: .7; }
 .field-control input, .field-control select { width: 100%; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: transparent; color: var(--doctor-text); font-size: 12px; font-weight: 400; }
-.field-control select { cursor: pointer; }
-.field-control:hover { border-color: rgba(171, 186, 234, .5); }
+
 .field-control:focus-within { border-color: var(--doctor-accent); background: #17213f; box-shadow: 0 0 0 3px rgba(170, 191, 255, .1); }
 .doctors-page .field-control :is(input, select):focus-visible { outline: none; }
 .field-control input::placeholder, .form-grid textarea::placeholder { color: #818ca5; }
@@ -204,7 +202,7 @@
 .status-dot[data-status="inactive"] { color: #fb8195; }
 .time-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .time-fields .field-control { padding: 0 9px; }
-.full-width { grid-column: 1 / -1; }
+
 .form-grid textarea { width: 100%; min-height: 64px; resize: vertical; padding: 10px 12px; border: 1px solid var(--doctor-line-bright); border-radius: 10px; background: var(--doctor-control); color: var(--doctor-text); font-size: 12px; font-weight: 400; line-height: 1.5; }
 .form-error { margin: 14px 0 0; font-size: 12px; color: #ff9cab; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }

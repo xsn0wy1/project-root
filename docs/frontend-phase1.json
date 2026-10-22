@@ -181,6 +181,121 @@
       },
       "readability_checks": 98,
       "transient_run_note": "One map API-settle timeout was resumed on unchanged source; all four final shards passed."
+    },
+    "wp1.2": {
+      "status": "passed",
+      "metrics": {
+        "application": {
+          "files": 267,
+          "bytes": 12592668,
+          "code_files": 171,
+          "code_bytes": 2303408,
+          "repeated_8_line_groups": 559,
+          "repeated_8_line_extra_occurrences": 622
+        },
+        "css": {
+          "files": 27,
+          "bytes": 693367,
+          "rules": 5753,
+          "grouping_rules": 166,
+          "keyframe_rules": 23,
+          "motion_rules": 246,
+          "motion_signature": "ec22135a4b0450c33f5e435db6827c59fac92ef48af51028af1281907ec78dc7",
+          "theme_bytes": 191486,
+          "theme_rules": 1166,
+          "theme_grouping_rules": 8,
+          "hardcoded_colors": 3278,
+          "explicit_colors": 2977,
+          "named_colors": 301,
+          "var_uses": 1556,
+          "cross_sheet_duplicates": {
+            "groups": 68,
+            "extra_occurrences": 79
+          },
+          "page_sheet_duplicates": {
+            "groups": 66,
+            "extra_occurrences": 77
+          },
+          "theme_unscoped_duplicates": {
+            "groups": 89,
+            "extra_occurrences": 95
+          }
+        },
+        "js": {
+          "files": 35,
+          "bytes": 597495,
+          "nonblank_lines": 14311,
+          "lines_over_140": 184,
+          "lines_over_250": 98,
+          "helper_definitions": {
+            "setBusy": 10,
+            "report": 10,
+            "icon": 9,
+            "toast": 5,
+            "escape": 2,
+            "escapeHtml": 1,
+            "renderPagination": 3,
+            "upsert": 4,
+            "fromApi": 4
+          },
+          "helper_total": 48,
+          "getters": 218,
+          "translation_getters": 177,
+          "html_references": 80,
+          "nested_ternaries": 35,
+          "nested_decision_chains": 0,
+          "functions_over_60": 70,
+          "function_count": 2274
+        },
+        "views": {
+          "inline_style_attributes": 40,
+          "i18n_inline_style_wrappers": 0,
+          "i18n_style_templates": 0,
+          "cache_buster_strings": 28,
+          "view_cache_buster_strings": 27
+        }
+      },
+      "js_line_attribution": {
+        "formatting_only_nonblank_line_delta": 0,
+        "changed_ast_nonblank_line_delta": 0,
+        "method": "AST-equal files are formatting-only; changed-AST file deltas can include formatting and behavior together."
+      },
+      "motion_declarations_equal": true,
+      "visual": {
+        "page_pairs": 300,
+        "interaction_pairs": 336,
+        "style_pairs": 636,
+        "style_differences": 0,
+        "element_observations_per_side": 161590,
+        "property_values_per_side": 78065080,
+        "maximum_pixel_difference_percent": 0,
+        "unhandled_errors": 0,
+        "missing_assets": 0,
+        "browser": "155.0.8059.85",
+        "incremental_verification": {
+          "retained_unchanged_page_pairs": 504,
+          "fresh_affected_page_pairs": 132,
+          "proof": "docs/frontend-shared-grid-proof.json",
+          "reason": "Restore .detail-grid display/gap/margin to its original page-local declarations. The class is present only in Ambulances, Patients and Transfer detail (including their JS templates)."
+        }
+      },
+      "source_equivalence": {
+        "passed": true,
+        "php_streams": 90,
+        "js_asts": 35,
+        "exact_intentional_files": 21
+      },
+      "browser_assertions": 534,
+      "theme_cases": 50,
+      "sql_api_checks": 203,
+      "i18n": {
+        "keys": 1816,
+        "fresh_pages": 25,
+        "literal_references": 1111
+      },
+      "moved_whole_css_groups": 23,
+      "retained_whole_groups": 45,
+      "reference_empty_base_sheet_counterpart": true
     }
   }
 }

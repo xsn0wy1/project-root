@@ -24,3 +24,20 @@ The duplicate inventory now includes the serialized shorthand declaration as wel
 Colors include 2,991 explicit literals and 301 named colors. JS helper definitions remain: setBusy 10, report 10, icon 9, toast 5, escape 2, escapeHtml 1, renderPagination 3, upsert 4, fromApi 4. Formatting-driven JS line growth is zero. Raw snapshots, screenshots and fictional fixtures stay under ignored `tests/.runtime/frontend/phase1/`.
 
 Verification passes: **636 computed-style pairs, zero property differences, zero pixel differences**, no missing assets or new console/unhandled errors. All seven required browser suites pass (534 assertions plus 50 theme page/viewport cases); their existing integrations pass 203 SQL/API checks. Translation coverage checks 1,816 bilingual keys, 25 fresh renders and 1,111 literal references; readability checks pass 98 cases. The structural gate verifies 90 PHP streams, 35 JS ASTs and exactly 20 declared intentional files. One map API-settle timeout was resumed against unchanged source. No later work package is applied in this commit.
+
+## WP-1.2 — shared base sheet
+
+A new `public/src/css/base.css` is loaded first on every staff, auth and public survey page. It contains the existing i18n wrapper rule and 23 exact whole rule blocks, including all four copies of the visually-hidden utility. The remaining 45 whole-block candidates and unsplit selector-list candidates stay local. Trial comparisons rejected changes to fonts, inherited colors, filter borders, catalog page indicators and dialog/action spacing. Motion and hover/focus variants remain local where their scope differs. Relative image paths preserve the same public asset at root and `/hospital`. Decisions are in `frontend-shared-rules.json`. After localizing detail-grid, 108 comparisons were rerun for its three source-confirmed pages; a separate 24-pair document-viewer replay replaces one isolated logo rasterization difference. The other 504 unchanged-page comparisons retain their original evidence. Exact scope/hashes are in `frontend-shared-grid-proof.json`. WP-1.3 adds a fresh complete cumulative replay. The strict reference uses an empty counterpart for the authorized new head link; every element/property remains compared.
+
+| Measurement | Before package | After package |
+|---|---:|---:|
+| First-party code bytes | 2,306,079 | 2,303,408 |
+| CSS bytes / style rules | 696,207 / 5,788 | 693,367 / 5,753 |
+| Theme bytes | 191,520 | 191,486 |
+| Hardcoded colors / var() | 3,292 / 1,556 | 3,278 / 1,556 |
+| Page duplicate groups / extras | 89 / 113 | 66 / 77 |
+| JS nonblank lines / helper definitions | 14,311 / 48 | 14,311 / 48 |
+| Getters / nested expressions / long functions | 218 / 35 / 70 | 218 / 35 / 70 |
+| Inline styles / handwritten view versions | 40 / 27 | 40 / 27 |
+
+Verification passes: **636 style/pixel pairs, zero computed-style differences and zero pixel differences**, all seven required browser suites (534 assertions plus 50 theme cases), 203 SQL/API checks, and 25 fresh translation/DOM/asset checks. No missing assets, new console errors or unhandled errors. Structural declarations match the exact final files; all 35 JS ASTs are equal for this package. Formatting-driven JS line growth is zero. No color merging, backend/domain/API change, dependency, build step or archive.

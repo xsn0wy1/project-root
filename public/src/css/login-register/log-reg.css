@@ -10,8 +10,6 @@ body {
     min-height: 100vh;
 }
 
-
-
 .tarjeta {
     width: 350px;
     padding: 30px;
@@ -22,8 +20,6 @@ body {
     box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.35);
 }
 
-
-
 .tarjeta h1 {
     text-align: center;
     font-size: 28px;
@@ -31,8 +27,6 @@ body {
     margin-bottom: 25px;
     color: #ffffff;
 }
-
-
 
 .tarjeta input {
     width: 100%;
@@ -46,14 +40,10 @@ body {
     box-sizing: border-box;
 }
 
-
-
 .tarjeta input::placeholder {
     color: rgba(255, 255, 255, 0.7);
 
 }
-
-
 
 .tarjeta button {
 
@@ -81,16 +71,6 @@ body {
 
 }
 
-
-
-.tarjeta button:enabled:hover {
-
-    background-color: #1d4ed8;
-
-}
-
-
-
 .tarjeta a {
 
     text-decoration: none;
@@ -101,23 +81,17 @@ body {
 
 }
 
-
-
 .tarjeta a:hover {
 
     color: #ffffff;
 
 }
 
-
-
 .tarjeta p {
 
     color: #b1b1b1;
 
 }
-
-
 
 button:focus,
 
@@ -163,7 +137,6 @@ input:focus-visible {
     backdrop-filter: none;
     filter: brightness(0) invert(1);
 }
-
 
 /* Estilos de la barra de seguridad */
 .strength-meter {

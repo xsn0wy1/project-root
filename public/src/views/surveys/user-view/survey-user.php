@@ -16,6 +16,7 @@ header('X-Content-Type-Options: nosniff');
   <meta name="referrer" content="no-referrer">
   <title data-i18n="survey.encuestas_hospital_de_clinicas">Encuestas | Hospital de Clínicas</title>
   <link rel="icon" type="image/x-icon" href="../../../../assets/hospital-gradient.ico">
+  <link rel="stylesheet" href="../../../css/base.css">
   <link rel="stylesheet" href="../../../../assets/vendor/fonts/inclusive-regular.css?v=local-1">
   <link rel="stylesheet" href="survey-user.css?v=20261015-icons">
   <script src="../../../api-connection/i18n.js?v=20261019-i18n" defer></script>

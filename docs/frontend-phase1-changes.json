@@ -100,5 +100,112 @@
       "after_sha256": "3d97a1f874023de6c617f68abadd8fd47e5f8182570439a57d3f4540d865eeee",
       "reason": "Move the unchanged i18n-text display:contents value from static/generated inline attributes to the globally loaded appearance sheet; no text or other styles change."
     }
+  },
+  "wp1.2": {
+    "backend/php/components/auth.php": {
+      "before_sha256": "4d047fc192512c36117ff1c743fe974c392073883e96c8580a8d5b12a1cc0229",
+      "after_sha256": "339467d332b5e78c999ec37caf70296613c6aca98498820adf9a3b2d403a5ab4",
+      "reason": "Load the new base stylesheet before existing stylesheets on staff, auth and public survey pages."
+    },
+    "backend/php/components/shell.php": {
+      "before_sha256": "35333a8a9b326d3c9f3f72b427452988b8051761b13cedeb488b70dade784742",
+      "after_sha256": "0fa2ed906f19f6b2c7026e6122dd2ee22b983634727fd032c9c1e439a667cac6",
+      "reason": "Load the new base stylesheet before existing stylesheets on staff, auth and public survey pages."
+    },
+    "public/src/css/base.css": {
+      "before_sha256": null,
+      "after_sha256": "f612eb6f8e224e07bc8898008d2165162d7ad588fb2abf6b09e85e838c253464",
+      "reason": "Add the globally loaded base sheet with selected identical declarations, preserving relative image URLs and the existing i18n-text rule."
+    },
+    "public/src/css/documents/documents-upload.css": {
+      "before_sha256": "214a86cc4ca77f99491082f5ac1a818873d16f7f4f53a07a16e76b46e3ef02f6",
+      "after_sha256": "d825fdafbb962562fc427fb8eaedc3ca073f6a6e4602c7aba647fc7f223c5a84",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/documents/documents-viewer.css": {
+      "before_sha256": "38efe052d64501e26f9dd37a8b0130562ad7947ff117a8cbadc9442e5f0a68d1",
+      "after_sha256": "df6bee6937196e7ad45fa3963208f8fe43f6bd92e5b2a3f3ce0c2f0755a28849",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/login-register/log-reg.css": {
+      "before_sha256": "054830f93ad623e6cfce49df4f748316e19c6203d10843afde98106b9810bf70",
+      "after_sha256": "4c4ac8f9c682091732fecc23f97ddc1dcc5665df574ae324c1c6e0176b739664",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/login-register/pass-restore.css": {
+      "before_sha256": "20881ba15a6ef8570ce9b6149b0201be614b3e6d6272a3bf117e895d8b5b77ec",
+      "after_sha256": "3bbc102749d5c043ba443a77c2b79fa2bc6729f02006a6464849b0306e1ff099",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/main-menu.css": {
+      "before_sha256": "1209e8f7fb647b17aa8f1b6fc2de4df60d1eafe6bbacfedebe01ac94170e2529",
+      "after_sha256": "644430f6a9b7b48afc742a95cf5cda44a3b27b860e81f11f173f0a67cc52b199",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/management/ambulances.css": {
+      "before_sha256": "798b3f3c8ea6d47b55da13e7f06046f4ed0cb2a5c6b93d2caad22e2cae3cc0b0",
+      "after_sha256": "60ffc922fdeb966c55f3b60501a5149b21a134354decdacdd2fbb1873c564943",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/management/catalogs.css": {
+      "before_sha256": "1a1d2c68c11555c5396e6c78f1c2d882ce485bbf21c8ed3cd0e3346d543ecfd4",
+      "after_sha256": "f6364fcd9b58d666c9292cb65be52d6028546c658d60c23b663d8080ed1dcb1d",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/management/doctors.css": {
+      "before_sha256": "c59b8de5cbdb6971f1d522c090ee0b5e3d90fd8f89da8f6d47081c8de3974d50",
+      "after_sha256": "9015c57f46e042b36d8b2afb7d5e6e0bba2f4bf440e1d5c4046e5a0b7cee741b",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/management/patients.css": {
+      "before_sha256": "fa8420d53be5d27b875fffc8496b42cfa8b9e9203064063c353dc139f8fdc7be",
+      "after_sha256": "7fdf9ce6615506835604d64d5cc635bdf4789d30ac9d79f7a2ccd9c286e62bf9",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/management/routes.css": {
+      "before_sha256": "d4220a128b2206a645aca5e2d21e44db5e4b908b2b770b5e67678014db394479",
+      "after_sha256": "f700918bafaaa5271b646879027d7f68eb44e75516bfd7b7eac29087da17bdbd",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/settings.css": {
+      "before_sha256": "0078a785ecbd0e62d6c4fccee9132837b3fb914d79e3ab8a4f3c776646c07e92",
+      "after_sha256": "b251962e68a8b9d92ef5c258e1e16af33def558e5fac22d01023f6cc0b88586f",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/theme.css": {
+      "before_sha256": "fc44574e11121f91add07a1514010e09642e6276427f66fcca7739bc32c85ece",
+      "after_sha256": "54c2f0727fda8c3326d158e5dfbb84bf13ef6d1b82504e4aaabe0b1bae6702a4",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/traces/trace-map.css": {
+      "before_sha256": "2209b8baf476a33bdd216409f2eaff68a9b1b6eebd1bfad901dcfda6e59d98e1",
+      "after_sha256": "de396957e29e6edbfcf396c6969ae7da0b0400725b3b0a06a96749365b9f52c7",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/traces/trace-new.css": {
+      "before_sha256": "47d9d1d0b09801f60a96b8d1c0c2fc7f566fd87aa07bb2588d8d62467bd114ea",
+      "after_sha256": "9a1be9f1413b35ef63a5428db59aa5c1103efb346689500f1903d1a86c4216f9",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/traces/trace-view.css": {
+      "before_sha256": "146aae9490179483ff4e751bbc777807a137edf8b718dec207d8113813752293",
+      "after_sha256": "1694cec13a3f2abc0a1c454678cdfce025672380e095b343ebf39bb7e6df9f79",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/css/traces/trace.css": {
+      "before_sha256": "e3b9263551a25fd36fd74a3dec26fa211c77f385107cef97ebd83d3a84dbf44d",
+      "after_sha256": "ddf4e3da1de8e48bcb82c18e98f130e7e51ec218f8d33ccfab429f95dc26ac5a",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/views/surveys/user-view/survey-user.css": {
+      "before_sha256": "030440dd6e000d027b1411425c0dd9a2420da2616bf2f65a9d2ee8cbe13f8139",
+      "after_sha256": "6a307a9fdb24b6f982213e4684f636591c38e5a725a976a935cdee374b2a0a54",
+      "reason": "Extract selected identical style blocks into the earlier base sheet; retain original selectors, values, contexts and remaining cascade."
+    },
+    "public/src/views/surveys/user-view/survey-user.php": {
+      "before_sha256": "3854a9c9f9539b80601125ff76f9f5736c68219b0efd19c43fb8e098ba23e535",
+      "after_sha256": "e13345f9e6ea7e0dd5ed10fbde4b086bff4a0e1f385d17c94a398b44b516afcd",
+      "reason": "Load the new base stylesheet before existing stylesheets on staff, auth and public survey pages."
+    }
   }
 }

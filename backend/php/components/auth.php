@@ -19,6 +19,7 @@ function auth_page_open(string $titleKey, string $title, string $src, string $as
   <meta name="referrer" content="no-referrer">
 <?php endif; ?>
   <title data-i18n="<?= page_escape($titleKey) ?>"><?= page_escape($title) ?></title>
+  <link rel="stylesheet" href="<?= $src ?>css/base.css">
   <link rel="stylesheet" href="<?= $src ?>css/login-register/<?= $style ?>.css?v=20261019-auth-effects">
   <link rel="stylesheet" href="<?= $src ?>css/login-register/auth-interactions.css?v=20261019-recovery-field">
   <link rel="icon" type="image/x-icon" href="<?= $assets ?>hospital-gradient.ico">

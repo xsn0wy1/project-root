@@ -6,10 +6,6 @@
     font-family: "Inclusive Sans", "Inter", "Segoe UI", sans-serif;
 }
 
-[hidden] {
-    display: none !important;
-}
-
 .content-card {
     width: calc(100% - 108px);
     height: calc(100vh - 87px);
@@ -27,7 +23,6 @@
     width: calc(100% - 280px);
     margin-left: 280px;
 }
-
 
 .content-card .topbar,
 .app-shell.menu-open .content-card .topbar {
@@ -114,7 +109,6 @@
         border-color 0.2s ease,
         box-shadow 0.2s ease;
 
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -196,8 +190,6 @@
     box-shadow: none;
 }
 
-
-
 .transfer-views {
     position: relative;
     margin-top: 15px;
@@ -248,7 +240,6 @@
     align-items: start;
     gap: 10px;
 }
-
 
 .ambulance-icon {
     width: 53px;
@@ -361,13 +352,11 @@
     font-size: 0.75rem;
 }
 
-
 .info-value {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
 
 .info-icon {
     width: 16px;
@@ -376,8 +365,6 @@
     opacity: 0.7;
     filter: brightness(0) invert(1);
 }
-
-
 
 .route-box {
     min-height: auto;
@@ -948,8 +935,6 @@
     }
 }
 
-
-
 .empty-message {
     min-height: 410px;
     margin: 15px 0 0;
@@ -1019,8 +1004,6 @@
     cursor: default;
 }
 
-
-
 @media (min-width: 1101px) and (max-width: 1440px),
 (min-width: 1101px) and (max-height: 900px) {
 
@@ -1028,22 +1011,18 @@
         min-height: 420px;
     }
 
-
     .transfer-information {
         gap: 6px;
     }
-
 
     .route-text {
         gap: 10px;
     }
 
-
     .route-box {
         padding: 10px 12px;
         margin: 2px 0 5px;
     }
-
 
     .transfer-card .card-title h2 {
         font-size: 1.15rem;
@@ -1056,7 +1035,6 @@
     .route-text strong {
         font-size: 0.95rem;
     }
-
 
     .empty-message {
         min-height: 350px;

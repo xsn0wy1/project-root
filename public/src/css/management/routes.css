@@ -172,7 +172,7 @@
 .form-section legend span { font-size: 10px; color: var(--route-accent); padding: 4px 6px; border-radius: 5px; background: rgba(171, 186, 234, .12); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; min-width: 0; }
 .form-grid.three-columns { grid-template-columns: 1fr 1fr 1fr; }
-.full-width { grid-column: 1 / -1; }
+
 .form-section label { min-width: 0; display: flex; flex-direction: column; gap: 7px; color: #e5e7ee; font-size: 11px; font-weight: 500; }
 .form-section :is(input, select, textarea) { width: 100%; min-width: 0; height: 39px; padding: 0 11px; border: 1px solid var(--route-line-bright); border-radius: 9px; outline: none; background: var(--route-control); color: var(--route-text); font-size: 12px; }
 .form-section select { appearance: none; padding-right: 38px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23a4aabe' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; cursor: pointer; }

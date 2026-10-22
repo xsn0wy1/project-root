@@ -11,10 +11,6 @@ body {
   color: #eeeeee;
 }
 
-[hidden] {
-  display: none !important;
-}
-
 .document-workspace {
   min-height: 100dvh;
 }
@@ -473,10 +469,6 @@ body {
   color: #9de2c3;
   font-size: 0.8rem;
   text-align: right;
-}
-
-.form-message.error {
-  color: #ef7b85;
 }
 
 .form-actions {

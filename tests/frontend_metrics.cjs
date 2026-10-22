@@ -76,6 +76,8 @@ async function cssInventory(page, sources) {
                     rules.push({selector: rule.selectorText || rule.keyText, context,
                         keyframe: rule.type === CSSRule.KEYFRAME_RULE,
                         declaration_text: rule.style.cssText,
+                        motion_shorthands: ['animation', 'transition'].map(name =>
+                            [name, rule.style.getPropertyValue(name), rule.style.getPropertyPriority(name)]).filter(([, value]) => value),
                         declarations: [...rule.style].map(name => [name, rule.style.getPropertyValue(name), rule.style.getPropertyPriority(name)])});
                 } else if (rule.cssRules) {
                     groupingRules++;
@@ -110,13 +112,24 @@ function duplicates(rows, removePageScope = false, crossSheet = false) {
     return {groups: repeated.length, extra_occurrences: repeated.reduce((sum, items) => sum + items.length - 1, 0)};
 }
 
+function motionRows(rows) {
+    return rows.flatMap(({file, rules}) => rules.flatMap(rule => {
+        if (rule.keyframe) return [[file, rule.context, rule.selector, rule.declaration_text]];
+        const properties = rule.declarations.filter(([name]) =>
+            /^(?:-webkit-)?(?:animation|transition)(?:-|$)/.test(name));
+        return properties.length || rule.motion_shorthands.length
+            ? [[file, rule.context, rule.selector, rule.motion_shorthands, properties]] : [];
+    }));
+}
+
 async function measure(page, sourceRoot) {
     const app = ['public', 'backend', 'db'].flatMap(area => files(path.join(sourceRoot, area)));
     const relative = file => path.relative(sourceRoot, file).split(path.sep).join('/');
     const cssFiles = app.filter(file => file.endsWith('.css'));
     const jsFiles = app.filter(file => file.endsWith('.js'));
     const css = await cssInventory(page, cssFiles.map(file => ({file: relative(file), source: fs.readFileSync(file, 'utf8')})));
-    const shared = new Set(['theme.css', 'responsive.css', 'dropdowns.css', 'auth-interactions.css']);
+    const motion = motionRows(css);
+    const shared = new Set(['base.css', 'theme.css', 'responsive.css', 'dropdowns.css', 'auth-interactions.css']);
     const pageSheets = css.filter(row => !shared.has(path.basename(row.file)));
     const js = jsFiles.map(file => ({file: relative(file), source: fs.readFileSync(file, 'utf8')}));
     const analysis = js.map(row => ({file: row.file, ...ast.inventory(row.source)}));
@@ -151,6 +164,8 @@ async function measure(page, sourceRoot) {
             rules: css.reduce((sum, row) => sum + row.rules.filter(rule => !rule.keyframe).length, 0),
             grouping_rules: css.reduce((sum, row) => sum + row.grouping_rules, 0),
             keyframe_rules: css.reduce((sum, row) => sum + row.rules.filter(rule => rule.keyframe).length, 0),
+            motion_rules: motion.length,
+            motion_signature: crypto.createHash('sha256').update(JSON.stringify(motion)).digest('hex'),
             theme_bytes: fs.statSync(theme).size, theme_rules: css.find(row => row.file === relative(theme)).rules.length,
             theme_grouping_rules: css.find(row => row.file === relative(theme)).grouping_rules,
             hardcoded_colors: css.reduce((sum, row) => sum + row.hardcoded_colors, 0),
@@ -194,6 +209,12 @@ async function measure(page, sourceRoot) {
                 {file: 'a.css', source: '.x{border:1px solid var(--a)}'},
                 {file: 'b.css', source: '.x{border:1px solid var(--b)}'}]);
             assert.equal(duplicates(variables, false, true).groups, 0, 'shorthand variables remain distinct');
+            const moving = await cssInventory(page, [
+                {file: 'a.css', source: '.x{color:red;transition:var(--a)}'},
+                {file: 'a.css', source: '.x{color:blue;transition:var(--a)}'},
+                {file: 'a.css', source: '.x{color:red;transition:var(--b)}'}]);
+            assert.deepEqual(motionRows([moving[0]]), motionRows([moving[1]]), 'ordinary colors do not alter motion evidence');
+            assert.notDeepEqual(motionRows([moving[0]]), motionRows([moving[2]]), 'motion shorthand variables remain significant');
             const js = ast.inventory('const icon = () => [].map(() => 1); const x={get label(){return window.HospitalI18n.t("key")}}; const y=a?b?c:d:e;');
             assert.equal(js.getters, 1); assert.equal(js.decision_chains.length, 1);
             assert.equal(js.translation_getters, 1);
@@ -207,6 +228,7 @@ async function measure(page, sourceRoot) {
         if (baseline) {
             const baselineRoot = path.resolve(baseline);
             report.baseline = await measure(page, baselineRoot);
+            report.motion_declarations_equal = report.current.css.motion_signature === report.baseline.css.motion_signature;
             report.delta = {};
             for (const area of ['application', 'css', 'js', 'views']) {
                 report.delta[area] = Object.fromEntries(Object.entries(report.current[area])

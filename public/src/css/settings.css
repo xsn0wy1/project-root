@@ -6,10 +6,6 @@
     font-family: "Inclusive Sans", "Inter", "Segoe UI", sans-serif;
 }
 
-[hidden] {
-    display: none !important;
-}
-
 .content-card {
     width: calc(100% - 108px);
     height: calc(100vh - 87px);
@@ -26,7 +22,6 @@
     width: calc(100% - 280px);
     margin-left: 280px;
 }
-
 
 .content-card .topbar,
 .app-shell.menu-open .content-card .topbar {

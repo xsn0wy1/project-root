@@ -13,8 +13,7 @@ button, input { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .38; }
 button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid #91abff; outline-offset: 2px; }
-[hidden] { display: none !important; }
-.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
 .icon { display: block; width: 18px; height: 18px; flex: none; object-fit: contain; font-size: 0; }
 .viewer-card .icon, .viewer-dialog .icon { filter: brightness(0) invert(1); opacity: .82; }
 

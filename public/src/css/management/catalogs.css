@@ -584,10 +584,6 @@
   font-size: 14px;
 }
 
-.empty-state[hidden] {
-  display: none;
-}
-
 .table-footer {
   min-height: 58px;
   display: flex;

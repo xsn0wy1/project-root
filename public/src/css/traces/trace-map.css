@@ -24,14 +24,14 @@ a { color: inherit; text-decoration: none; }
 button:focus-visible, a:focus-visible, input:focus-visible, #map-heading:focus-visible { outline: 2px solid #abbaea; outline-offset: 4px; }
 button:disabled { opacity: .4; cursor: not-allowed; }
 button, input { border: 0; }
-[hidden] { display: none !important; }
+
 h1, h2, h3, p { margin: 0; }
 img { display: block; }
 .icon { display: block; width: 20px; height: 20px; flex-shrink: 0; background-color: currentColor; -webkit-mask: var(--icon-image) center / contain no-repeat; mask: var(--icon-image) center / contain no-repeat; opacity: .75; }
 .nav-item .icon { width: 24px; height: 24px; opacity: 1; }
 .icon-button { display: grid; place-items: center; width: 36px; height: 36px; background: transparent; border-radius: 8px; }
 .icon-button:hover { background: rgba(255,255,255,.06); }
-.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
 .skip-link { position: fixed; top: 8px; left: 150px; z-index: 3000; padding: 10px 16px; border-radius: 9px; background: var(--blue); transform: translateY(-150%); }
 .skip-link:focus { transform: none; }
 

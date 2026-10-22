@@ -46,7 +46,7 @@
 .transfer-detail h1, .transfer-detail h2 { margin: 0; }
 .transfer-detail button, .transfer-dialog button { font-family: inherit; }
 .transfer-dialog input, .transfer-dialog select, .transfer-dialog textarea { font: inherit; }
-[hidden] { display: none !important; }
+
 .transfer-detail button, .transfer-dialog button { cursor: pointer; }
 .transfer-detail button:disabled { cursor: default; opacity: .45; }
 .transfer-detail :is(button, a):focus-visible,
