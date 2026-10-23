@@ -151,6 +151,32 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .qr-preview { display: grid; place-items: center; width: 284px; height: 284px; max-width: 100%; margin: 22px auto 0; border-radius: 12px; background: #fff; }
 .qr-preview canvas { display: block; width: 264px; height: 264px; max-width: calc(100% - 20px); image-rendering: pixelated; }
 .qr-dialog p { text-align: center; }
+.viewer-dialog.management-dialog { width: min(520px, calc(100vw - 30px)); max-height: 88vh; padding: 22px; border-color: rgba(150, 163, 209, .3); border-radius: 20px; background: #111934; box-shadow: 0 30px 90px rgba(0, 0, 0, .5); }
+.viewer-dialog.management-dialog::backdrop { background: rgba(5, 8, 22, .75); backdrop-filter: blur(5px); }
+.management-dialog .dialog-heading { align-items: flex-start; gap: 16px; }
+.viewer-dialog-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.management-dialog .dialog-heading h2 { font-size: 22px; line-height: 1.25; }
+.management-dialog .dialog-icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border: 1px solid rgba(150, 163, 209, .3); border-radius: 12px; background: rgba(150, 163, 209, .08); }
+.management-dialog .dialog-icon .icon { width: 20px; height: 20px; }
+.management-dialog .dialog-close { flex: none; width: 34px; height: 34px; border: 1px solid rgba(150, 163, 209, .3); border-radius: 10px; }
+.management-dialog p { font-size: 12px; line-height: 1.6; }
+.management-dialog input { height: 44px; font: inherit; font-size: 13px; background: rgba(8, 13, 32, .48); border-color: rgba(150, 163, 209, .3); border-radius: 10px; }
+.viewer-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.viewer-dialog-actions .dialog-primary { width: auto; min-height: 41px; margin: 0; padding: 8px 16px; border-radius: 10px; font-size: 12px; }
+.viewer-dialog-actions .dialog-secondary { border-color: rgba(150, 163, 209, .3); background: rgba(27, 36, 63, .48); color: var(--viewer-text); }
+.viewer-dialog-actions .dialog-secondary:hover { background: rgba(150, 163, 209, .14); }
+.viewer-dialog.archive-dialog { width: min(460px, calc(100vw - 30px)); }
+.viewer-dialog-actions .dialog-danger { border-color: rgba(244, 63, 94, .4); background: rgba(244, 63, 94, .12); color: #fb8195; }
+.viewer-dialog-actions .dialog-danger:hover { background: rgba(244, 63, 94, .2); }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .viewer-dialog.management-dialog { background: var(--light-canvas); border-color: rgba(88, 108, 151, .3); box-shadow: 0 30px 90px rgba(44, 61, 104, .125); }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .viewer-dialog.management-dialog::backdrop { background: rgba(245, 248, 255, .75); }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .management-dialog :is(.dialog-icon, .dialog-close) { border-color: rgba(88, 108, 151, .3); }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .viewer-dialog-actions .dialog-secondary { border-color: rgba(88, 108, 151, .3); background: rgba(255, 255, 255, .38); color: var(--light-text); }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .viewer-dialog-actions .dialog-secondary:hover { background: rgba(89, 110, 167, .12); }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .viewer-dialog-actions .dialog-danger { border-color: rgba(173, 49, 76, .3); background: rgba(173, 49, 76, .08); color: #a92f4c; }
+html[data-theme="light"][data-theme-styles~="documents-viewer"] .viewer-dialog-actions .dialog-danger:hover { background: rgba(173, 49, 76, .15); }
+.viewer-dialog.management-dialog .dialog-primary:not(.dialog-secondary):not(.dialog-danger) { border-color: #6689ef; background: #4b6dde url("../../../assets/special-bg.png") center / cover no-repeat; color: #fff; }
+.viewer-dialog.management-dialog .dialog-primary:not(.dialog-secondary):not(.dialog-danger) .icon { filter: brightness(0) invert(1); }
 .toast { position: fixed; right: 23px; bottom: 23px; z-index: 10; max-width: min(350px, calc(100vw - 46px)); padding: 12px 17px; border: 1px solid #58719c; border-radius: 10px; background: #223251; box-shadow: 0 12px 35px rgba(0, 0, 0, .3); color: #eef3ff; font-size: 14px; }
 
 @media (max-width: 1100px) {

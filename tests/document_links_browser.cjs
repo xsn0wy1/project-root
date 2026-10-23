@@ -17,6 +17,7 @@ async function formJourney(browser, storageState) {
  try {
   const upload=base+'/src/views/documents/documents-upload.php';
   await page.goto(upload);await page.waitForFunction(()=>document.querySelector('#documentForm').getAttribute('aria-busy')==='false');
+  check(await page.locator('.sidebar-nav a[href="../management/management.php"]').count()===1,'Upload Document includes the mounted Management navigation link');
   check(await page.locator('html').getAttribute('lang')==='en'&&await page.locator('html').getAttribute('data-theme')==='light','mounted form reuses its English/light staff session');
   console.log('Verified document form initialization');
   const source=await page.request.get(base+'/api/v1/documents.php?action=content&id='+fixtures.pdf.id+'&version=1');
@@ -65,7 +66,15 @@ async function formJourney(browser, storageState) {
   const anonymous=await browser.newContext();const staffLink=await anonymous.request.get(shared.href);
   check(staffLink.url().includes('/index.php?reason=session_expired'),'ordinary sharing requires a staff login');await anonymous.close();
   await page.locator('#share-dialog [data-close-dialog]').click();
-  await page.locator('#delete-button').click();await page.waitForURL('**/documents.php');
+  await page.locator('#delete-button').click();
+  await page.locator('#archive-dialog[open]').waitFor();
+  check((await page.locator('#archive-description').textContent()).includes('Fictional replacement') && await page.locator('#archive-dialog [autofocus]').evaluate(button=>button===document.activeElement),'archive dialog names the actual document and defaults focus to Cancel');
+  const failedArchive=/\/documents\.php\?action=archive$/;
+  await page.route(failedArchive,route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'SERVICE_UNAVAILABLE',message:'Fictional archive failure'}})}));
+  await page.locator('#confirm-archive').click();await page.waitForFunction(()=>!document.getElementById('confirm-archive').disabled);
+  check(await page.locator('#archive-dialog').evaluate(dialog=>dialog.open),'failed archive retains the styled dialog and allows retry');
+  await page.unroute(failedArchive);
+  await page.locator('#confirm-archive').click();await page.waitForURL('**/documents.php');
   const archived=await page.evaluate(async id=>DocumentApi.get(id),item.id);
   check(Boolean(archived.archived_at)&&archived.file_versions.length===2,'archive preserves both versions and revision history');
   await page.goto(base+'/src/views/documents/documents-viewer.php?id='+item.id);
@@ -74,7 +83,7 @@ async function formJourney(browser, storageState) {
   await page.locator('#delete-button').click();await page.waitForURL('**/documents.php');
   const restored=await page.evaluate(async id=>DocumentApi.get(id),item.id);
   check(!restored.archived_at&&restored.file_versions.length===2,'restore retains the complete document history');
-  check(errors.length===0&&dialogs.length===1&&dialogs[0]==='confirm','document journey has no script errors and only its existing archive confirmation');
+  check(errors.length===0&&dialogs.length===0,'document journey has no script errors or native confirmations');
  } catch(error) {
   await page.screenshot({path:path.join(runtime,'form-failure.png')}).catch(()=>{});
   console.error('Document form failed at',new URL(page.url()).pathname);
@@ -124,6 +133,7 @@ async function formJourney(browser, storageState) {
    check((await anonymous.request.get(base+'/api/v1/documents.php?action=get&id='+fixtures.pdf.id)).status()===401,'capability grants no staff API access');
    const dialog=await page.locator('#qr-dialog').evaluate(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,overflow:getComputedStyle(el).overflowY,scroll:el.scrollHeight,client:el.clientHeight}));
    check(dialog.width<=(mobile?390:1440)&&dialog.height<=(mobile?844:900),'QR dialog fits viewport with native overflow');
+   check(await page.locator('#qr-dialog .dialog-icon img').count()===1 && await page.locator('#revoke-qr-link').evaluate(button=>button.classList.contains('dialog-secondary')),'QR uses the management header and outlined revoke action');
    if(!mount)await page.screenshot({path:path.join(runtime,`qr-${theme}-${mobile?'mobile':'desktop'}.png`)});
    if(!mount&&!mobile&&theme==='dark'){
     // Opening the URL is a real native PDF navigation, independent of the staff page.
@@ -142,6 +152,16 @@ async function formJourney(browser, storageState) {
    await page.locator('#qr-button').click();await page.waitForFunction(()=>!document.getElementById('qr-button').disabled);
    check(!(await page.locator('#qr-dialog').evaluate(el=>el.open))&&await page.locator('#patient-qr-url').inputValue()==='','failed issuance leaves no misleading QR or link');
    await page.unroute(/\/documents\.php\?action=patient-link$/);
+   await page.locator('#share-button').click();await page.locator('#share-dialog[open]').waitFor();
+   const staffUrl=await page.locator('#share-url').inputValue();
+   await page.locator('#copy-share-link').click();
+   check(await page.evaluate(()=>navigator.clipboard.readText())===staffUrl && await page.locator('#share-dialog .dialog-icon img').count()===1,'styled staff share keeps its exact version URL and working primary copy action');
+   await page.locator('#share-dialog [data-close-dialog]').click();
+   await page.locator('#delete-button').click();await page.locator('#archive-dialog[open]').waitFor();
+   const archive=await page.locator('#archive-dialog').evaluate(dialog=>({width:dialog.getBoundingClientRect().width,height:dialog.getBoundingClientRect().height}));
+   check(archive.width<=(mobile?390:1440) && archive.height<=(mobile?844:900) && (await page.locator('#archive-description').textContent()).includes(fixtures.pdf.title),'localized archive dialog fits the viewport and includes the document name');
+   await page.locator('#archive-dialog [autofocus]').click();
+   check(!(await page.locator('#archive-dialog').evaluate(dialog=>dialog.open)) && !(await page.evaluate(id=>DocumentApi.get(id),fixtures.pdf.id)).archived_at,'Cancel leaves document bytes and archive state unchanged');
    check(errors.length===0&&dialogs.length===0,'no script errors or native dialogs');
    // The staff header geometry is independent of the patient QR dialog.
    if(!mobile)check(await page.locator('.topbar').evaluate(el=>Math.round(el.getBoundingClientRect().height))===100,'desktop header retains 100px geometry');

@@ -14,6 +14,7 @@ staff_page_open([
     'stylesheets' => ['documents/documents.css', 'documents/documents-upload.css'],
     'font_stylesheet' => 'forms',
     'nav_section' => 'document-form',
+    'management_nav' => !$editing,
     'main_class' => 'app-shell document-workspace',
     'extra_scripts' => ['../../js/documents/document-api.js', '../../js/documents/document-form.js'],
 ]);

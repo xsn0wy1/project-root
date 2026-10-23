@@ -42,10 +42,45 @@ async function signIn(browser, base) {
     return await context.storageState();
   } finally { await context.close(); }
 }
+async function invalidTransfer(page) {
+  check(await page.locator('.sidebar-nav a[href="../management/management.php"]').count() === 1, 'New Transfer includes the existing Management navigation link');
+  let creates = 0;
+  const observe = request => { if (request.url().includes('transfers.php?action=create&') || request.url().endsWith('transfers.php?action=create')) creates++; };
+  page.on('request', observe);
+  const date = await page.locator('#startDate').inputValue(), time = await page.locator('#startTime').inputValue(), locale = await page.locator('html').getAttribute('lang');
+  await page.locator('#startDate').fill(''); await page.locator('#startTime').fill('');
+  await page.locator('[type=submit]').click();
+  check(await page.locator('#newTransferForm').evaluate(form => [...form.elements].filter(field => field.willValidate && !field.validity.valid).length) === 9, 'blank transfer reports the same nine always-required fields');
+  check(await page.locator('#ambulance-button').evaluate(button => button === document.activeElement && button.getAttribute('aria-invalid') === 'true' && button.getBoundingClientRect().top >= 0 && button.getBoundingClientRect().bottom <= innerHeight), 'first invalid custom dropdown is visibly marked, scrolled into view and focused');
+  await page.waitForFunction(() => ['rgb(239, 123, 133)','rgba(163, 52, 80, 0.65)'].includes(getComputedStyle(document.getElementById('ambulance-button')).borderTopColor));
+  const errorColor = await page.locator('#ambulance-button').evaluate(button => getComputedStyle(button).borderTopColor);
+  check(['rgb(239, 123, 133)','rgba(163, 52, 80, 0.65)'].includes(errorColor) && (await page.locator('#formMessage').textContent()).includes(await page.locator('label[for=ambulance]').textContent()), 'existing error colors and message identify the visible invalid dropdown');
+  await page.locator('#driver').fill('Fictional name outside catalog');
+  await page.locator('#companion').fill('Fictional companion outside catalog');
+  await choose(page, '#transferType', 'patient');
+  await page.locator('#patientName').fill('Fictional patient outside catalog');
+  await page.locator('[type=submit]').click();
+  check(await page.locator('#driver').evaluate(field => field.validity.customError) && await page.locator('#companion').evaluate(field => field.validity.customError) && await page.locator('#patientName').evaluate(field => field.validity.customError), 'unlisted driver, companion and patient remain rejected by the catalog rules');
+  check(await page.locator('#formMessage').evaluate(message => message.textContent.includes(HospitalI18n.t('trace_new.choose_from_list'))), 'catalog rejection explains that the user must choose from the list');
+  check(await page.locator('#driver-validation').isVisible() && await page.locator('#companion-validation').isVisible() && await page.locator('#patientName-validation').isVisible(), 'each rejected catalog field shows its own readable choose-from-list explanation');
+  await page.evaluate(() => HospitalI18n.apply('en'));
+  check((await page.locator('#formMessage').textContent()).includes('Choose an option from the list.'), 'validation feedback switches to English at runtime');
+  await page.evaluate(locale => HospitalI18n.apply(locale), locale);
+  await page.locator('#driver').fill(''); await page.locator('#companion').fill('');
+  await choose(page, '#transferType', 'equipment');
+  await page.locator('#startDate').fill('2020-01-01');
+  await page.locator('#startTime').fill(time);
+  await page.locator('[type=submit]').click();
+  check(await page.locator('#startDate').evaluate(field => field.validity.rangeUnderflow && field.getAttribute('aria-invalid') === 'true') && creates === 0, 'date-before-today stays invalid and rejected submissions never call create');
+  await page.locator('#startDate').fill(date);
+  check(await page.locator('#startDate').getAttribute('aria-invalid') === null && await page.locator('#patientName').isDisabled(), 'correcting a date clears its error and equipment keeps patient controls disabled');
+  page.off('request', observe);
+}
 async function transferJourney(browser, context, page, base) {
   await page.goto(base + '/src/views/traces/trace-new.php'); await ready(page);
   await page.waitForFunction(() => document.getElementById('newTransferForm').getAttribute('aria-busy') === 'false');
   const catalog = await api(page, endpoint('transfers', 'catalogs'));
+  await invalidTransfer(page);
   const driver = catalog.crew.find(item => item.role_code === 'driver');
   const route = catalog.routes.find(item => item.geometry.length >= 2);
   const schedule = await page.evaluate(() => TraceApi.localParts(Date.now() + 6 * 3600000));
@@ -198,6 +233,9 @@ async function surveyJourney(browser, page, base, label, mobile, errors, dialogs
         await api(page, endpoint('settings', 'preferences-update'), {version: current.settings.version, locale: mobile ? 'en' : 'es-UY', theme});
         if (!transferId) transferId = await transferJourney(browser, context, page, base);
         else {
+          await page.goto(base + '/src/views/traces/trace-new.php'); await ready(page);
+          await page.waitForFunction(() => document.getElementById('newTransferForm').getAttribute('aria-busy') === 'false');
+          await invalidTransfer(page);
           await page.goto(base + '/src/views/traces/trace-view.php?id=' + transferId); await ready(page);
           await page.waitForFunction(() => document.getElementById('transfer-detail').dataset.status === 'completed');
           check(await page.locator('#edit-transfer').isDisabled(), label + ': completed transfer remains read-only after navigation');

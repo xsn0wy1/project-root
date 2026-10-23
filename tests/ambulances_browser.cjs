@@ -28,6 +28,15 @@ async function fill(page, plate, model) {
     await page.locator('#ambulance-capacity').fill('6');
     await page.locator('#ambulance-status').selectOption('OPERATIVA');
 }
+async function quickStatus(page, value, status = 200) {
+    const response = page.waitForResponse(r => r.url().endsWith(api('update')) && r.request().method() === 'POST');
+    await page.locator('#detail-operational-status-button').click();
+    await page.locator(`#detail-operational-status-button-menu [data-value="${value}"]`).click();
+    const result = await response;
+    assert.equal(result.status(), status);
+    await page.waitForFunction(() => !document.getElementById('detail-operational-status').disabled);
+    return result;
+}
 (async () => {
     const browser = await chromium.launch({channel: 'chrome', headless: true});
     try {
@@ -61,6 +70,24 @@ async function fill(page, plate, model) {
         await page.locator('[data-select-id="' + created.id + '"]').click();
         await page.waitForFunction(() => document.querySelector('#detail-panel').getAttribute('aria-hidden') === 'false');
         check(await page.locator('#directory-panel').evaluate(e => e.inert), 'selection opens details and makes the directory inert');
+        const quick = await quickStatus(page, 'MANTENIMIENTO');
+        const changed = (await quick.json()).data;
+        check(changed.version === created.version + 1 && changed.plate === created.plate && changed.model === created.model && changed.capacity === created.capacity && changed.operational_status === 'maintenance', 'detail dropdown saves the selected status with the current revision and unchanged metadata');
+        check(await page.locator('#detail-operational-status').inputValue() === 'MANTENIMIENTO' && await page.locator('#ambulance-toast').isVisible(), 'quick status refreshes the detail, row and existing success feedback');
+        await quickStatus(page, 'FUERA_SERVICIO');
+        await quickStatus(page, 'OPERATIVA');
+        const quickFailure = '**/api/v1/ambulances.php?action=update';
+        await page.route(quickFailure, route => route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'SERVICE_UNAVAILABLE',message:'Fictional quick status failure'}})}));
+        await quickStatus(page, 'MANTENIMIENTO', 503);
+        check(await page.locator('#detail-operational-status').inputValue() === 'MANTENIMIENTO' && await page.locator('#detail-panel').getAttribute('aria-hidden') === 'false' && await page.locator('#edit-from-detail').isEnabled(), 'failed quick save retains the choice and open panel and releases busy controls');
+        await page.unroute(quickFailure);
+        await page.evaluate(async id => {
+            const item = await HospitalApi.get('ambulances.php?action=get&id=' + id);
+            await HospitalApi.post('ambulances.php?action=update', {id, version:item.version, plate:item.plate, model:item.model, capacity:item.capacity, operational_status:'available'});
+        }, created.id);
+        await quickStatus(page, 'FUERA_SERVICIO', 409);
+        const preserved = await page.evaluate(id => HospitalApi.get('ambulances.php?action=get&id=' + id), created.id);
+        check(preserved.operational_status === 'available', 'a real stale quick-save revision cannot overwrite another save');
         await page.locator('#close-detail').click();
         check(await page.locator('[data-select-id="' + created.id + '"]').evaluate(e => e === document.activeElement), 'closing details restores row focus');
         await page.locator('[data-select-id="' + created.id + '"]').click();
@@ -105,6 +132,7 @@ async function fill(page, plate, model) {
         await page.locator('#ambulance-search').fill(plate); await page.locator('[data-filter=FUERA_SERVICIO]').click();
         await page.locator('[data-select-id="' + created.id + '"]').click();
         check(await page.locator('#edit-from-detail').isHidden(), 'archived details preserve the restore-only state');
+        check(await page.locator('#detail-operational-status').count() === 0, 'archived ambulances cannot use the quick status control');
         await page.locator('#delete-from-detail').click();
         response = page.waitForResponse(r => r.url().endsWith(api('restore')));
         await page.locator('#confirm-delete').click(); assert.equal((await response).status(), 200);

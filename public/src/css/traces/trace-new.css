@@ -378,11 +378,13 @@
     color: #ccd7ff;
 }
 
-.field :is(input, select, textarea):user-invalid:not(:disabled) {
+.field :is(input, select, textarea):user-invalid:not(:disabled),
+.field :is(input, select, textarea, .hospital-select-trigger)[aria-invalid="true"]:not(:disabled) {
     border-color: #ef7b85;
 }
 
-.field :is(input, select, textarea):user-invalid:focus:not(:disabled) {
+.field :is(input, select, textarea):user-invalid:focus:not(:disabled),
+.field :is(input, select, textarea, .hospital-select-trigger)[aria-invalid="true"]:focus:not(:disabled) {
     box-shadow: 0 0 0 3px rgba(239, 123, 133, 0.2);
 }
 
@@ -582,6 +584,8 @@ input[type="time"] {
 .form-message:empty {
     visibility: hidden;
 }
+.form-message.error { color: #ef7b85; }
+.field-error { color: #ef7b85; font-size: 0.72rem; line-height: 1.4; }
 
 .form-actions {
     min-height: 38px;

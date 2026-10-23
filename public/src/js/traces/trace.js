@@ -299,7 +299,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     patientTimer,
     draftVersion = 0,
     token,
-    busy = true;
+    busy = true,
+    submitted = false;
   const crewLabel = item => `${item.full_name} · #${item.id}`,
     facilityLabel = api.facilityLabel,
     patientLabel = item => `${item.full_name} · ${item.national_id}`;
@@ -323,7 +324,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         crewLabel(item) === value &&
         (duty === 'driver' ? item.role_code === 'driver' : ['copilot', 'doctor'].includes(item.role_code))
     );
-  const validation = text => api.report(new window.HospitalApi.ApiError(text, 422, 'VALIDATION_FAILED'));
+  function catalogValidity() {
+    for (const name of ['driver', 'companion', 'patientName']) {
+      const control = $(name);
+      window.HospitalI18n.bindValidity(control, () => {
+        const matched = name === 'patientName'
+          ? patient && patientLabel(patient) === control.value
+          : findCrew(control.value, name);
+        return !control.disabled && control.value && !matched
+          ? window.HospitalI18n.t("trace_new.choose_from_list") : '';
+      });
+    }
+  }
+  function fieldLabel(control) {
+    return control.getAttribute('aria-label') || control.labels[0]?.textContent.trim() || control.name;
+  }
+  function catalogHint(control, invalid) {
+    let hint = $(control.id + '-validation');
+    if (!invalid || !control.validity.customError) {
+      hint?.remove();
+      return null;
+    }
+    if (!hint) {
+      hint = document.createElement('small');
+      hint.id = control.id + '-validation';
+      hint.className = 'field-error';
+      control.closest('.field').append(hint);
+    }
+    window.HospitalI18n.bindText(hint, () => window.HospitalI18n.t("trace_new.choose_from_list"));
+    return hint;
+  }
+  function validateForm(focus = false) {
+    catalogValidity();
+    const invalid = [...form.elements].filter(control => control.willValidate && !control.validity.valid);
+    for (const control of form.querySelectorAll('input,select,textarea')) {
+      const button = $(control.dataset.hospitalButton);
+      const hint = catalogHint(control, invalid.includes(control));
+      for (const target of [control, button].filter(Boolean)) {
+        if (invalid.includes(control)) {
+          target.setAttribute('aria-invalid', 'true');
+          target.setAttribute('aria-describedby', (hint ? hint.id + ' ' : '') + 'formMessage');
+        } else {
+          target.removeAttribute('aria-invalid');
+          target.removeAttribute('aria-describedby');
+        }
+      }
+    }
+    $('formMessage').classList.toggle('error', invalid.length > 0);
+    window.HospitalI18n.bindText($('formMessage'), () => invalid.length
+      ? window.HospitalI18n.t("trace_new.invalid_fields", {
+          value0: invalid.map(control => fieldLabel(control) + (control.validity.customError
+            ? ': ' + window.HospitalI18n.t("trace_new.choose_from_list") : '')).join('; ')
+        }) : '');
+    if (focus && invalid.length) {
+      closeDropdowns();
+      const first = $(invalid[0].dataset.hospitalButton) || invalid[0];
+      first.scrollIntoView({ block: 'center', behavior: 'auto' });
+      first.focus({ preventScroll: true });
+    }
+    return invalid.length === 0;
+  }
+  for (const type of ['input', 'change']) form.addEventListener(type, () => {
+    if (submitted && !busy) validateForm();
+  });
+  window.addEventListener('hospital:localechange', () => {
+    if (submitted && !busy) validateForm();
+  });
   function setBusy(value) {
     busy = value;
     if (value) closeDropdowns();
@@ -378,6 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           ...found.map(item => window.HospitalI18n.option(() => patientLabel(item), patientLabel(item)))
         );
         showPatient(found.find(item => patientLabel(item) === $('patientName').value) ?? null);
+        if (submitted && !busy) validateForm();
       } catch (error) {
         api.report(error);
       }
@@ -399,6 +466,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clear ? { version: draftVersion, clear: true } : { version: draftVersion, payload }
       );
       draftVersion = result.version;
+      $('formMessage').classList.remove('error');
       window.HospitalI18n.bindText($('formMessage'), () =>
         clear ? '' : window.HospitalI18n.t("trace.borrador_guardado")
       );
@@ -418,18 +486,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy || !form.checkValidity()) return;
+    if (busy) return;
+    submitted = true;
+    if (!validateForm(true)) return;
     const driver = findCrew($('driver').value, 'driver'),
       companion = $('companion').value ? findCrew($('companion').value, 'companion') : null;
-    if (
-      !driver ||
-      ($('companion').value && !companion) ||
-      ($('transferType').value === 'patient' &&
-        (!patient || patientLabel(patient) !== $('patientName').value))
-    ) {
-      validation(window.HospitalI18n.t("trace.selecciona_personal_y_paciente_desde_sus_catalogos"));
-      return;
-    }
     const body = {
       route_template_id: $('routeTemplate').value || null,
       ambulance_id: $('ambulance').value,

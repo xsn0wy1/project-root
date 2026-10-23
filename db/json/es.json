@@ -965,6 +965,8 @@
   "trace.edad_estimada_registrada_el_value": "Edad estimada registrada el {value0}",
   "trace.borrador_guardado": "Borrador guardado.",
   "trace.selecciona_personal_y_paciente_desde_sus_catalogos": "Seleccioná personal y paciente desde sus catálogos.",
+  "trace_new.choose_from_list": "Elegí una opción de la lista.",
+  "trace_new.invalid_fields": "Completá o revisá estos campos: {value0}",
   "trace.guardando_traslado": "Guardando traslado...",
   "trace.ambulancia_value_value": "Ambulancia {value0} · {value1}",
   "trace.ruta_del_borrador_no_disponible": "Ruta del borrador (no disponible)",

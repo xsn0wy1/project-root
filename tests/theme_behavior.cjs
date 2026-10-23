@@ -8,8 +8,64 @@ let checks=0;const check=(v,s)=>{assert(v,s);checks++;console.log('PASS',s)};
 const ready=async p=>{await p.evaluate(async()=>{await HospitalI18n.ready;await window.HospitalAuth?.ready});await p.waitForTimeout(120)};
 const theme=p=>p.locator('html').getAttribute('data-theme');
 async function login(p,who={username:'system_admin',password:process.env.HOSPITAL_ADMIN_PASSWORD}){await p.goto(base+'/');await ready(p);await p.evaluate(async who=>await HospitalApi.post('auth.php?action=login',who),who);await p.goto(base+'/src/views/settings.php');await ready(p);await p.locator('#privacy-tab').click()}
+async function loginChoices(browser) {
+ const cases=[
+  {name:'choose-light',saved:'dark',cache:'dark',choices:['light'],expected:'light',locale:'en'},
+  {name:'choose-dark',saved:'light',cache:'light',choices:['dark'],expected:'dark'},
+  {name:'unchanged-cache',saved:'light',cache:'dark',choices:[],expected:'light'},
+  {name:'already-selected',saved:'light',cache:'dark',choices:['dark'],expected:'light'},
+  {name:'change-back',saved:'light',cache:'dark',choices:['light','dark'],expected:'dark'},
+  {name:'failed-login-retry',saved:'dark',cache:'dark',choices:['light'],expected:'light',badLogin:true},
+  {name:'failed-theme-save',saved:'dark',cache:'dark',choices:['light'],expected:'dark',failure:503},
+  {name:'stale-theme-save',saved:'dark',cache:'dark',choices:['light'],expected:'dark',failure:409}
+ ];
+ for(const item of cases){
+  const context=await browser.newContext(),page=await context.newPage();
+  try{
+   await page.goto(base+'/');await ready(page);
+   await page.evaluate(async ({password,saved,locale})=>{
+    await HospitalApi.post('auth.php?action=login',{username:'system_admin',password});
+    const current=await HospitalApi.get('settings.php?action=get');
+    await HospitalApi.post('settings.php?action=preferences-update',{version:current.settings.version,theme:saved,locale});
+    await HospitalApi.post('auth.php?action=logout');
+    localStorage.setItem('hospital-theme:'+new URL(HospitalApi.page('')).pathname,saved);
+   },{password:process.env.HOSPITAL_ADMIN_PASSWORD,saved:item.saved,locale:item.locale||'es-UY'});
+   await page.evaluate(cache=>localStorage.setItem('hospital-theme:'+new URL(HospitalApi.page('')).pathname,cache),item.cache);
+   await page.reload();await ready(page);
+   let saves=0;
+   const endpoint='**/api/v1/settings.php?action=preferences-update';
+   await page.route(endpoint,async route=>{
+    saves++;
+    if(item.failure===503)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'SERVICE_UNAVAILABLE',message:'Fictional login theme failure'}})});
+    if(item.failure===409){const body=route.request().postDataJSON();return route.continue({postData:JSON.stringify({...body,version:body.version+100})});}
+    return route.continue();
+   });
+   for(const choice of item.choices)await page.locator(`[data-public-theme="${choice}"]`).click();
+   await page.locator('[name=username]').fill('system_admin');
+   if(item.badLogin){
+    await page.locator('[name=password]').fill('Fictional invalid password');
+    const rejected=page.waitForResponse(response=>response.url().includes('auth.php?action=login'));
+    await page.locator('#loginForm [type=submit]').click();assert.equal((await rejected).status(),401);
+    await page.waitForFunction(()=>!document.querySelector('#loginForm [type=submit]').disabled);
+    check(saves===0,'failed login never saves a public theme');
+   }
+   await page.locator('[name=password]').fill(process.env.HOSPITAL_ADMIN_PASSWORD);
+   const navigation=page.waitForResponse(response=>response.request().isNavigationRequest()&&response.url().endsWith('/src/views/main-menu.php'));
+   await page.locator('#loginForm [type=submit]').click();
+   const response=await navigation,html=await response.text();
+   await page.waitForURL('**/src/views/main-menu.php');await ready(page);
+   check(html.includes('data-theme="'+item.expected+'"')&&await theme(page)===item.expected,item.name+': the first staff response and paint use the expected account theme');
+   const changed=item.choices.some((choice,index)=>choice!==(item.choices[index-1]||item.cache));
+   check(saves===(changed?1:0),item.name+': only an explicit login-page change writes the versioned preference');
+   await page.unroute(endpoint);
+   const saved=await page.evaluate(()=>HospitalApi.get('settings.php?action=get'));
+   check(saved.settings.theme===item.expected&&saved.settings.locale===(item.locale||'es-UY'),item.name+': account persistence matches the successful or failed save and retains its language');
+  }finally{await context.close();}
+ }
+}
 (async()=>{
  const b=await chromium.launch({channel:'chrome',headless:true}),c=await b.newContext({viewport:{width:1440,height:900}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await loginChoices(b);
  await p.goto(base+'/');await ready(p);check(await theme(p)==='dark','public first visit defaults to dark');
  await p.locator('[data-public-theme="light"]').click();await p.waitForTimeout(300);check(await theme(p)==='light','public switch immediately applies light');
  await p.locator('[name=username]').fill('Unsaved fictional name');await p.locator('[name=password]').fill('Unsaved fictional password');await p.locator('[data-public-theme="dark"]').click();check(await p.locator('[name=username]').inputValue()==='Unsaved fictional name'&&await p.locator('[name=password]').inputValue()==='Unsaved fictional password','public switching preserves username and password values');

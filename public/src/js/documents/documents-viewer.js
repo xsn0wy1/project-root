@@ -23,7 +23,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     toastTimer;
   let passwordUpdate, loadingTask;
   let patientLink = null,
-    qrBusy = false;
+    qrBusy = false,
+    archiveBusy = false;
   const state = { page: 1, pages: 0, zoom: 100, rotation: 0, thumbnails: true };
   const tools = [
     "page-input",
@@ -638,25 +639,33 @@ document.addEventListener("DOMContentLoaded", async () => {
       qrControls(false);
     }
   });
-  $("delete-button").addEventListener("click", async () => {
+  async function archiveDocument() {
+    if (archiveBusy) return;
     const restore = Boolean(data.archived_at);
-    if (
-      !restore &&
-      !confirm(
-        window.HospitalI18n.t("documents_viewer.archivar_value_se_conservaran_el_archivo_y_su_historial", {
-          value0: data.title
-        })
-      )
-    )
-      return;
+    archiveBusy = true;
     $("delete-button").disabled = true;
+    $("archive-dialog").querySelectorAll('button').forEach(button => { button.disabled = true; });
     try {
       await (restore ? api.restore(id, data.version) : api.archive(id, data.version));
       location.assign("documents.php");
     } catch (error) {
       report(error);
+      archiveBusy = false;
       $("delete-button").disabled = false;
+      $("archive-dialog").querySelectorAll('button').forEach(button => { button.disabled = false; });
     }
+  }
+  $("delete-button").addEventListener("click", () => {
+    if (data.archived_at) return archiveDocument();
+    window.HospitalI18n.bindText($("archive-description"), () =>
+      window.HospitalI18n.t("documents_viewer.archivar_value_se_conservaran_el_archivo_y_su_historial", {
+        value0: data.title
+      }));
+    $("archive-dialog").showModal();
+  });
+  $("confirm-archive").addEventListener("click", archiveDocument);
+  $("archive-dialog").addEventListener("cancel", event => {
+    if (archiveBusy) event.preventDefault();
   });
   $("file-version").addEventListener("change", async event => {
     event.target.disabled = true;

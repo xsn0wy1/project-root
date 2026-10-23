@@ -79,6 +79,10 @@
       }
     );
     $('new-ambulance').disabled = value;
+    ['detail-operational-status', 'edit-from-detail', 'delete-from-detail'].forEach(id => {
+      if ($(id)) $(id).disabled = value;
+    });
+    window.HospitalDropdown.refresh();
   }
   async function refresh() {
     ambulances = (await api.get('ambulances.php?action=list')).map(fromApi);
@@ -202,9 +206,10 @@
         <dt>${icon('id-badge.svg')}${window.HospitalI18n.mark("ambulances.matricula")}</dt><dd>${escapeHtml(ambulance.plate)}</dd>
         <dt>${icon('brand-icon.svg')}${window.HospitalI18n.mark("ambulances.modelo")}</dt><dd>${escapeHtml(ambulance.model)}</dd>
         <dt>${icon('seats-icon.svg')}${window.HospitalI18n.mark("ambulances.capacidad")}</dt><dd>${window.HospitalI18n.mark("ambulances.value_plazas", { value0: ambulance.capacity })}</dd>
-        <dt>${icon('information-icon.svg')}${window.HospitalI18n.mark("ambulances.estado_operativo")}</dt><dd>${labels[ambulance.status]}</dd>
+        <dt>${icon('information-icon.svg')}${window.HospitalI18n.mark("ambulances.estado_operativo")}</dt><dd>${ambulance.archived ? labels[ambulance.status] : `<span class="detail-status-control"><select id="detail-operational-status" aria-label="${window.HospitalI18n.html("ambulances.estado_operativo")}" data-i18n-aria-label="ambulances.estado_operativo">${Object.keys(statusCodes).map(status => `<option value="${status}"${status === ambulance.status ? ' selected' : ''}>${labels[status]}</option>`).join('')}</select></span>`}</dd>
       </dl></section></div>`
     );
+    if ($('detail-operational-status')) window.HospitalDropdown.enhance($('detail-operational-status'));
     detailPanel.inert = false;
     detailPanel.setAttribute('aria-hidden', 'false');
     workspace.classList.add('has-selection');
@@ -212,6 +217,30 @@
     $('close-detail').focus();
     directory.inert = true;
   }
+
+  $('detail-content').addEventListener('change', async event => {
+    if (event.target.id !== 'detail-operational-status' || busy) return;
+    const ambulance = ambulances.find(item => item.id === selectedId);
+    if (!ambulance || ambulance.archived) return;
+    setBusy(true);
+    try {
+      const saved = upsert(await api.post('ambulances.php?action=update', {
+        id: ambulance.id,
+        version: ambulance.version,
+        plate: ambulance.plate,
+        model: ambulance.model,
+        capacity: ambulance.capacity,
+        operational_status: statusCodes[event.target.value]
+      }));
+      selectAmbulance(saved.id);
+      toast(() => window.HospitalI18n.t("ambulances.ambulancia_value_actualizada", { value0: saved.plate }));
+    } catch (error) {
+      report(error);
+    } finally {
+      setBusy(false);
+      $('detail-operational-status-button')?.focus();
+    }
+  });
 
   function clearError() {
     $('form-error').hidden = true;

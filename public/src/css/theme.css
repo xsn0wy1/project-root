@@ -917,8 +917,10 @@ html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, selec
 html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea):active:not(:disabled),
 html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea):focus:not(:disabled) { background-color: rgba(245, 248, 255, 0.76); }
 html[data-theme="light"][data-theme-styles~="trace-new"] .field:focus-within > label { color: var(--light-accent); }
-html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea):user-invalid:not(:disabled) { border-color: rgba(163, 52, 80, 0.65); }
-html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea):user-invalid:focus:not(:disabled) { box-shadow: 0 0 0 3px rgba(44, 61, 104, 0.05); }
+html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea):user-invalid:not(:disabled),
+html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea, .hospital-select-trigger)[aria-invalid="true"]:not(:disabled) { border-color: rgba(163, 52, 80, 0.65); }
+html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea):user-invalid:focus:not(:disabled),
+html[data-theme="light"][data-theme-styles~="trace-new"] .field :is(input, select, textarea, .hospital-select-trigger)[aria-invalid="true"]:focus:not(:disabled) { box-shadow: 0 0 0 3px rgba(44, 61, 104, 0.05); }
 html[data-theme="light"][data-theme-styles~="trace-new"] input[type="date"],
 html[data-theme="light"][data-theme-styles~="trace-new"] input[type="time"] { color-scheme: light; }
 html[data-theme="light"][data-theme-styles~="trace-new"] .check-option { border: 1px solid rgba(88, 108, 151, 0.165); }
@@ -936,6 +938,7 @@ html[data-theme="light"][data-theme-styles~="trace-new"] .critical-option:focus-
 html[data-theme="light"][data-theme-styles~="trace-new"] .critical-option input:focus-visible { outline-color: rgba(163, 52, 80, 0.65); }
 html[data-theme="light"][data-theme-styles~="trace-new"] .form-message { color: #246c50; }
 html[data-theme="light"][data-theme-styles~="trace-new"] .form-message.error { color: #a33450; }
+html[data-theme="light"][data-theme-styles~="trace-new"] .field-error { color: #a33450; }
 html[data-theme="light"][data-theme-styles~="trace-new"] .form-actions { border: 1px solid rgba(88, 108, 151, 0.21); }
 html[data-theme="light"][data-theme-styles~="trace-new"] .form-actions button { border-right: 1px solid rgba(88, 108, 151, 0.16); color: var(--light-text); }
 html[data-theme="light"][data-theme-styles~="trace-new"] .form-actions button:hover { color: var(--light-text); background-color: rgba(89, 110, 167, 0.12); }

@@ -1,0 +1,145 @@
+{
+  "date": "2026-10-23",
+  "application_files": 267,
+  "intentional_files": 13,
+  "unchanged_files": 254,
+  "protected_api_domain_sql_autoload_files": 47,
+  "asset_files_unchanged": 371,
+  "visual": {
+    "strict": 564,
+    "targeted": 96,
+    "returned_and_viewer_sidebar": 36,
+    "total": 696,
+    "computed_differences_outside_controls": 0,
+    "pixel_differences_outside_controls": 0,
+    "viewports": [
+      "1440x900",
+      "390x844",
+      "320x640"
+    ],
+    "locales": [
+      "es-UY",
+      "en"
+    ],
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "modal_pixel_normalization": "The secondary open-dialog comparison neutralizes only the changed backdrop/shadow in both copies; full screenshots are retained.",
+    "sidebar_spacer_allowance": "Only the new navigation row consumes spacer height; spacer pixels are not excluded."
+  },
+  "api": {
+    "focused": 413,
+    "document_links": 46,
+    "mock_recovery": 58,
+    "total": 517
+  },
+  "browser": {
+    "theme": 57,
+    "ambulances": 23,
+    "transfers_surveys": 89,
+    "dropdowns": 136,
+    "i18n": 71,
+    "i18n_mounted": 8,
+    "document_links": 174,
+    "recovery": 130
+  },
+  "browser_total": 688,
+  "theme_page_viewport_cases": 50,
+  "readability_cases": 98,
+  "translation": {
+    "bilingual_keys": 1818,
+    "fresh_pages": 25,
+    "literal_references": 1112,
+    "versioned_asset_urls": 408,
+    "existing_fallback_attributes_ids_preserved": true
+  },
+  "login_selection_proof": [
+    {
+      "copy": 0,
+      "selected": "light",
+      "firstStaffTheme": "dark",
+      "savedTheme": "dark",
+      "preferenceSaves": 0
+    },
+    {
+      "copy": 1,
+      "selected": "light",
+      "firstStaffTheme": "light",
+      "savedTheme": "light",
+      "preferenceSaves": 1
+    }
+  ],
+  "source": {
+    "php": 90,
+    "js": 35,
+    "intentional_declarations": 13,
+    "passed": true
+  },
+  "metrics": {
+    "before": {
+      "files": 267,
+      "bytes": 12598115,
+      "code_files": 171,
+      "code_bytes": 2308855,
+      "repeated_8_line_groups": 559,
+      "repeated_8_line_extra_occurrences": 622
+    },
+    "after": {
+      "files": 267,
+      "bytes": 12609921,
+      "code_files": 171,
+      "code_bytes": 2320661,
+      "repeated_8_line_groups": 559,
+      "repeated_8_line_extra_occurrences": 622
+    },
+    "delta": {
+      "files": 0,
+      "bytes": 11806,
+      "code_files": 0,
+      "code_bytes": 11806,
+      "repeated_8_line_groups": 0,
+      "repeated_8_line_extra_occurrences": 0
+    },
+    "css_bytes_before": 693435,
+    "css_bytes_after": 698091,
+    "css_rules_added": 33,
+    "motion_equal": true,
+    "page_duplicates_before": {
+      "groups": 66,
+      "extra_occurrences": 77
+    },
+    "page_duplicates_after": {
+      "groups": 66,
+      "extra_occurrences": 77
+    },
+    "cross_sheet_duplicates_before": {
+      "groups": 68,
+      "extra_occurrences": 79
+    },
+    "cross_sheet_duplicates_after": {
+      "groups": 69,
+      "extra_occurrences": 80
+    }
+  },
+  "cleanup": {
+    "owned_fixture_cleanup_succeeded": true,
+    "disposable_ports_closed": {
+      "8114": true,
+      "8116": true,
+      "8117": true,
+      "8879": true,
+      "8880": true,
+      "8881": true,
+      "8882": true,
+      "8883": true,
+      "8884": true,
+      "8885": true,
+      "8890": true,
+      "8891": true
+    },
+    "demo_8091_http_status": 200,
+    "screenshots_retained": true,
+    "preexisting_fixtures_retained": true
+  }
+}

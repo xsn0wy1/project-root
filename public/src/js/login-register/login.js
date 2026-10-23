@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
+  let loginTheme = null;
+  document.querySelectorAll('[data-public-theme]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (button.dataset.publicTheme !== window.HospitalTheme.current)
+        loginTheme = button.dataset.publicTheme;
+    });
+  });
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
 
@@ -24,8 +31,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     message.style.color = '';
     window.HospitalI18n.bindText(message, () => window.HospitalI18n.t("registration.iniciando_sesion"));
     try {
-      await window.HospitalApi.post('auth.php?action=login', Object.fromEntries(new FormData(form)));
+      const session = await window.HospitalApi.post('auth.php?action=login', Object.fromEntries(new FormData(form)));
       password.value = '';
+      if (loginTheme) {
+        try {
+          await window.HospitalApi.post('settings.php?action=preferences-update', {
+            version: session.settings.version,
+            theme: loginTheme
+          });
+        } catch (error) {
+          window.HospitalApi.report(error, 'login-theme');
+        }
+      }
       location.assign(window.HospitalApi.page('src/views/main-menu.php'));
     } catch (error) {
       window.HospitalApi.report(error, 'login');

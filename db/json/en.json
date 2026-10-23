@@ -965,6 +965,8 @@
   "trace.edad_estimada_registrada_el_value": "Estimated age recorded on {value0}",
   "trace.borrador_guardado": "Draft saved.",
   "trace.selecciona_personal_y_paciente_desde_sus_catalogos": "Select staff and a patient from their catalogs.",
+  "trace_new.choose_from_list": "Choose an option from the list.",
+  "trace_new.invalid_fields": "Complete or review these fields: {value0}",
   "trace.guardando_traslado": "Saving transfer...",
   "trace.ambulancia_value_value": "Ambulance {value0} · {value1}",
   "trace.ruta_del_borrador_no_disponible": "Draft route (unavailable)",

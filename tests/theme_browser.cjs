@@ -34,7 +34,7 @@ async function geometry(p){return p.evaluate(()=>Object.fromEntries(['.tarjeta',
    await p.setViewportSize(viewport);const response=await p.goto(url(file));if(response)assert.equal(response.status(),200,file+' response');await ready(p);assert.equal(new URL(p.url()).pathname,new URL(url(file)).pathname,file+' unexpected redirect');
    const name=file.replaceAll('/','_').replace('.html','')+'-'+size;
    const theme=baseline?'dark':'light';
-   if(!baseline){await p.evaluate(()=>HospitalTheme.preview('light'));await p.waitForTimeout(320);assert.equal(await p.locator('html').getAttribute('data-theme'),'light');}
+   await p.evaluate(theme=>HospitalTheme.preview(theme),theme);await p.waitForTimeout(320);assert.equal(await p.locator('html').getAttribute('data-theme'),theme);
    shapes[name]=await geometry(p);
    await p.screenshot({path:path.join(runtime,(baseline?'before-':'light-')+name+'.png')});
    if(!baseline){await p.evaluate(()=>HospitalTheme.preview('dark'));await p.waitForTimeout(320);const old=JSON.parse(fs.readFileSync(path.join(runtime,'baseline.json')))[name],now=await geometry(p);for(const selector of Object.keys(old)){if(!old[selector]||!now[selector])continue;for(const k of ['x','y','w','h'])assert(Math.abs(old[selector][k]-now[selector][k])<1.1,name+' '+selector+' '+k+' changed '+JSON.stringify({old:old[selector],now:now[selector]}));assert.equal(now[selector].blur,old[selector].blur,name+' glass blur');}

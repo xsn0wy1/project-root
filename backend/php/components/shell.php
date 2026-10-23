@@ -98,10 +98,10 @@ function staff_page_open(array $page): void
 <?php endif; ?>
   <main class="<?= page_escape($page['main_class'] ?? 'app-shell') ?>">
 <?php
-    staff_sidebar($page['described_nav'], $module === 'management', $page['nav_section'] ?? 'management', $assets);
+    staff_sidebar($page['described_nav'], $module === 'management', $page['nav_section'] ?? 'management', $assets, $page['management_nav'] ?? true);
 }
 
-function staff_sidebar(bool $described, bool $hub, string $section = 'management', string $assets = '../../../assets/'): void
+function staff_sidebar(bool $described, bool $hub, string $section = 'management', string $assets = '../../../assets/', bool $management = true): void
 {
     $document = in_array($section, ['documents', 'document-form', 'document-viewer'], true);
     $transfer = in_array($section, ['transfers', 'transfer-form', 'transfer-view'], true);
@@ -136,7 +136,7 @@ function staff_sidebar(bool $described, bool $hub, string $section = 'management
       <nav class="sidebar-nav"<?= $described ? '' : ' aria-label="Navegación principal" data-i18n-aria-label="trace_map.navegacion_principal"' ?>>
         <div class="nav-indicator"></div>
 <?php foreach ($links as $index => [$url, $icon, $key, $label]): ?>
-<?php if ($index === 4 && in_array($section, ['document-form', 'transfer-form'], true)) continue; ?>
+<?php if ($index === 4 && !$management) continue; ?>
 <?php if ($index === 5): ?>
         <div class="nav-spacer"></div>
 <?php endif; ?>

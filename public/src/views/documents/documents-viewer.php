@@ -113,23 +113,29 @@ staff_page_open([
     </section>
   </main>
 
-  <dialog class="viewer-dialog" id="share-dialog" aria-labelledby="share-title">
-    <div class="dialog-heading"><h2 id="share-title" data-i18n="documents_viewer.compartir_documento">Compartir documento</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
+  <dialog class="viewer-dialog management-dialog" id="share-dialog" aria-labelledby="share-title">
+    <div class="dialog-heading"><div class="viewer-dialog-title"><span class="dialog-icon"><img class="icon" src="../../../assets/Icons/share-icon.svg" alt="" aria-hidden="true"></span><h2 id="share-title" data-i18n="documents_viewer.compartir_documento">Compartir documento</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
     <p data-i18n="documents_viewer.el_destinatario_debe_iniciar_sesion_y_tener_permiso_para_acceder_al_documento">El destinatario debe iniciar sesión y tener permiso para acceder al documento.</p>
     <label class="visually-hidden" for="share-url" data-i18n="documents_viewer.enlace_del_documento">Enlace del documento</label>
     <input id="share-url" type="text" readonly>
-    <button type="button" class="dialog-primary" id="copy-share-link"><img class="icon" src="../../../assets/Icons/select-multiple-icon.svg" alt="" aria-hidden="true"><span data-i18n="survey_view.copiar_enlace">Copiar enlace</span></button>
+    <div class="viewer-dialog-actions"><button type="button" class="dialog-primary" id="copy-share-link"><img class="icon" src="../../../assets/Icons/select-multiple-icon.svg" alt="" aria-hidden="true"><span data-i18n="survey_view.copiar_enlace">Copiar enlace</span></button></div>
   </dialog>
 
-  <dialog class="viewer-dialog qr-dialog" id="qr-dialog" aria-labelledby="qr-title">
-    <div class="dialog-heading"><h2 id="qr-title" data-i18n="documents_viewer.codigo_qr_del_documento">Código QR del documento</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
+  <dialog class="viewer-dialog management-dialog qr-dialog" id="qr-dialog" aria-labelledby="qr-title">
+    <div class="dialog-heading"><div class="viewer-dialog-title"><span class="dialog-icon"><img class="icon" src="../../../assets/Icons/qr-icon.svg" alt="" aria-hidden="true"></span><h2 id="qr-title" data-i18n="documents_viewer.codigo_qr_del_documento">Código QR del documento</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
     <div class="qr-preview"><canvas id="qr-canvas" width="264" height="264" role="img" aria-label="Código QR de acceso al archivo para el paciente" data-i18n-aria-label="documents_viewer.patient_file_qr"></canvas></div>
     <p><i18n-text data-i18n="documents_viewer.patient_file_access">Acceso al archivo del documento</i18n-text> <strong id="qr-document-id"></strong>.</p>
     <p id="qr-expiry"></p>
     <p data-i18n="documents_viewer.patient_link_notice">Cualquier persona con este enlace puede abrir este archivo sin iniciar sesión.</p>
     <input id="patient-qr-url" type="text" readonly aria-label="Enlace del archivo para el paciente" data-i18n-aria-label="documents_viewer.patient_file_url">
-    <button type="button" class="dialog-primary" id="copy-qr-link"><img class="icon" src="../../../assets/Icons/select-multiple-icon.svg" alt="" aria-hidden="true"><span data-i18n="survey_view.copiar_enlace">Copiar enlace</span></button>
-    <button type="button" class="dialog-primary" id="revoke-qr-link" data-i18n="documents_viewer.revoke_patient_link">Revocar enlace</button>
+    <div class="viewer-dialog-actions"><button type="button" class="dialog-primary" id="copy-qr-link"><img class="icon" src="../../../assets/Icons/select-multiple-icon.svg" alt="" aria-hidden="true"><span data-i18n="survey_view.copiar_enlace">Copiar enlace</span></button>
+    <button type="button" class="dialog-primary dialog-secondary" id="revoke-qr-link" data-i18n="documents_viewer.revoke_patient_link">Revocar enlace</button></div>
+  </dialog>
+
+  <dialog class="viewer-dialog management-dialog archive-dialog" id="archive-dialog" aria-labelledby="archive-title" aria-describedby="archive-description">
+    <div class="dialog-heading"><div class="viewer-dialog-title"><span class="dialog-icon"><img class="icon" src="../../../assets/Icons/trash-icon.svg" alt="" aria-hidden="true"></span><h2 id="archive-title" data-i18n="documents_viewer.eliminar_documento">Eliminar documento</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
+    <p id="archive-description"></p>
+    <div class="viewer-dialog-actions"><button type="button" class="dialog-primary dialog-secondary" data-close-dialog autofocus data-i18n="settings.cancelar">Cancelar</button><button type="button" class="dialog-primary dialog-danger" id="confirm-archive" data-i18n="documents_viewer.eliminar_documento">Eliminar documento</button></div>
   </dialog>
 
   <dialog class="viewer-dialog" id="pdf-password-dialog" aria-labelledby="pdf-password-title">
