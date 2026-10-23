@@ -1825,5 +1825,14 @@
   "security.other_device": "Other device",
   "security.last_seen": "Last active: {date}",
   "security.no_sessions": "No active sessions.",
-  "destinations.ubicacion_contacto_y_acceso": "Location, contact details and access information."
+  "destinations.ubicacion_contacto_y_acceso": "Location, contact details and access information.",
+  "error_page.forbidden_title": "Access denied",
+  "error_page.forbidden_description": "You do not have permission to access this section.",
+  "error_page.not_found_title": "Page not found",
+  "error_page.not_found_description": "The page you are looking for does not exist or has moved.",
+  "error_page.server_title": "Something went wrong",
+  "error_page.server_description": "The page could not be loaded; please try again.",
+  "error_page.home": "Back to home",
+  "error_page.login": "Sign in",
+  "error_page.request_id": "Request ID: {value0}"
 }

@@ -11,7 +11,7 @@ def prepare():
  RUNTIME.mkdir(parents=True,exist_ok=True)
  if (RUNTIME/'env.json').exists():raise RuntimeError('A theme test environment already exists; clean it first.')
  env=dict(os.environ)
- env.update(HOSPITAL_DB_NAME='hospital_theme_'+secrets.token_hex(4)+'_test',HOSPITAL_DB_USER='theme_'+secrets.token_hex(4),HOSPITAL_DB_PASSWORD=secrets.token_hex(24),HOSPITAL_DB_SOCKET='/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock',HOSPITAL_APP_KEY=secrets.token_hex(32),HOSPITAL_STORAGE_PATH=str(RUNTIME/'storage'),HOSPITAL_BASE_PATH='',HOSPITAL_SECURE_COOKIES='false',HOSPITAL_BCRYPT_COST='10',HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24),HOSPITAL_AUTH_TEST_URL='http://127.0.0.1:8879',HOSPITAL_TEST_PHP=PHP,HOSPITAL_ROUTE_MAPPING_ENABLED='false',HOSPITAL_I18N_TEST_RECORDS=str(RUNTIME/'records.json'))
+ env.update(HOSPITAL_DB_NAME='hospital_theme_'+secrets.token_hex(4)+'_test',HOSPITAL_DB_USER='theme_'+secrets.token_hex(4),HOSPITAL_DB_PASSWORD=secrets.token_hex(24),HOSPITAL_DB_SOCKET=os.environ.get('HOSPITAL_DB_SOCKET','/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'),HOSPITAL_APP_KEY=secrets.token_hex(32),HOSPITAL_STORAGE_PATH=str(RUNTIME/'storage'),HOSPITAL_BASE_PATH='',HOSPITAL_SECURE_COOKIES='false',HOSPITAL_BCRYPT_COST='10',HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24),HOSPITAL_AUTH_TEST_URL='http://127.0.0.1:8879',HOSPITAL_TEST_PHP=PHP,HOSPITAL_ROUTE_MAPPING_ENABLED='false',HOSPITAL_I18N_TEST_RECORDS=str(RUNTIME/'records.json'))
  env.update(HOSPITAL_AUTH_TEST_URL=f'http://127.0.0.1:{PORT}',HOSPITAL_APP_URL=f'http://127.0.0.1:{PORT}/')
  saved={k:v for k,v in env.items() if k.startswith('HOSPITAL_')}
  (RUNTIME/'env.json').write_text(json.dumps(saved));(RUNTIME/'env.json').chmod(0o600)

@@ -37,6 +37,26 @@ async function quickStatus(page, value, status = 200) {
     await page.waitForFunction(() => !document.getElementById('detail-operational-status').disabled);
     return result;
 }
+async function compactStatus(browser, context, id) {
+    const touch = await browser.newContext({hasTouch:true, storageState:await context.storageState()});
+    const page = await touch.newPage();
+    try {
+        for (const [name, viewport] of Object.entries({mobile:{width:390,height:844}, narrow:{width:320,height:640}, landscape:{width:844,height:390}, tablet:{width:1024,height:768}, desktop:{width:1440,height:900}})) {
+            await page.setViewportSize(viewport); await page.goto(url); await ready(page);
+            await page.locator('[data-select-id="'+id+'"]').click();
+            for (const locale of ['es-UY','en']) for (const theme of ['dark','light']) {
+                await page.evaluate(async ({locale,theme})=>{await HospitalI18n.apply(locale);HospitalTheme.preview(theme);},{locale,theme});
+                const geometry = await page.locator('#detail-operational-status-button').evaluate(button=>{
+                    const box = node=>{const b=node.getBoundingClientRect();return {x:b.x,y:b.y,right:b.right,bottom:b.bottom,width:b.width,height:b.height};};
+                    return {button:box(button), card:box(button.closest('.detail-card')), actions:['edit-from-detail','delete-from-detail'].map(id=>box(document.getElementById(id))), font:getComputedStyle(button).fontSize,label:getComputedStyle(button.querySelector('.hospital-select-label')).fontSize,coarse:matchMedia('(pointer:coarse)').matches};
+                });
+                const b=geometry.button,c=geometry.card;
+                check(geometry.coarse&&b.height===28&&geometry.font==='10px'&&geometry.label==='10px'&&b.x>=c.x&&b.right<=c.right&&b.y>=c.y&&b.bottom<=c.bottom&&geometry.actions.every(a=>b.right<=a.x||b.x>=a.right||b.bottom<=a.y||b.y>=a.bottom),name+'/'+locale+'/'+theme+': coarse-pointer status stays compact, inside its card and clear of actions');
+            }
+            await page.screenshot({path:path.join(runtime,'compact-status-'+name+'.png')});
+        }
+    } finally {await touch.close();}
+}
 (async () => {
     const browser = await chromium.launch({channel: 'chrome', headless: true});
     try {
@@ -70,6 +90,7 @@ async function quickStatus(page, value, status = 200) {
         await page.locator('[data-select-id="' + created.id + '"]').click();
         await page.waitForFunction(() => document.querySelector('#detail-panel').getAttribute('aria-hidden') === 'false');
         check(await page.locator('#directory-panel').evaluate(e => e.inert), 'selection opens details and makes the directory inert');
+        await compactStatus(browser, context, created.id);
         const quick = await quickStatus(page, 'MANTENIMIENTO');
         const changed = (await quick.json()).data;
         check(changed.version === created.version + 1 && changed.plate === created.plate && changed.model === created.model && changed.capacity === created.capacity && changed.operational_status === 'maintenance', 'detail dropdown saves the selected status with the current revision and unchanged metadata');
@@ -153,8 +174,8 @@ async function quickStatus(page, value, status = 200) {
         const admin = await browser.newPage(); await admin.goto(base + '/');
         await admin.evaluate(() => HospitalI18n.ready);
         await admin.evaluate(password => HospitalApi.post('auth.php?action=login', {username: 'system_admin', password}), env.HOSPITAL_ADMIN_PASSWORD);
-        await admin.goto(url);
-        check(new URL(admin.url()).pathname.endsWith('/management.php'), 'admin without dispatcher is redirected by the PHP page guard');
+        const forbidden = await admin.goto(url);
+        check(forbidden.status() === 403 && new URL(admin.url()).pathname.endsWith('/ambulances.php') && await admin.locator('.error-card').isVisible(), 'admin without dispatcher receives the standalone 403 page');
         check(proof.nativeDialogs.length === 0 && proof.scriptErrors.length === 0, 'no native alerts/validation popups or uncaught script errors');
     } finally {
         fs.writeFileSync(path.join(runtime, 'browser-report.json'), JSON.stringify(proof, null, 2) + '\n');

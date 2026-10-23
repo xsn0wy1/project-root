@@ -1,5 +1,9 @@
 > Imported planning context. Current instructions use `johnproject 2` for directory names only, never its files or code. All work belongs in `project-root`; historical references to `desired.zip` do not apply. See `progress.md` for current stage status.
 
+## Current UI maintenance checkpoint — 2026-10-23
+
+The small fixes and standalone error page are complete and paused for review; see `docs/error-pages.md` and `docs/progress.md`. `public/src/views/error.php` is intentionally public, uses server I18n/auth-card styles and only the existing theme script, and is covered by dedicated error cases rather than ordinary authenticated-page enumeration. APIs/CLI stay JSON, 401 keeps its login redirect, and Apache/root/mounted errors are verified. `tests/error_pages_integration.py --apache --html` reuses disposable theme fixtures for API byte contracts, normal HTML equivalence and late/partial-output failures. No schema migration, dependency, global XAMPP change or submission archive. Frontend Phase 2 has not started.
+
 # Hospital project: simplification plan and context handoff
 
 **Prepared:** 20 October 2026  

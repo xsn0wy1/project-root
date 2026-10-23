@@ -14,12 +14,24 @@ try {
     $GLOBALS['request_id'] = bin2hex(random_bytes(12));
     header('Cache-Control: no-store, private');
     header('X-Content-Type-Options: nosniff');
-    Hospital\Http\Response::error(new Hospital\Http\ApiException(
-        503,
-        'SERVICE_UNAVAILABLE',
-        \Hospital\I18n::t("errors.completa_la_configuracion_local_siguiendo_docs_xampp_setup_md")
-    ));
-    return;
+    $mount = rtrim(getenv('HOSPITAL_BASE_PATH') ?: '', '/');
+    $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
+    if (!preg_match('#/api/v1(?:/|$)#', $path) &&
+        ($path === $mount || str_ends_with($path, '/') || preg_match('#/(?:index|src/views/(?:[a-z0-9-]+/)*[a-z0-9-]+)\.php$#', $path))) {
+        require_once dirname(__DIR__, 2) . '/public/src/views/error.php';
+        render_error_page(503);
+        return;
+    }
+    if (preg_match('#/api/v1(?:/|$)#', $path)) {
+        Hospital\Http\Response::error(new Hospital\Http\ApiException(
+            503,
+            'SERVICE_UNAVAILABLE',
+            \Hospital\I18n::t("errors.completa_la_configuracion_local_siguiendo_docs_xampp_setup_md")
+        ));
+        return;
+    }
+    // Keep the standalone error card's public assets available during setup failures.
+    $config = ['base_path' => preg_match('#^(?:/[a-zA-Z0-9_-]+)*$#', $mount) ? $mount : ''];
 }
 $mount = $config['base_path'];
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
@@ -69,6 +81,11 @@ $types = [
 ];
 $ext = $file ? strtolower(pathinfo($file, PATHINFO_EXTENSION)) : '';
 if (!$file || !str_starts_with($file, $root . '/') || !is_file($file)) {
+    if (preg_match('#^/src/views/(?:[a-z0-9-]+/)*[a-z0-9-]+\.php$#', $path)) {
+        require_once $root . '/src/views/error.php';
+        render_error_page(404);
+        return;
+    }
     http_response_code(404);
     exit;
 }
@@ -80,6 +97,8 @@ if (
 ) {
     require_once __DIR__ . '/autoload.php';
     require $file;
+    if ($path === '/src/views/error.php')
+        render_error_page((int) ($_GET['status'] ?? 404));
     return;
 }
 if (!isset($types[$ext])) {

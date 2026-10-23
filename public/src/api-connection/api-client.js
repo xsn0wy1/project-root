@@ -74,6 +74,8 @@
       report(error);
       throw error;
     }
+    // Optional telemetry must not turn rate limiting into a console error.
+    if (response.status === 429 && path === 'settings.php?action=diagnostics') return null;
     let payload;
     try {
       if (!response.headers.get('Content-Type')?.includes('application/json')) throw new Error();

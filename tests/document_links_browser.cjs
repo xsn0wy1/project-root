@@ -158,6 +158,8 @@ async function formJourney(browser, storageState) {
    check(await page.evaluate(()=>navigator.clipboard.readText())===staffUrl && await page.locator('#share-dialog .dialog-icon img').count()===1,'styled staff share keeps its exact version URL and working primary copy action');
    await page.locator('#share-dialog [data-close-dialog]').click();
    await page.locator('#delete-button').click();await page.locator('#archive-dialog[open]').waitFor();
+   const archiveLabel = locale === 'en' ? 'Archive' : 'Archivar';
+   check(await page.locator('#archive-title').textContent() === archiveLabel && await page.locator('#confirm-archive').textContent() === archiveLabel,'archive title and confirm use the existing archive translation');
    const archive=await page.locator('#archive-dialog').evaluate(dialog=>({width:dialog.getBoundingClientRect().width,height:dialog.getBoundingClientRect().height}));
    check(archive.width<=(mobile?390:1440) && archive.height<=(mobile?844:900) && (await page.locator('#archive-description').textContent()).includes(fixtures.pdf.title),'localized archive dialog fits the viewport and includes the document name');
    await page.locator('#archive-dialog [autofocus]').click();

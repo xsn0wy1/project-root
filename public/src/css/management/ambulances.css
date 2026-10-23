@@ -459,6 +459,8 @@
 .detail-status-control .hospital-select { position: absolute; top: -7px; height: 28px; }
 .detail-status-control select { height: 28px; width: 100%; font: inherit; }
 .detail-status-control .filter-trigger { padding: 0 7px; font-size: 10px; border-radius: 7px; }
+:root .detail-status-control :is(.hospital-select,select,.filter-trigger) { min-height: 0; }
+:root .detail-status-control :is(.filter-trigger,.hospital-select-label) { font-size: 10px !important; }
 
 .ambulance-dialog {
   width: min(720px, calc(100vw - 30px));

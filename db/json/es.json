@@ -1825,5 +1825,14 @@
   "security.other_device": "Otro dispositivo",
   "security.last_seen": "Última actividad: {date}",
   "security.no_sessions": "No hay sesiones activas.",
-  "destinations.ubicacion_contacto_y_acceso": "Ubicación, contacto e indicaciones de acceso."
+  "destinations.ubicacion_contacto_y_acceso": "Ubicación, contacto e indicaciones de acceso.",
+  "error_page.forbidden_title": "Sin permiso",
+  "error_page.forbidden_description": "No tenés permiso para acceder a esta sección.",
+  "error_page.not_found_title": "Página no encontrada",
+  "error_page.not_found_description": "La página que buscás no existe o cambió de dirección.",
+  "error_page.server_title": "Algo salió mal",
+  "error_page.server_description": "No se pudo cargar la página; intentá nuevamente.",
+  "error_page.home": "Volver al inicio",
+  "error_page.login": "Iniciar sesión",
+  "error_page.request_id": "ID de solicitud: {value0}"
 }

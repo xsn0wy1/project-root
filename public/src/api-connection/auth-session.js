@@ -23,7 +23,9 @@
       .post('settings.php?action=diagnostics', {
         load_ms: Math.min(120000, Math.max(0, Math.round(timing.loadEventEnd - timing.startTime)))
       })
-      .catch(error => api.report(error, 'diagnostics'));
+      .catch(error => {
+        if (error?.status !== 429) api.report(error, 'diagnostics');
+      });
   }
   window.addEventListener('load', () => {
     if (current) setTimeout(() => diagnostics(current), 0);

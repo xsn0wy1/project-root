@@ -4,10 +4,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/autoload.php';
 $GLOBALS['request_id'] = bin2hex(random_bytes(12));
 ini_set('display_errors', '0');
-set_exception_handler(static function (Throwable $error): void {
-    if ($error instanceof Hospital\Http\ApiException) {
-        Hospital\Http\Response::error($error);
-    } else {
+$requestPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '');
+$pageBuffer = PHP_SAPI !== 'cli' && !preg_match('#/api/v1(?:/|$)#', $requestPath) ? ob_get_level() : null;
+if ($pageBuffer !== null) ob_start();
+set_exception_handler(static function (Throwable $error) use ($pageBuffer): void {
+    if (!$error instanceof Hospital\Http\ApiException) {
         // Do not log SQL parameters, request bodies, credentials, CI or session IDs.
         $diagnostic = get_class($error) . ' at ' . basename($error->getFile()) . ':' . $error->getLine();
         if ($error instanceof PDOException) {
@@ -19,11 +20,19 @@ set_exception_handler(static function (Throwable $error): void {
                 $diagnostic .= ' driver_code=' . $number;
         }
         error_log('Hospital request ' . $GLOBALS['request_id'] . ' failed: ' . $diagnostic);
-        Hospital\Http\Response::error(new Hospital\Http\ApiException(
+        $error = new Hospital\Http\ApiException(
             503,
             'SERVICE_UNAVAILABLE',
             \Hospital\I18n::t("errors.el_servicio_no_esta_disponible_revisa_la_configuracion_o_intenta_nuevamente")
-        ));
+        );
+    }
+    if ($pageBuffer !== null) {
+        while (ob_get_level() > $pageBuffer) ob_end_clean();
+        require_once dirname(__DIR__, 2) . '/public/src/views/error.php';
+        $status = in_array($error->status, [403, 404, 503], true) ? $error->status : 500;
+        render_error_page($status);
+    } else {
+        Hospital\Http\Response::error($error);
     }
 });
 if (PHP_SAPI !== 'cli') {

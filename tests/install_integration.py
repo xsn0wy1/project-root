@@ -73,7 +73,7 @@ def run(output, browser):
                 return
             except urllib.error.HTTPError as error:
                 if error.code == expected:
-                    return json.loads(error.read())
+                    return error.read().decode()
                 if process.poll() is not None:
                     raise RuntimeError('Fresh-install server stopped.')
                 time.sleep(.05)
@@ -87,7 +87,18 @@ def run(output, browser):
         local = source/'backend/php/config/local.php'
         check(not local.exists() and not (source/'storage').exists(), 'clean copy excludes existing configuration and uploads')
         unavailable = serve(8114, '', expected=503)
-        check(unavailable['success'] is False and 'README.md' in unavailable['error']['message'], 'unconfigured installation gives a safe error pointing to current setup instructions')
+        check('Algo salió mal' in unavailable and 'error-card' in unavailable, 'unconfigured page renders the safe standalone service error')
+        for path in ['/src/css/login-register/log-reg.css', '/src/api-connection/theme.js', '/assets/Icons/alert-icon.svg']:
+            with urllib.request.urlopen('http://127.0.0.1:8114'+path, timeout=5) as response:
+                check(response.status == 200 and response.read() == (source/'public'/path.lstrip('/')).read_bytes(),
+                      'unconfigured error-card asset remains available: '+path)
+        try:
+            urllib.request.urlopen('http://127.0.0.1:8114/api/v1/auth.php?action=me', timeout=5)
+            raise AssertionError('Unconfigured API unexpectedly succeeded.')
+        except urllib.error.HTTPError as error:
+            payload = json.loads(error.read())
+            check(error.code == 503 and payload['success'] is False and payload['error']['code'] == 'SERVICE_UNAVAILABLE'
+                  and 'README.md' in payload['error']['message'], 'unconfigured API retains its original JSON envelope/message')
         unconfigured = servers.pop()
         unconfigured.terminate()
         unconfigured.wait(timeout=10)
@@ -143,7 +154,7 @@ def run(output, browser):
             check(anon.call('/api/v1/page.php?view=main-menu.html')[0] == 404 and anon.call('/src/views/main-menu.html')[0] == 404, 'retired HTML routes stay removed')
             for page in (source/'public/src/views').rglob('*.php'):
                 relative = page.relative_to(source/'public').as_posix()
-                if 'register-restore/' in relative or relative.endswith('survey-user.php'):
+                if 'register-restore/' in relative or relative.endswith(('survey-user.php', '/error.php')):
                     continue
                 status, _, headers = anon.call('/'+relative)
                 check(status == 303 and 'index.php' in headers['Location'], 'anonymous fresh-install staff page is guarded: '+relative)

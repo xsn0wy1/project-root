@@ -54,14 +54,18 @@ for path in files:
  if path.suffix=='.php':
   assert relative in rendered,'Provide --rendered-pages from an authenticated baseline capture: '+relative
  page=Page();page.feed(rendered[relative] if path.suffix=='.php' else path.read_text())
- assert 'i18n.js' in next(src for src in page.scripts if 'theme.js' not in src),path
+ if path.name=='error.php':
+  assert len(page.scripts)==1 and 'theme.js' in page.scripts[0],path
+ else:
+  assert 'i18n.js' in next(src for src in page.scripts if 'theme.js' not in src),path
  for src in page.scripts+page.styles:
   if not src.startswith(('http:','https:')):
-   assert (path.parent/src.split('?')[0]).resolve().is_file(),(path,src)
+   asset=ROOT/'public'/src.lstrip('/') if src.startswith('/') else path.parent/src
+   assert Path(str(asset).split('?')[0]).resolve().is_file(),(path,src)
    if args.asset_version:
     assert parse_qs(urlsplit(src).query).get('v')==[args.asset_version],('Asset version differs',path,src)
     versioned_assets+=1
- if baseline:
+ if baseline and path.name!='error.php':
   before=Page();before.feed(baseline[relative if relative in baseline else relative.replace('.php','.html')])
   assert not (Counter(before.text)-Counter(page.text)),('Spanish fallback changed',path,Counter(before.text)-Counter(page.text))
   assert not (Counter(before.attrs)-Counter(page.attrs)),('Spanish attribute changed',path)

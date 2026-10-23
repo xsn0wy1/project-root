@@ -1,0 +1,67 @@
+{
+  "backend/php/bootstrap.php": {
+    "before_sha256": "cdbf65f366c2baa41d720667abb8694b793ea3d70ec8d28081d047fe359d1c5e",
+    "after_sha256": "2a6bd89576954d70ca09efefb367ae59f6f6d56090e06e7d794dd676483eb778",
+    "reason": "Preserve existing logging and byte-identical API/CLI error output, including encoded API paths. Buffer only page HTML so even exceptions after partial rendering replace it with the correct standalone 500/503 response."
+  },
+  "backend/php/core/page.php": {
+    "before_sha256": "db03a91a99165203f6af49fa4d63e7e4a006ae4d9c0a35065a6cfaa50a6b19d8",
+    "after_sha256": "80143713e64cffb0a038a500eeb18422d0d023e87aa71c2e52d47c38d410fc3b",
+    "reason": "Render the shared 403 card with the already authenticated account after role denial; retain the existing 401 login redirect and permission checks."
+  },
+  "backend/php/dev-router.php": {
+    "before_sha256": "3d683bb7a8cf22f957f0edbd5e6f2702c094fb5ca96a876f31ad2b97b85115b2",
+    "after_sha256": "f0bca3023fa1ea1886f6bd0202ae45011c2ef88c1fed77f9bfa9100b3756a971",
+    "reason": "Render missing PHP views and configuration failures as the shared page, explicitly dispatch the standalone view at root/mount, preserve API errors and plain static 404s, and keep error-card assets available during configuration failures."
+  },
+  "db/json/en.json": {
+    "before_sha256": "7606a1064d87fde5ec9ac1c2627001637606af8452f3ea4ef02dc4fa0bee43e2",
+    "after_sha256": "9fb3e45638059aac5e5239b88fe58bd095bfdbfc97f8584b82acd5cbaad2f445",
+    "reason": "Append only the nine English error-card strings; retain every existing translation and interpolation contract."
+  },
+  "db/json/es.json": {
+    "before_sha256": "78e371b3cb01775469a534f742e43aceac8e57d9a025b3f84b28d5590bb9a856",
+    "after_sha256": "82fbeab87d7f7f2140552c7f4c4f222d5a9ececb555eef2e76339609132493eb",
+    "reason": "Append only the nine default Spanish error-card strings; retain every existing translation and interpolation contract."
+  },
+  "public/.htaccess": {
+    "before_sha256": "c063dc15e4fbf3d71d32321d4540540af4f25465345120f6750301328f59bf2f",
+    "after_sha256": "9530091172e3b0ad04fffdecd845c5804921f5c785033216936444ab6a67de14",
+    "reason": "Use the shared error view for Apache 403/404/500, preserving Alias mounts through CONTEXT_PREFIX without changing global Apache configuration."
+  },
+  "public/src/api-connection/api-client.js": {
+    "before_sha256": "7f710135e2fc3efd7d47c35dd23321de02810e6bd06bdfecac295bbcc0e1ca7d",
+    "after_sha256": "a2cc576934c3ed41be83a8b0b4229f380c62a201e6522cafec719f4eb4278437",
+    "reason": "Drop only optional diagnostics 429 responses before JSON decoding/reporting; every other API failure retains existing behavior."
+  },
+  "public/src/api-connection/auth-session.js": {
+    "before_sha256": "b1f5cefd51aef1fe3e82e715a6a47451c11ce0caba4088f4d7411fb39001dd94",
+    "after_sha256": "5b1ab172a84faab08938e6ca3484e335076a61e358ef20dac3aec80d02ae1e10",
+    "reason": "Silently discard a rejected optional diagnostics 429 while retaining reporting for all other diagnostics errors."
+  },
+  "public/src/api-connection/theme.js": {
+    "before_sha256": "e7ef081917c9315611930ae23ab3ceef9f2383895b81f3def421d58c16022ba4",
+    "after_sha256": "397297831bbbdd34249674b159f233a461cc6a992fbf6daee13fd7567f470bf1",
+    "reason": "Allow the standalone error card to opt into the existing cached public theme when the account theme is unknown; preserve all existing page behavior."
+  },
+  "public/src/css/login-register/log-reg.css": {
+    "before_sha256": "4c4ac8f9c682091732fecc23f97ddc1dcc5665df574ae324c1c6e0176b739664",
+    "after_sha256": "286ec9763370818d37360504c0c018f77dddc90b034135753cbf0f1c2755f540",
+    "reason": "Add only three error-card rules for alignment and a theme-readable existing icon; reuse the existing auth card, typography, background and buttons."
+  },
+  "public/src/css/management/ambulances.css": {
+    "before_sha256": "658b32fd40da3e5316f39b6a87a850dd8b13cc05b522df82d97841b4c4d84d73",
+    "after_sha256": "ee7da2335c86595bf99d214f21beb0a0606ff6e6df5fed8493c425adaa71967b",
+    "reason": "Keep the detail status trigger at its desktop 28px/10px size despite responsive/coarse-pointer minimums, without changing menus or other controls."
+  },
+  "public/src/views/documents/documents-viewer.php": {
+    "before_sha256": "7c72094c244f633176199e7a2eca5e4b8cffb5ce172dfd6c73226ee0536381f6",
+    "after_sha256": "f8c0c901f6a07d58624593abb6ab382a982441c1d2b7d4602a93b96e943a3547",
+    "reason": "Use the existing Archive translation for only the archive dialog title and confirmation button; retain description, IDs and behavior."
+  },
+  "public/src/views/error.php": {
+    "before_sha256": null,
+    "after_sha256": "c5c2c23e5e9130268b8088ce53c81bb9e9267bd57f1df02acec84e2c927fc7e5",
+    "reason": "Add one standalone PHP view/function for 403/404/500/503, with account locale/theme, cached-theme fallback, appropriate navigation and request IDs only for server errors. Reuse auth styles and the existing theme script; preserve Apache query language and plain static 404s."
+  }
+}

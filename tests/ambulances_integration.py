@@ -44,11 +44,13 @@ def page_guard_checks(dispatcher, admin):
     for role, client in [('anonymous', Client()), ('admin', admin), ('dispatcher', dispatcher), ('records_manager', clinical)]:
         for page, permission in permissions.items():
             allowed = role != 'anonymous' and (permission is None or permission == role)
-            status, _, headers = client.call('/src/views/'+page+'.php')
-            check(status == (200 if allowed else 303), 'PHP page guard: '+role+' / '+page)
-            if not allowed:
-                fallback = '/index.php' if role == 'anonymous' else '/src/views/traces/trace.php' if page == 'traces/trace-new' else '/src/views/management/management.php'
-                assert headers['Location'].startswith(fallback)
+            status, body, headers = client.call('/src/views/'+page+'.php')
+            check(status == (200 if allowed else 303 if role == 'anonymous' else 403), 'PHP page guard: '+role+' / '+page)
+            if role == 'anonymous':
+                assert headers['Location'].startswith('/index.php')
+            elif not allowed:
+                assert 'Location' not in headers and 'text/html' in headers['Content-Type']
+                assert 'No tenés permiso para acceder a esta sección.' in body
 
 
 def run():

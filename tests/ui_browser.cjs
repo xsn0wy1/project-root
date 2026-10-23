@@ -15,7 +15,7 @@ const rendered = {};
 const check = (value, label) => {assert(value, label); report.checks++;};
 const ids = {'documents-edit.php': records.document.id, 'documents-viewer.php': records.document.id,
   'trace-view.php': records.transfer.id, 'survey-view.php': records.survey.id, 'survey-new.php': records.survey.id};
-const files = fs.readdirSync(path.join(root, 'public'), {recursive: true}).filter(file => file.endsWith('.php')).sort()
+const files = fs.readdirSync(path.join(root, 'public'), {recursive: true}).filter(file => file.endsWith('.php') && !file.endsWith('/error.php')).sort()
   .filter(file => !process.env.HOSPITAL_UI_FILES || process.env.HOSPITAL_UI_FILES.split(',').some(name => file.endsWith(name)));
 const sizes = {desktop: {width: 1440, height: 900}, mobile: {width: 390, height: 844},
   narrow: {width: 320, height: 640}, tablet: {width: 768, height: 1024},

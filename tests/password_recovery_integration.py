@@ -25,7 +25,7 @@ PHP=os.environ.get('HOSPITAL_TEST_PHP','/Applications/XAMPP/xamppfiles/bin/php')
 NODE=os.environ.get('HOSPITAL_TEST_NODE',str(Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node'))
 env=dict(os.environ)
 env.setdefault('NODE_PATH',str(Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules'))
-env.update(HOSPITAL_DB_NAME='hospital_recovery_'+secrets.token_hex(4)+'_test',HOSPITAL_DB_USER='recovery_'+secrets.token_hex(4),HOSPITAL_DB_PASSWORD=secrets.token_hex(24),HOSPITAL_DB_SOCKET='/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock',HOSPITAL_APP_KEY=secrets.token_hex(32),HOSPITAL_STORAGE_PATH=str(RUNTIME/'storage'),HOSPITAL_BASE_PATH='',HOSPITAL_SECURE_COOKIES='false',HOSPITAL_BCRYPT_COST='10',HOSPITAL_BREVO_API_KEY='offline-test-key',HOSPITAL_MAIL_FROM_EMAIL='sender@hospital.example',HOSPITAL_APP_URL='http://127.0.0.1:8881/',HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24))
+env.update(HOSPITAL_DB_NAME='hospital_recovery_'+secrets.token_hex(4)+'_test',HOSPITAL_DB_USER='recovery_'+secrets.token_hex(4),HOSPITAL_DB_PASSWORD=secrets.token_hex(24),HOSPITAL_DB_SOCKET=os.environ.get('HOSPITAL_DB_SOCKET','/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'),HOSPITAL_APP_KEY=secrets.token_hex(32),HOSPITAL_STORAGE_PATH=str(RUNTIME/'storage'),HOSPITAL_BASE_PATH='',HOSPITAL_SECURE_COOKIES='false',HOSPITAL_BCRYPT_COST='10',HOSPITAL_BREVO_API_KEY='offline-test-key',HOSPITAL_MAIL_FROM_EMAIL='sender@hospital.example',HOSPITAL_APP_URL='http://127.0.0.1:8881/',HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24))
 servers=[]
 mail_peer=None
 mail_started=threading.Event()

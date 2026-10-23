@@ -133,9 +133,9 @@ staff_page_open([
   </dialog>
 
   <dialog class="viewer-dialog management-dialog archive-dialog" id="archive-dialog" aria-labelledby="archive-title" aria-describedby="archive-description">
-    <div class="dialog-heading"><div class="viewer-dialog-title"><span class="dialog-icon"><img class="icon" src="../../../assets/Icons/trash-icon.svg" alt="" aria-hidden="true"></span><h2 id="archive-title" data-i18n="documents_viewer.eliminar_documento">Eliminar documento</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
+    <div class="dialog-heading"><div class="viewer-dialog-title"><span class="dialog-icon"><img class="icon" src="../../../assets/Icons/trash-icon.svg" alt="" aria-hidden="true"></span><h2 id="archive-title" data-i18n="patients.archivar">Archivar</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span aria-hidden="true" data-i18n="documents_upload.times">×</span></button></div>
     <p id="archive-description"></p>
-    <div class="viewer-dialog-actions"><button type="button" class="dialog-primary dialog-secondary" data-close-dialog autofocus data-i18n="settings.cancelar">Cancelar</button><button type="button" class="dialog-primary dialog-danger" id="confirm-archive" data-i18n="documents_viewer.eliminar_documento">Eliminar documento</button></div>
+    <div class="viewer-dialog-actions"><button type="button" class="dialog-primary dialog-secondary" data-close-dialog autofocus data-i18n="settings.cancelar">Cancelar</button><button type="button" class="dialog-primary dialog-danger" id="confirm-archive" data-i18n="patients.archivar">Archivar</button></div>
   </dialog>
 
   <dialog class="viewer-dialog" id="pdf-password-dialog" aria-labelledby="pdf-password-title">

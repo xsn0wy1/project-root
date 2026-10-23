@@ -18,7 +18,7 @@ PHP = os.environ.get('HOSPITAL_TEST_PHP', '/Applications/XAMPP/xamppfiles/bin/ph
 NODE = os.environ.get('HOSPITAL_TEST_NODE', str(Path.home() / '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node'))
 os.environ.update(HOSPITAL_DB_NAME='hospital_doclinks_' + secrets.token_hex(4) + '_test',
     HOSPITAL_DB_USER='doclinks_' + secrets.token_hex(4), HOSPITAL_DB_PASSWORD=secrets.token_hex(24),
-    HOSPITAL_DB_SOCKET='/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock', HOSPITAL_APP_KEY=secrets.token_hex(32),
+    HOSPITAL_DB_SOCKET=os.environ.get('HOSPITAL_DB_SOCKET','/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'), HOSPITAL_APP_KEY=secrets.token_hex(32),
     HOSPITAL_STORAGE_PATH=str(STORAGE), HOSPITAL_BASE_PATH='', HOSPITAL_SECURE_COOKIES='false',
     HOSPITAL_BCRYPT_COST='10', HOSPITAL_ADMIN_PASSWORD=secrets.token_urlsafe(24), HOSPITAL_AUTH_TEST_URL='http://127.0.0.1:8884')
 os.environ.setdefault('NODE_PATH', str(Path.home() / '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules'))

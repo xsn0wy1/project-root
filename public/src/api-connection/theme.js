@@ -3,6 +3,7 @@
   'use strict';
   const root = new URL('../../', document.currentScript.src);
   const publicPage =
+    document.documentElement.hasAttribute('data-cached-theme') ||
     location.pathname === root.pathname ||
     location.pathname === new URL('index.php', root).pathname ||
     location.pathname.includes('/register-restore/') ||

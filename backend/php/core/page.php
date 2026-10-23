@@ -29,8 +29,9 @@ function require_staff_page(string $view): void
     if (isset($permissions[$page])) {
         $roles = users_roles($db, (string) $user['id']);
         if (!in_array($permissions[$page], $roles, true)) {
-            $fallback = $page === 'traces/trace-new' ? 'traces/trace.php' : 'management/management.php';
-            header('Location: ' . $config['base_path'] . '/src/views/' . $fallback, true, 303);
+            $GLOBALS['page_user'] = $user;
+            require_once dirname(__DIR__, 3) . '/public/src/views/error.php';
+            render_error_page(403);
             exit;
         }
     }

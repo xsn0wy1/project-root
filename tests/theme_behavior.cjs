@@ -8,6 +8,31 @@ let checks=0;const check=(v,s)=>{assert(v,s);checks++;console.log('PASS',s)};
 const ready=async p=>{await p.evaluate(async()=>{await HospitalI18n.ready;await window.HospitalAuth?.ready});await p.waitForTimeout(120)};
 const theme=p=>p.locator('html').getAttribute('data-theme');
 async function login(p,who={username:'system_admin',password:process.env.HOSPITAL_ADMIN_PASSWORD}){await p.goto(base+'/');await ready(p);await p.evaluate(async who=>await HospitalApi.post('auth.php?action=login',who),who);await p.goto(base+'/src/views/settings.php');await ready(p);await p.locator('#privacy-tab').click()}
+async function diagnosticsRateLimit(browser) {
+ const context=await browser.newContext(), page=await context.newPage(), reports=[];
+ await login(page);
+ const original=await page.evaluate(()=>HospitalApi.get('settings.php?action=get'));
+ try {
+  await page.evaluate(async state=>HospitalApi.post('settings.php?action=preferences-update',{version:state.settings.version,optional_diagnostics:true}),original);
+  const endpoint='**/api/v1/settings.php?action=diagnostics';
+  await page.route(endpoint,route=>route.fulfill({status:429,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'RATE_LIMITED',message:'Optional telemetry fixture'}})}));
+  page.on('console',message=>{if(message.type()==='error'&&message.text().startsWith('[Hospital'))reports.push(message.text());});
+  const diagnostic=page.waitForResponse(response=>response.url().endsWith('settings.php?action=diagnostics'));
+  await page.goto(base+'/src/views/main-menu.php');await ready(page);assert.equal((await diagnostic).status(),429);await page.waitForTimeout(100);
+  check(reports.length===0,'optional diagnostics 429 emits no shared-client or session console report');
+  await page.route(endpoint,route=>route.fulfill({status:429,contentType:'text/plain',body:'Optional telemetry fixture'}));
+  check(await page.evaluate(()=>HospitalApi.post('settings.php?action=diagnostics',{load_ms:1}))===null&&reports.length===0,'optional diagnostics also silently drops a non-JSON 429');
+  await page.route('**/api/v1/settings.php?action=get',route=>route.fulfill({status:429,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'RATE_LIMITED',message:'Ordinary request fixture'}})}));
+  check(await page.evaluate(()=>HospitalApi.get('settings.php?action=get').then(()=>false,error=>error.status===429))&&reports.length===1,'ordinary API rate limiting still rejects and reports normally');
+  await page.unroute('**/api/v1/settings.php?action=get');
+  await page.route(endpoint,route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'SERVICE_UNAVAILABLE',message:'Optional telemetry service fixture'}})}));
+  check(await page.evaluate(()=>HospitalApi.post('settings.php?action=diagnostics',{load_ms:1}).then(()=>false,error=>error.status===503))&&reports.length===2,'other diagnostics failures retain their existing reporting');
+ } finally {
+  await page.unrouteAll({behavior:'wait'});
+  await page.evaluate(async original=>{const state=await HospitalApi.get('settings.php?action=get');await HospitalApi.post('settings.php?action=preferences-update',{version:state.settings.version,optional_diagnostics:original.optional_diagnostics});},original.settings);
+  await context.close();
+ }
+}
 async function loginChoices(browser) {
  const cases=[
   {name:'choose-light',saved:'dark',cache:'dark',choices:['light'],expected:'light',locale:'en'},
@@ -65,6 +90,7 @@ async function loginChoices(browser) {
 }
 (async()=>{
  const b=await chromium.launch({channel:'chrome',headless:true}),c=await b.newContext({viewport:{width:1440,height:900}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await diagnosticsRateLimit(b);
  await loginChoices(b);
  await p.goto(base+'/');await ready(p);check(await theme(p)==='dark','public first visit defaults to dark');
  await p.locator('[data-public-theme="light"]').click();await p.waitForTimeout(300);check(await theme(p)==='light','public switch immediately applies light');
