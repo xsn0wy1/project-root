@@ -3,6 +3,10 @@ declare(strict_types=1);
 require dirname(__DIR__, 4) . '/backend/php/core/page.php';
 require_staff_page('documents/documents.php');
 require dirname(__DIR__, 4) . '/backend/php/components/shell.php';
+$user = $GLOBALS['page_user'];
+$name = ($user['staff_name'] ?? $user['display_name']) ?: $user['username'];
+$roleNames = array_map(static fn (string $role): string => Hospital\I18n::t('account_role_code.' . $role), users_roles($db, (string) $user['id']));
+$roleText = Hospital\I18n::t('auth_session.cargo_value', ['value0' => implode(', ', $roleNames)]);
 staff_page_open([
     'module' => 'documents',
     'body_class' => '',
@@ -24,9 +28,9 @@ staff_page_open([
       <div class="documents-layout">
         <aside class="document-surface staff-card">
           <img class="staff-avatar" src="../../../assets/Icons/pfp-default.png" alt="Funcionario 1" data-i18n-alt="documents.funcionario_1" data-current-user-avatar>
-          <h2 data-current-user-name data-i18n="documents.funcionario1">FUNCIONARIO1</h2>
-          <p data-current-user-national-id></p>
-          <p data-current-user-role></p>
+          <h2 data-current-user-name><?= page_escape($name) ?></h2>
+          <p data-current-user-national-id><?= page_escape($user['staff_national_id'] ?? $user['registration_national_id']) ?></p>
+          <p data-current-user-role><?= page_escape($roleText) ?></p>
 
           <div class="staff-divider"></div>
 

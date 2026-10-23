@@ -42,7 +42,7 @@ function staff_page_head(array $page): void
     $font = $page['font_stylesheet'] ?? 'inclusive-regular';
     ?>
 <!DOCTYPE html>
-<html lang="<?= page_language() ?>" data-theme="dark" data-theme-styles="<?= page_escape($page['theme_styles'] ?? 'main-menu ' . $module) ?>">
+<html lang="<?= page_language() ?>" data-theme="<?= $GLOBALS['page_theme'] ?? 'dark' ?>" data-theme-styles="<?= page_escape($page['theme_styles'] ?? 'main-menu ' . $module) ?>">
 <head>
   <script src="<?= asset_url($src . 'api-connection/theme.js') ?>"></script>
   <meta charset="UTF-8">

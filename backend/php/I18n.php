@@ -9,6 +9,7 @@ final class I18n
 
     public static function locale(): string
     {
+        if (isset($GLOBALS['page_locale'])) return $GLOBALS['page_locale'];
         return ($_SERVER['HTTP_X_HOSPITAL_LOCALE'] ?? '') === 'en' ? 'en' : 'es-UY';
     }
 

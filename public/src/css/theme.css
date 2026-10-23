@@ -1031,7 +1031,7 @@ html[data-theme="light"][data-theme-styles~="trace-map"] .list-toggle[aria-expan
 html[data-theme="light"][data-theme-styles~="trace-map"] .map-search-input { border: 1px solid rgba(88, 108, 151, 0.65); background: var(--light-canvas); }
 html[data-theme="light"][data-theme-styles~="trace-map"] .map-search-input::placeholder { color: var(--light-muted); }
 html[data-theme="light"][data-theme-styles~="trace-map"] .map-search.search-active .search-toggle { background: #f5f8ff; border-color: rgba(88, 108, 151, 0.65); }
-html[data-theme="light"][data-theme-styles~="trace-map"] .filter-icon { background: #ffffff; }
+html[data-theme="light"][data-theme-styles~="trace-map"] .filter-icon { background: currentColor; }
 html[data-theme="light"][data-theme-styles~="trace-map"] .filter-count { color: var(--light-accent); background: rgba(225, 233, 250, 0.333333); }
 html[data-theme="light"][data-theme-styles~="trace-map"] .map-stage { background: var(--light-canvas); }
 html[data-theme="light"][data-theme-styles~="trace-map"] #fleet-map { background: var(--light-canvas); }

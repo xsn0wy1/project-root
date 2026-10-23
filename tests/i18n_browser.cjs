@@ -3,6 +3,7 @@
 /* Run with the disposable environment and records prepared by i18n_integration.py --prepare-browser. */
 const fs = require('fs'),
   assert = require('assert');
+const firstPaint = require('./i18n_first_paint.cjs');
 const {
   chromium
 } = require('playwright');
@@ -58,6 +59,38 @@ const {
   await p.selectOption('#settings-language', 'en');
   await p.waitForTimeout(250);
   check((await p.locator('h1').innerText()) === 'Settings', 'existing settings selector updates language');
+  for (const theme of ['dark', 'light']) {
+    await p.evaluate(async theme => {
+      const account = await HospitalApi.get('auth.php?action=me');
+      await HospitalApi.post('settings.php?action=preferences-update', {version: account.settings.version, theme});
+    }, theme);
+    for (const [size, viewport] of [['desktop', {width: 1440, height: 900}], ['mobile', {width: 390, height: 844}]]) {
+      const paint = await firstPaint.capture(context, base, {theme, viewport, name: theme+'-'+size});
+      check(paint.englishAt > 0, theme+' '+size+' English account has no visible Spanish first-paint copy at CPU ×6');
+    }
+  }
+  for (const failure of ['reject', 'stall']) {
+    const fallback = await context.newPage(), pending = [];
+    await fallback.route('**/api/v1/translations.php?*', route => {
+      if (failure === 'reject') return route.fulfill({status: 503, contentType: 'application/json', body: '{}'});
+      pending.push(route);
+    });
+    await fallback.goto(base+'/index.php?lang=en', {waitUntil: 'domcontentloaded'});
+    if (failure === 'stall') check(await fallback.locator('body').evaluate(body => getComputedStyle(body).visibility === 'hidden'),
+      'English page waits for translation while dictionaries are pending');
+    await fallback.waitForFunction(() => document.documentElement.classList.contains('i18n-ready'), null, {timeout: 4000});
+    check(await fallback.locator('body').evaluate(body => getComputedStyle(body).visibility === 'visible'),
+      'English page is revealed when dictionaries '+failure);
+    for (const route of pending) await route.abort();
+    await fallback.close();
+  }
+  const spanishPending = await context.newPage(), spanishRequests = [];
+  await spanishPending.route('**/api/v1/translations.php?*', route => {spanishRequests.push(route);});
+  await spanishPending.goto(base+'/index.php', {waitUntil: 'domcontentloaded'});
+  check(await spanishPending.locator('body').evaluate(body => getComputedStyle(body).visibility === 'visible'),
+    'Spanish server text remains visible while dictionaries are pending');
+  for (const route of spanishRequests) await route.abort();
+  await spanishPending.close();
   for (const file of ['documents/documents.php', 'documents/documents-edit.php?id=' + r.document.id, 'documents/documents-viewer.php?id=' + r.document.id, 'management/patients.php', 'management/doctors.php', 'management/personnel.php', 'management/ambulances.php', 'management/destinations.php', 'management/routes.php', 'traces/trace.php', 'traces/trace-view.php?id=' + r.transfer.id, 'traces/trace-map.php?transfer=' + r.transfer.id, 'surveys/survey.php', 'surveys/survey-new.php?id=' + r.survey.id, 'surveys/survey-view.php?id=' + r.survey.id]) {
     errors = [];
     await go(file);
@@ -77,7 +110,24 @@ const {
     if (file === 'management/routes.php') {
       check((await p.locator('body').innerText()).includes('Discharge'), 'route discharge uses context-specific translation');
     }
+    if (file.startsWith('traces/trace-map.php')) {
+      check(await p.evaluate(() => {
+        const theme = HospitalTheme.current;
+        HospitalTheme.preview('light');
+        const icon = document.querySelector('#filter-toggle .filter-icon');
+        const readable = getComputedStyle(icon).backgroundColor === getComputedStyle(icon.parentElement).color;
+        HospitalTheme.preview(theme);
+        return readable;
+      }), 'light map filter icon follows the readable button text color');
+    }
   }
+  await go('surveys/survey-new.php');
+  check(!(await p.locator('.builder-step[data-step="3"]').getAttribute('class')).includes('is-complete') &&
+    (await p.locator('.builder-step[data-step="3"] .step-number').innerText()) === '3',
+    'empty survey configuration step shows its number instead of a finished icon');
+  await p.locator('[data-info=title]').fill('Borrador incompleto');
+  check(!(await p.locator('.builder-step[data-step="3"]').getAttribute('class')).includes('is-complete'),
+    'survey title alone does not finish the configuration step');
   const forms = [['management/doctors.php', '#doctor-rows [data-action="view"][data-id="' + r.doctor.id + '"]', '#doctor-form'], ['management/personnel.php', '#personnel-rows [data-action="edit"][data-id="' + r.crew.id + '"]', '#personnel-form'], ['management/destinations.php', '#destinations-rows [data-action="edit"][data-id="' + r.destination.id + '"]', '#destinations-form']];
   for (const [file, button, form] of forms) {
     errors = [];
@@ -105,9 +155,14 @@ const {
   }
   await go('surveys/survey-new.php?template=patient_care');
   await p.waitForTimeout(100);
+  check((await p.locator('.builder-step[data-step="3"]').getAttribute('class')).includes('is-complete'),
+    'valid survey content and default configuration retain the finished icon');
   check((await p.locator('[data-info=title]').inputValue()).includes('patient satisfaction'), 'English template inserts English editable content');
   const title = await p.locator('[data-info=title]').inputValue();
   await p.locator('[data-step="2"]').first().click();
+  await p.locator('#form-title').fill('');
+  check(!(await p.locator('.builder-step[data-step="3"]').getAttribute('class')).includes('is-complete'),
+    'removing required survey content clears the finished icon');
   await p.locator('#form-title').fill('Texto propio');
   await p.evaluate(() => HospitalI18n.apply('es-UY'));
   check((await p.locator('[data-info=title]').inputValue()) === title && (await p.locator('#form-title').inputValue()) === 'Texto propio', 'language switching never rewrites template or draft content');

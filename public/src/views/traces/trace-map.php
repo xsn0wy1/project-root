@@ -3,6 +3,21 @@ declare(strict_types=1);
 require dirname(__DIR__, 4) . '/backend/php/core/page.php';
 require_staff_page('traces/trace-map.php');
 require dirname(__DIR__, 4) . '/backend/php/components/shell.php';
+$simulation = tracking_status($db);
+$historical = false;
+if (isset($_GET['transfer'])) {
+    try {
+        $transfer = transfers_row($db, (string) $GLOBALS['page_user']['id'], Hospital\Http\Request::id($_GET['transfer']));
+        $historical = in_array($transfer['status'], ['completed', 'cancelled'], true);
+    } catch (Hospital\Http\ApiException $error) {
+        // The browser retains its existing inaccessible-transfer fallback.
+    }
+}
+if ($historical) $simulationKey = 'trace_map.historico_simulado';
+elseif ($simulation['status'] === 'stopped') $simulationKey = 'trace_map.simulacion_detenida';
+elseif ($simulation['stale']) $simulationKey = 'trace_map.simulacion_sin_actualizacion';
+elseif ($simulation['status'] === 'paused') $simulationKey = 'trace_map.simulacion_pausada';
+else $simulationKey = 'trace_map.simulacion';
 staff_page_head([
     'module' => 'trace-map',
     'theme_styles' => 'main-menu trace-map',
@@ -59,7 +74,7 @@ staff_page_head([
           <div class="heading-copy">
             <div class="page-title">
               <h1 id="map-heading" tabindex="-1" data-i18n="trace_map.mapa_de_traslados">Mapa de Traslados</h1>
-              <span class="live-indicator"><span class="status-dot"></span><i18n-text data-i18n="trace_map.simulacion">Simulación</i18n-text></span>
+              <span class="live-indicator<?= !$historical && $simulation['stale'] ? ' stale' : '' ?>"><span class="status-dot"></span><i18n-text data-i18n="<?= $simulationKey ?>"><?= page_escape(Hospital\I18n::t($simulationKey)) ?></i18n-text></span>
             </div>
             <div class="metrics-pill" aria-label="Resumen de traslados" data-i18n-aria-label="trace_map.resumen_de_traslados" id="metrics">
               <span class="metric metric-total"><span class="icon" style="--icon-image: url('../../../assets/Icons/steering-wheel.svg')" aria-hidden="true"></span><strong id="total-count">0</strong> <i18n-text data-i18n="trace_map.traslados">traslados</i18n-text></span>

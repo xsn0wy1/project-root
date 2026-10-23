@@ -34,9 +34,17 @@ function require_staff_page(string $view): void
             exit;
         }
     }
-    $locale = $db->prepare('SELECT locale FROM user_settings WHERE user_id = ?');
-    $locale->execute([(string)$user['id']]);
-    $GLOBALS['page_locale'] = $locale->fetchColumn() === 'en' ? 'en' : 'es-UY';
+    $settings = $db->prepare('SELECT locale, theme, photo_visible_to_staff, optional_diagnostics, security_notifications, automatic_logout FROM user_settings WHERE user_id = ?');
+    $settings->execute([(string)$user['id']]);
+    $saved = $settings->fetch();
+    $GLOBALS['page_preferences'] = $saved ?: [
+        'locale' => 'es-UY', 'theme' => 'dark', 'photo_visible_to_staff' => false,
+        'optional_diagnostics' => false, 'security_notifications' => true, 'automatic_logout' => true,
+    ];
+    $GLOBALS['page_user'] = $user;
+    $GLOBALS['page_has_settings'] = (bool) $saved;
+    $GLOBALS['page_locale'] = $GLOBALS['page_preferences']['locale'] === 'en' ? 'en' : 'es-UY';
+    $GLOBALS['page_theme'] = $GLOBALS['page_preferences']['theme'] === 'light' ? 'light' : 'dark';
     session_write_close();
     if (in_array($page, ['traces/trace-view', 'traces/trace-map'], true))
         header('Referrer-Policy: strict-origin');

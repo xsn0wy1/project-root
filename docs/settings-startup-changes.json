@@ -1,0 +1,52 @@
+{
+  "backend/php/core/page.php": {
+    "before_sha256": "3b71fc494734a1d6d9c7c2a5922b8ca79a9e60ebc258317b1ba207d9d5c1655a",
+    "after_sha256": "db03a91a99165203f6af49fa4d63e7e4a006ae4d9c0a35065a6cfaa50a6b19d8",
+    "reason": "Read saved staff locale/theme and four switch flags in the existing settings query, with new-account defaults when no row exists; share the guarded user with private templates."
+  },
+  "backend/php/components/shell.php": {
+    "before_sha256": "8cdb5fc1e9783d0f81e25b0e13d22f073ac7c8a1751b1606f811de3a4151e63f",
+    "after_sha256": "a87da8aa2e6db5dc007990158e3ac8d77dddd1a16293cbc8e4be1ae02008e633",
+    "reason": "Render the saved staff theme in HTML so the first CSS paint has the correct palette."
+  },
+  "backend/php/I18n.php": {
+    "before_sha256": "82de55abbee70471dc97cad792f4bc6d27db9e4d0126f562bd76f9dea2efb588",
+    "after_sha256": "21e9202a6f278ea50bf45a86d70a743072b1df34fed0eb49b01fd69b957f08c5",
+    "reason": "Use the authenticated page locale for newly server-rendered labels; retain explicit request-header localization when no staff page context exists."
+  },
+  "public/src/api-connection/theme.js": {
+    "before_sha256": "f8674fbfdc25f56f0bfb740875d6bb922b41cb781c93375308fb2c756c34e18f",
+    "after_sha256": "e7ef081917c9315611930ae23ab3ceef9f2383895b81f3def421d58c16022ba4",
+    "reason": "Use server-rendered theme for staff and retain cached public appearance, saves, confirmations and cross-tab updates."
+  },
+  "public/src/views/settings.php": {
+    "before_sha256": "6990d4d399aa8e44cdfdad39e68bf3f5fca2940d55586f4af4c0edffe6309447",
+    "after_sha256": "6ae914abfc1898b4acaf3d4489342851b9f44601750d5516a176c2cdd339b90b",
+    "reason": "Render saved switches, theme selection, staff name and specialty chips before API confirmation; leave settings.js byte-identical."
+  },
+  "public/src/views/documents/documents.php": {
+    "before_sha256": "36679f8d075f392230dff6a4e592aa2f2dd88a3d5c7a6a23698081f2ece68828",
+    "after_sha256": "d9bf786c22f5bd54b41df6164f96cdc32643cd100200373b2aa3c1d8d07cf5d5",
+    "reason": "Render current staff identity/role metadata to prevent sidebar action buttons moving when account details arrive."
+  },
+  "public/src/views/management/accounts.php": {
+    "before_sha256": "996261ad56cbebbf02819e1905a0e96f5ff45b1f38cba875170116f0a3e465e7",
+    "after_sha256": "9dbaff4cd49525d30ada52f6e363c5d41cdfe15b408ea2a572ff613e1ccd8ab9",
+    "reason": "Render the exact unfiltered account count so the footer occupies its final height before the list loads."
+  },
+  "public/src/views/surveys/survey-view.php": {
+    "before_sha256": "b730828b9957963ef3e98e52df32a965836ef55a55b97a7fc9fc7e60ddba3120",
+    "after_sha256": "ba968210fa428d0e10adb95633136e18e2b0b0f09ca4a8573d8f1a0e58a171d0",
+    "reason": "Render the requested Form/Summary tab and access-checked survey status badge so tabs and panels do not jump after data loading."
+  },
+  "public/src/js/surveys/survey-view.js": {
+    "before_sha256": "b88ee8b27071cb9523845ab5dd97efa11eac0c1d943509e0440286b6e78b254b",
+    "after_sha256": "bf467108ff6318822d1567c7df3ebae10a027e9f60fa7b3efe48925c474172f7",
+    "reason": "Seed the internal tab from the URL, preserve the original hidden Summary content/layout without selecting or painting it on initial Form loading, and retain existing tab/saving behavior."
+  },
+  "public/src/views/traces/trace-map.php": {
+    "before_sha256": "60c7b8ec905635c7d3f79b85182d42ba13f3606064f08e277d3202bc4090032b",
+    "after_sha256": "65bf0e62abd2ab86aaf3d7bcdfefc6330f39cd573270a9ed2b394c76bba8759a",
+    "reason": "Render the existing simulation status/history label from read-only domain data so the header counters do not shift after the first snapshot."
+  }
+}

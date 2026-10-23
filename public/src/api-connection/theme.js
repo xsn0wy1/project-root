@@ -9,12 +9,12 @@
     location.pathname.endsWith('/surveys/user-view/survey-user.php');
   const cacheKey = `hospital-theme:${root.pathname}`;
   const normalize = value => (value === 'light' ? 'light' : 'dark');
-  let current = 'dark',
+  let current = normalize(document.documentElement.dataset.theme),
     confirmed = 'dark',
     pending = null,
     account = null;
   try {
-    current = normalize(localStorage.getItem(cacheKey));
+    if (publicPage) current = normalize(localStorage.getItem(cacheKey));
   } catch (_) {
     /* Appearance works without browser storage. */
   }

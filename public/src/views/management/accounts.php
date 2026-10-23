@@ -2,6 +2,7 @@
 require_once dirname(__DIR__, 4) . '/backend/php/core/page.php';
 require_staff_page('management/accounts.php');
 require_once dirname(__DIR__, 4) . '/backend/php/components/shell.php';
+$accountCount = (int) $db->query('SELECT COUNT(*) FROM users')->fetchColumn();
 staff_page_open([
     'module' => 'accounts',
     'title_key' => 'accounts.cuentas_hospital_de_clinicas',
@@ -43,7 +44,7 @@ staff_page_open([
               <h2 id="account-empty-title" data-i18n="accounts.no_accounts">Aún no hay usuarios</h2>
               <p id="account-empty-description" data-i18n="accounts.no_accounts_help">Las solicitudes de registro del personal aparecerán aquí.</p>
             </div>
-            <p id="account-count" role="status"></p>
+            <p id="account-count" role="status" data-i18n="accounts.value_cuentas" data-i18n-params="<?= page_escape(json_encode(['value0' => $accountCount])) ?>"><?= page_escape(Hospital\I18n::t('accounts.value_cuentas', ['value0' => $accountCount])) ?></p>
           </section>
           <aside class="route-detail" aria-label="Detalle de cuenta" data-i18n-aria-label="accounts.detalle_de_cuenta">
             <div class="detail-scroll is-empty" id="account-detail"><div class="accounts-placeholder"><span class="account-empty-icon" aria-hidden="true"><img src="../../../assets/Icons/person-icon.svg" alt=""></span><h2 data-i18n="accounts.select_user_to_begin">Selecciona un usuario para comenzar</h2><p data-i18n="accounts.selection_help">Aquí verás su información y podrás administrar su acceso y sus permisos.</p></div></div>

@@ -119,6 +119,24 @@ def run(output, browser):
         for base in ['http://127.0.0.1:8114', 'http://127.0.0.1:8115/hospital']:
             anon = Client(base)
             check(anon.call('/index.php')[0] == 200, 'fresh public login renders at '+base)
+            for path, content_type in [('/src/css/base.css', 'text/css; charset=utf-8'),
+                                       ('/src/api-connection/theme.js', 'application/javascript; charset=utf-8'),
+                                       ('/assets/Icons/eye.svg', 'image/svg+xml')]:
+                with urllib.request.urlopen(base+path+'?v=router-check', timeout=5) as response:
+                    check(response.status == 200 and response.read() == (source/'public'/path.lstrip('/')).read_bytes(),
+                          'static resource retains exact bytes at '+base+path)
+                    check(response.headers['Content-Type'] == content_type and response.headers['X-Content-Type-Options'] == 'nosniff',
+                          'static resource retains MIME and nosniff headers: '+path)
+                    if path.endswith(('.css', '.js')):
+                        check(response.headers['Cache-Control'] == 'no-cache', 'development asset retains revalidation: '+path)
+            request = urllib.request.Request(base+'/src/css/base.css', method='HEAD')
+            with urllib.request.urlopen(request, timeout=5) as response:
+                check(response.status == 200 and response.read() == b'' and response.headers['Content-Type'] == 'text/css; charset=utf-8',
+                      'static HEAD retains headers and omits the body at '+base)
+            check(anon.call('/src/css/missing.css')[0] == 404, 'missing static asset remains unavailable at '+base)
+            status, payload, _ = anon.call('/api/v1/missing.php')
+            check(status == 404 and payload['success'] is False and payload['error']['code'] == 'NOT_FOUND',
+                  'missing API endpoint retains its JSON envelope at '+base)
             for path in ['/backend/php/config/local.php', '/db/sql/schema.sql', '/storage/documents/',
                          '/tests/.runtime/', '/../backend/php/config/local.php']:
                 check(anon.call(path)[0] == 404, 'private path stays unavailable: '+path)

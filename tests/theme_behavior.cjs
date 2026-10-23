@@ -1,7 +1,7 @@
 /* Focused theme controls, persistence and state-preservation checks on fictional local data. */
 'use strict';
 const fs=require('fs'),path=require('path'),assert=require('assert');
-const runtime=path.join(__dirname,'.runtime/theme');Object.assign(process.env,JSON.parse(fs.readFileSync(path.join(runtime,'env.json'))));
+const runtime=process.env.HOSPITAL_THEME_TEST_DIR||path.join(__dirname,'.runtime/theme');Object.assign(process.env,JSON.parse(fs.readFileSync(path.join(runtime,'env.json'))));
 assert(process.env.HOSPITAL_DB_NAME.endsWith('_test'));
 const {chromium}=require('playwright'),r=JSON.parse(fs.readFileSync(path.join(runtime,'records.json'))),other=JSON.parse(fs.readFileSync(path.join(runtime,'other.json'))),base=process.env.HOSPITAL_AUTH_TEST_URL;
 let checks=0;const check=(v,s)=>{assert(v,s);checks++;console.log('PASS',s)};
@@ -17,8 +17,13 @@ async function login(p,who={username:'system_admin',password:process.env.HOSPITA
  check(await p.locator('[data-public-theme="light"]').getAttribute('aria-label')==='Light theme','appearance controls use English labels');await p.reload();await ready(p);check(await theme(p)==='light','public choice survives reload');
  const tab=await c.newPage();await tab.goto(base+'/');await ready(tab);await p.locator('[data-public-theme="dark"]').click();await tab.waitForFunction(()=>HospitalTheme.current==='dark');check(await theme(tab)==='dark','public tabs synchronize appearance through the theme-only cache');await tab.close();
  await login(p);check(await theme(p)==='dark','signed-in SQL preference overrides the public cache');
+ const firstPaint=require('./settings_first_paint.cjs');
+ const first=await firstPaint.capture(c,base,path.join(runtime,'settings-first-paint'),{name:'dark-stale-light',cacheTheme:'light'});
+ check(first.first.every(button=>button.checked===String(button.on)),'CPU ×6 first paint retains all four saved preference states without transitions');
  const light=p.locator('[data-theme-option=light]'),dark=p.locator('[data-theme-option=dark]');check(await light.isEnabled(),'Settings enables the light control');
  let response=p.waitForResponse(r=>r.url().includes('/settings.php?action=preferences-update'));await light.click();await response;await p.waitForFunction(()=>HospitalAuth.current.settings.theme==='light');check(await theme(p)==='light','Settings previews and commits light');
+ await firstPaint.capture(c,base,path.join(runtime,'settings-first-paint'),{name:'light-stale-dark',cacheTheme:'dark'});
+ check(true,'CPU ×6 light Settings has no saved-state transition with a stale dark cache');
  const second=await c.newPage();await second.goto(base+'/src/views/main-menu.php');await ready(second);check(await theme(second)==='light','navigation hydrates the saved account theme');
  response=p.waitForResponse(r=>r.url().includes('/settings.php?action=preferences-update'));await dark.click();await response;await second.waitForFunction(()=>HospitalTheme.current==='dark');check(await theme(second)==='dark','staff tabs receive confirmed settings through the existing broadcast');await second.close();
  const endpoint='**/api/v1/settings.php?action=preferences-update';let requests=0;

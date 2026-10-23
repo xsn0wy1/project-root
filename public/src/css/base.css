@@ -1,6 +1,8 @@
 /* Shared rules. Page sheets keep their page-specific values and overrides. */
 i18n-text { display: contents; }
 
+html[lang="en"]:not(.i18n-ready) body { visibility: hidden; }
+
 [hidden] {
   display: none !important;
 }

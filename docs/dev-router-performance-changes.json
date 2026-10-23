@@ -1,0 +1,7 @@
+{
+  "backend/php/dev-router.php": {
+    "before_sha256": "5e6be4649639004406767da7d05e1f071fe9282e609ef19af2ffbbbe3cce0124",
+    "after_sha256": "ecf3ffeac5904d4b2d66987f027e799f0ecb0726cb8d9e4a58c6982fdaf013db",
+    "reason": "Load Config directly to preserve mount validation; defer the unchanged autoloader and its 16 domain modules until API/PHP view routing or the existing configuration-error response."
+  }
+}

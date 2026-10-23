@@ -14,7 +14,7 @@
   const root = new URL('../../', document.currentScript.src);
   const dictionaries = { es: {}, en: {} };
   const bindings = new Map();
-  let locale = 'es-UY',
+  let locale = document.documentElement.lang === 'en' ? 'en' : 'es-UY',
     pendingLocale = null,
     confirmedLocale = 'es-UY',
     readyDone = false;
@@ -25,6 +25,11 @@
     location.pathname.includes('/register-restore/') ||
     location.pathname.endsWith('/surveys/user-view/survey-user.php');
   if (publicPage) locale = normalize(new URL(location.href).searchParams.get('lang'));
+  function reveal() {
+    clearTimeout(revealTimeout);
+    document.documentElement.classList.add('i18n-ready');
+  }
+  const revealTimeout = setTimeout(reveal, 1500);
   const escape = value =>
     String(value ?? '').replace(
       /[&<>"']/g,
@@ -86,6 +91,7 @@
       }
     }
     publicLinks(node);
+    if (readyDone && node === document) reveal();
   }
   function binding(node, name, getter) {
     if (!node) return '';
@@ -272,6 +278,7 @@
         dictionaries[language] = dictionary;
       } catch (_) {
         console.error('[Hospital i18n]', { code: 'I18N_ASSET_UNAVAILABLE', language });
+        reveal();
       }
     })
   ).then(() => {

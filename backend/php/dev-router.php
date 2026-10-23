@@ -5,10 +5,12 @@ if (PHP_SAPI !== 'cli-server') {
     http_response_code(404);
     exit;
 }
-require_once __DIR__ . '/autoload.php';
+// Static resources only need the configured mount, not the domain modules.
+require_once __DIR__ . '/Config.php';
 try {
     $config = Hospital\Config::load();
 } catch (Throwable $error) {
+    require_once __DIR__ . '/autoload.php';
     $GLOBALS['request_id'] = bin2hex(random_bytes(12));
     header('Cache-Control: no-store, private');
     header('X-Content-Type-Options: nosniff');
@@ -29,6 +31,8 @@ $path = substr($path, strlen($mount));
 if ($path === '' || $path === '/')
     $path = '/index.php';
 if (str_starts_with($path, '/api/v1/')) {
+    if ($path !== '/api/v1/translations.php')
+        require_once __DIR__ . '/autoload.php';
     $relative = substr($path, strlen('/api/v1/'));
     $root = realpath(dirname(__DIR__) . '/api/v1');
     $file = realpath($root . '/' . $relative);
@@ -74,6 +78,7 @@ if (
     && ($path === '/index.php'
     || preg_match('#^/src/views/(?:[a-z0-9-]+/)*[a-z0-9-]+\.php$#', $path))
 ) {
+    require_once __DIR__ . '/autoload.php';
     require $file;
     return;
 }

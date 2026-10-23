@@ -272,7 +272,7 @@
     }
   };
   const state = {
-    tab: 'summary',
+    tab: new URLSearchParams(location.search).get('tab') === 'form' ? 'form' : 'summary',
     selectedId: null,
     query: '',
     answerQuery: '',
@@ -976,12 +976,21 @@
       try {
         if (!requestedId) return;
         const previous = state.selectedId;
+        const initial = survey === null;
         survey = await surveysApi.get(requestedId);
         prepareItems();
         if (items.some(item => item.id === previous)) state.selectedId = previous;
         renderHeader();
         renderInformation();
         renderActivity();
+        if (initial && state.tab === 'form') {
+          // Prepare the hidden summary at its original size without selecting or painting that tab.
+          $('summary-panel').hidden = false;
+          $('question-workspace').hidden = true;
+          renderOverview();
+          $('summary-panel').hidden = true;
+          $('question-workspace').hidden = false;
+        }
         setTab(state.tab);
       } catch (error) {
         api.report(error, 'surveys');

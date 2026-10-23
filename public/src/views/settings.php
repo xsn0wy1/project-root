@@ -2,6 +2,11 @@
 require_once dirname(__DIR__, 3) . '/backend/php/core/page.php';
 require_staff_page('settings.php');
 require_once dirname(__DIR__, 3) . '/backend/php/components/shell.php';
+$preferences = $GLOBALS['page_preferences'];
+$theme = $GLOBALS['page_theme'];
+$user = $GLOBALS['page_user'];
+$name = ($user['staff_name'] ?? $user['display_name']) ?: $user['username'];
+$specialties = $GLOBALS['page_has_settings'] ? users_settings($db, (string) $user['id'])['specialties'] : [];
 staff_page_open([
     'module' => 'settings',
     'title_key' => 'main_menu.configuracion',
@@ -43,7 +48,7 @@ staff_page_open([
                         <span class="user-avatar" aria-hidden="true">
                             <img src="../../assets/Icons/person-icon.svg" alt="Usuario" data-i18n-alt="login.usuario">
                         </span>
-                        <span class="user-name" data-i18n="login.usuario">Usuario</span>
+                        <span class="user-name"><?= page_escape($name) ?></span>
                         <span class="user-arrows" aria-hidden="true">
                             <span>▲</span>
                             <span>▼</span>
@@ -88,6 +93,9 @@ staff_page_open([
                             <div class="specialties-group">
                                 <p data-i18n="settings.especializaciones">Especializaciones</p>
                                 <div class="specialty-list">
+                                    <?php foreach ($specialties as $specialty): ?>
+                                    <button type="button" class="specialty-chip" data-specialty-id="<?= page_escape($specialty['id']) ?>" title="<?= page_escape(Hospital\I18n::t('settings.quitar_especializacion')) ?>" data-i18n-title="settings.quitar_especializacion"><?= page_escape($specialty['name']) ?></button>
+                                    <?php endforeach; ?>
                                     <button type="button" class="specialty-add"
                                         aria-label="Agregar especialización" data-i18n-aria-label="settings.agregar_especializacion">+</button>
                                 </div>
@@ -111,7 +119,7 @@ staff_page_open([
                             <div class="visibility-setting">
                                 <p data-i18n="settings.visibilidad_de_foto">Visibilidad de Foto</p>
                                 <div class="toggle-line">
-                                    <button type="button" class="toggle is-on" role="switch" aria-checked="true"
+                                    <button type="button" class="toggle<?= $preferences['photo_visible_to_staff'] ? ' is-on' : '' ?>" role="switch" aria-checked="<?= $preferences['photo_visible_to_staff'] ? 'true' : 'false' ?>"
                                         aria-label="Visibilidad de la foto para funcionarios" data-i18n-aria-label="settings.visibilidad_de_la_foto_para_funcionarios" data-preference="photo_visible_to_staff">
                                         <span class="toggle-knob"></span>
                                     </button>
@@ -127,7 +135,7 @@ staff_page_open([
                         <div class="privacy-options">
                             <div class="privacy-setting">
                                 <p data-i18n="settings.analisis_de_rendimiento">Análisis de Rendimiento</p>
-                                <button type="button" class="toggle is-on" role="switch" aria-checked="true"
+                                <button type="button" class="toggle<?= $preferences['optional_diagnostics'] ? ' is-on' : '' ?>" role="switch" aria-checked="<?= $preferences['optional_diagnostics'] ? 'true' : 'false' ?>"
                                     aria-label="Análisis de rendimiento" data-i18n-aria-label="settings.analisis_de_rendimiento_2" data-preference="optional_diagnostics" title="Métricas locales opcionales del tiempo de carga. No se envían a terceros." data-i18n-title="settings.metricas_locales_opcionales_del_tiempo_de_carga_no_se_envian_a_terceros">
                                     <span class="toggle-knob"></span>
                                 </button>
@@ -135,7 +143,7 @@ staff_page_open([
 
                             <div class="privacy-setting">
                                 <p data-i18n="settings.notificaciones_de_seguridad">Notificaciones de Seguridad</p>
-                                <button type="button" class="toggle" role="switch" aria-checked="false"
+                                <button type="button" class="toggle<?= $preferences['security_notifications'] ? ' is-on' : '' ?>" role="switch" aria-checked="<?= $preferences['security_notifications'] ? 'true' : 'false' ?>"
                                     aria-label="Notificaciones de seguridad" data-i18n-aria-label="settings.notificaciones_de_seguridad_2" data-preference="security_notifications">
                                     <span class="toggle-knob"></span>
                                 </button>
@@ -143,7 +151,7 @@ staff_page_open([
 
                             <div class="privacy-setting">
                                 <p data-i18n="settings.cerrar_sesion_automaticamente">Cerrar Sesión Automáticamente</p>
-                                <button type="button" class="toggle" role="switch" aria-checked="false"
+                                <button type="button" class="toggle<?= $preferences['automatic_logout'] ? ' is-on' : '' ?>" role="switch" aria-checked="<?= $preferences['automatic_logout'] ? 'true' : 'false' ?>"
                                     aria-label="Cerrar sesión automáticamente" data-i18n-aria-label="settings.cerrar_sesion_automaticamente_2" data-preference="automatic_logout" title="Activado: 5 minutos sin actividad. Desactivado: límite obligatorio del servidor (30 minutos por defecto)." data-i18n-title="settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po">
                                     <span class="toggle-knob"></span>
                                 </button>
@@ -159,13 +167,13 @@ staff_page_open([
 
                             <div class="theme-setting">
                                 <p data-i18n="settings.estilo_de_interfaz">Estilo de Interfaz</p>
-                                <div class="theme-switch" data-theme="dark">
+                                <div class="theme-switch" data-theme="<?= $theme ?>">
                                     <span class="theme-highlight" aria-hidden="true"></span>
-                                    <button type="button" class="theme-option active" data-theme-option="dark"
+                                    <button type="button" class="theme-option<?= $theme === 'dark' ? ' active' : '' ?>" data-theme-option="dark" aria-pressed="<?= $theme === 'dark' ? 'true' : 'false' ?>"
                                         aria-label="Tema oscuro" data-i18n-aria-label="settings.tema_oscuro">
                                         <img src="../../assets/Icons/moon-icon.svg" alt="Tema oscuro" data-i18n-alt="settings.tema_oscuro">
                                     </button>
-                                    <button type="button" class="theme-option" data-theme-option="light"
+                                    <button type="button" class="theme-option<?= $theme === 'light' ? ' active' : '' ?>" data-theme-option="light" aria-pressed="<?= $theme === 'light' ? 'true' : 'false' ?>"
                                         aria-label="Tema claro" data-i18n-aria-label="settings.tema_claro">
                                         <img src="../../assets/Icons/sun-icon.svg" alt="Tema claro" data-i18n-alt="settings.tema_claro">
                                     </button>

@@ -1,0 +1,27 @@
+{
+  "public/src/api-connection/i18n.js": {
+    "before_sha256": "2cf32116a04bc60f3aeff89f62724eaa938e4ad1d13e22115038fca0c3799fe8",
+    "after_sha256": "1780a3be96d851391f226476d9a2737f183ba2d2f811f9ca9fb9fae93483367a",
+    "reason": "Initialize staff locale from server HTML; reveal after initial whole-document translation, dictionary failure or the 1500 ms safety timeout, preserving public query-language handling and account confirmation."
+  },
+  "public/src/css/base.css": {
+    "before_sha256": "f612eb6f8e224e07bc8898008d2165162d7ad588fb2abf6b09e85e838c253464",
+    "after_sha256": "8f95e90d8464555c12657b4a809cecc73323eaec21d15110b41ebb68bebf4e20",
+    "reason": "Hide only untranslated English bodies until readiness; the selector is inactive in the final rendered state and on Spanish pages."
+  },
+  "backend/php/dev-router.php": {
+    "before_sha256": "ecf3ffeac5904d4b2d66987f027e799f0ecb0726cb8d9e4a58c6982fdaf013db",
+    "after_sha256": "3d683bb7a8cf22f957f0edbd5e6f2702c094fb5ca96a876f31ad2b97b85115b2",
+    "reason": "Bypass the unchanged domain autoloader for the exact public translations endpoint while preserving mount/file validation and every response byte/header."
+  },
+  "public/src/js/surveys/survey-new.js": {
+    "before_sha256": "7e36ed47b5dcd11e230bbbadf7e9d2691c9d9783c6d59a92f3b7b2cd7301d49c",
+    "after_sha256": "eb066fd796e735133f7f6ae0948711ea8d7ff2eb4336ca3c78c3b6b5b14db2cf",
+    "reason": "Show the third-step finished icon only when survey information, form content and existing configuration checks are complete; preserve all save/publish validation and payloads."
+  },
+  "public/src/css/theme.css": {
+    "before_sha256": "54c2f0727fda8c3326d158e5dfbb84bf13ef6d1b82504e4aaabe0b1bae6702a4",
+    "after_sha256": "6d261f3e3ba6bdc9a80f104caf5379bbbc797308b830efa82fb3c97bf92a0cf6",
+    "reason": "Make the light-theme map filter icon inherit its button text color; preserve dimensions, surrounding layout and the dark-theme rule."
+  }
+}

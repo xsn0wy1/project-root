@@ -518,6 +518,7 @@
     $('read-form').disabled = $('review-form').disabled = !questions().length;
   }
   function completedSteps() {
+    const infoComplete = Boolean(state.info.title.trim());
     const formComplete = Boolean(
       state.form.title.trim() &&
         questions().length &&
@@ -534,7 +535,7 @@
         state.config.closes_enabled &&
         state.config.opens_at > state.config.closes_at
       );
-    return [Boolean(state.info.title.trim()), formComplete, Boolean(configComplete)];
+    return [infoComplete, formComplete, Boolean(infoComplete && formComplete && configComplete)];
   }
   function renderSteps() {
     const complete = completedSteps();

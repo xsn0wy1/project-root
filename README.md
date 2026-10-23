@@ -29,7 +29,7 @@ HOSPITAL_APP_URL=http://127.0.0.1:8091/ \
 /Applications/XAMPP/xamppfiles/bin/php backend/php/cli/setup.php
 
 /Applications/XAMPP/xamppfiles/bin/php backend/php/cli/users.php create-admin chosen_admin admin@hospital.example 10000001
-/Applications/XAMPP/xamppfiles/bin/php -S 127.0.0.1:8091 -t public backend/php/dev-router.php
+/Applications/XAMPP/xamppfiles/bin/php -d opcache.enable_cli=1 -S 127.0.0.1:8091 -t public backend/php/dev-router.php
 ```
 
 The administrator command prompts for a password. Give accounts explicit `records_manager` and/or `dispatcher` roles with `backend/php/cli/users.php roles USER ROLE,ROLE` as appropriate; `admin` alone does not grant those permissions. Use fictional identities. On other XAMPP installations, substitute the installed PHP executable and database host/socket. The schema is installed through `setup.php`, which selects the configured database. Keep `public/` as the only web document root.
