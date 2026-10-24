@@ -1,3 +1,33 @@
+/* Shared theme values. Keep legacy --light-* references until the rollout ends. */
+:root {
+  --tint: 255, 255, 255;
+  --panel: 16, 23, 50;
+  --shade: 8, 13, 32;
+  --surface-base: #101732;
+  --surface-raised: rgba(var(--panel), 0.38);
+  --text-primary: #eeeeee;
+  --text-muted: rgba(238, 238, 238, 0.55);
+  --text-secondary: rgba(238, 238, 238, 0.6);
+  --line-default: rgba(238, 238, 238, 0.18);
+  --line-soft: rgba(238, 238, 238, 0.14);
+  --accent: #abbaea;
+  --icon-filter: brightness(0) invert(1);
+}
+
+html[data-theme="light"] {
+  --tint: 89, 110, 167;
+  --panel: 245, 248, 255;
+  --shade: 245, 248, 255;
+  --surface-base: var(--light-canvas, #f3f5fa);
+  --text-primary: var(--light-text, #20283d);
+  --text-muted: var(--light-muted, #5e6a82);
+  --text-secondary: var(--light-muted, #5e6a82);
+  --line-default: rgba(88, 108, 151, 0.16);
+  --line-soft: rgba(88, 108, 151, 0.16);
+  --accent: var(--light-accent, #586ca7);
+  --icon-filter: var(--light-icon-filter, brightness(0) saturate(100%) invert(16%) sepia(19%) saturate(1095%) hue-rotate(184deg) brightness(93%) contrast(90%));
+}
+
 /* Shared rules. Page sheets keep their page-specific values and overrides. */
 i18n-text { display: contents; }
 

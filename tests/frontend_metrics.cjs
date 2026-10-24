@@ -194,7 +194,9 @@ async function measure(page, sourceRoot) {
     };
 }
 
-(async () => {
+module.exports = {cssInventory};
+
+if (require.main === module) (async () => {
     const browser = await chromium.launch({channel: 'chrome', headless: true});
     try {
         const page = await browser.newPage();

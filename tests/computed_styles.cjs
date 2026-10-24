@@ -9,8 +9,8 @@ const zlib = require('zlib');
 
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
-async function snapshot(page) {
-    const payload = await page.evaluate(async () => {
+async function snapshot(page, {ignoreCustomProperties = false} = {}) {
+    const payload = await page.evaluate(async ignoreCustomProperties => {
         const paths = new Map(), entries = [], styles = [], known = new Map();
         for (const element of document.querySelectorAll('*')) {
             const parent = element.parentElement;
@@ -22,6 +22,7 @@ async function snapshot(page) {
                 if (pseudo && ['none', 'normal'].includes(computed.content)) continue;
                 const properties = [...computed].sort()
                     .filter(name => !/^(?:-webkit-)?(?:animation|transition)(?:-|$)/.test(name))
+                    .filter(name => !ignoreCustomProperties || !name.startsWith('--'))
                     .map(name => [name, computed.getPropertyValue(name)]);
                 const serialized = JSON.stringify(properties);
                 if (!known.has(serialized)) {
@@ -40,7 +41,7 @@ async function snapshot(page) {
         let binary = '';
         for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
         return btoa(binary);
-    });
+    }, ignoreCustomProperties);
     const captured = JSON.parse(zlib.gunzipSync(Buffer.from(payload, 'base64')));
     const styles = {}, elements = [], hashes = captured.styles.map(properties => {
         const fingerprint = hash(properties);
@@ -99,11 +100,17 @@ async function selfTest() {
         assert(changed.details.some(row => row.element.endsWith('::before')), 'pseudo styles must fail');
         assert(changed.details.some(row => row.element.endsWith('p:1')), 'hidden elements must fail');
         const last = await snapshot(page);
+        const withoutCustom = await snapshot(page, {ignoreCustomProperties: true});
         await page.locator('p').first().evaluate(node => {node.style.setProperty('--probe', '1');});
         assert(compare(last, await snapshot(page)).differences > 0, 'custom properties remain significant');
+        assert.equal(compare(withoutCustom, await snapshot(page, {ignoreCustomProperties: true})).differences, 0,
+            'the authorized palette gate may ignore custom properties');
+        await page.locator('p').first().evaluate(node => {node.style.transition = 'none'; node.style.color = 'rgb(21,30,41)';});
+        assert(compare(withoutCustom, await snapshot(page, {ignoreCustomProperties: true})).differences > 0,
+            'the palette gate still detects ordinary computed properties');
         await page.locator('p').last().evaluate(node => node.remove());
         assert(compare(last, await snapshot(page)).details.some(row => row.kind === 'removed-element'));
-        console.log('PASS computed-style gate: equal replay, exact colors, motion-only exclusion, pseudo/hidden styles, custom properties and removed elements.');
+        console.log('PASS computed-style gate: equal replay, exact colors, motion exclusion, pseudo/hidden styles, strict/opt-in custom properties and removed elements.');
     } finally {await browser.close();}
 }
 

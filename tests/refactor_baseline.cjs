@@ -17,6 +17,9 @@ const output = process.env.BASELINE_OUTPUT_DIR ? path.resolve(process.env.BASELI
 const env = JSON.parse(fs.readFileSync(path.join(runtime, 'env.json')));
 const selectedFiles = (process.env.BASELINE_FILES || '').split(',').filter(Boolean);
 const fullStyles = process.env.BASELINE_COMPUTED_STYLES === '1';
+const ignoreCustomProperties = process.env.BASELINE_IGNORE_CUSTOM_PROPERTIES === '1';
+const exactPixels = process.env.BASELINE_EXACT_PIXELS === '1';
+const referenceCss = process.env.BASELINE_REFERENCE_CSS_DIR;
 const sizes = {desktop: {width: 1440, height: 900}, mobile: {width: 390, height: 844}, narrow: {width: 320, height: 640}};
 const matrix = (process.env.BASELINE_SIZES || (fullStyles ? 'desktop,mobile,narrow' : 'desktop,mobile')).split(',');
 const locales = process.env.BASELINE_LOCALES ? process.env.BASELINE_LOCALES.split(',') : fullStyles ? ['es-UY', 'en'] : [null];
@@ -110,7 +113,8 @@ function pixelDifference(a, b, regions = []) {
         }
     let changed = 0;
     for (let i = 0; i < left.data.length; i += 4)
-        if ([0, 1, 2].some(c => Math.abs(left.data[i+c]-right.data[i+c]) > 12)) changed++;
+        if ((exactPixels ? [0, 1, 2, 3] : [0, 1, 2]).some(c => Math.abs(left.data[i+c]-right.data[i+c]) > (exactPixels ? 0 : 12))) changed++;
+    if (exactPixels) return 100 * changed / (left.width * left.height);
     return Math.round(100000*changed/(left.width*left.height))/1000;
 }
 async function capturePair(pair, name, captures) {
@@ -118,7 +122,7 @@ async function capturePair(pair, name, captures) {
     if (fullStyles) {
         await Promise.all(pair.map(ready));
         if (process.env.BASELINE_TRACE_PROGRESS === '1') console.log('Reading styles for ' + name);
-        const snapshots = await Promise.all(pair.map(computedStyles.snapshot));
+        const snapshots = await Promise.all(pair.map(page => computedStyles.snapshot(page, {ignoreCustomProperties})));
         const comparison = computedStyles.compare(...snapshots);
         for (let i = 0; i < snapshots.length; i++) computedStyles.save(path.join(output, 'computed-styles', (i ? 'current-' : 'reference-') + name + '.json.gz'), snapshots[i]);
         report.computedStyles ??= [];
@@ -179,6 +183,43 @@ async function navigate(pair, file, theme, bases, locale) {
         await page.waitForTimeout(200);
     }));
 }
+async function pilotStates(pair, file, name, locale) {
+    const capture = async (suffix, open, close) => {
+        await Promise.all(pair.map(open));
+        await capturePair(pair, name + suffix, report.interactions);
+        await Promise.all(pair.map(close));
+    };
+    const settings = /settings\.php$/.test(file);
+    const profile = settings ? '.user-control' : '.profile-button';
+    await capture('-profile', page => page.locator(profile).click(), page => page.locator(profile).click());
+    if (await pair[0].locator('.search-action').count())
+        await capture('-search', async page => {
+            await page.locator('.search-action').click();
+            await page.locator('.search-input').fill(locale === 'en' ? 'patients' : 'pacientes');
+            await page.waitForFunction(() => document.querySelectorAll('#search-results-list .search-result').length > 0);
+        }, page => page.locator('.search-action').click());
+    if (!settings) {
+        await capture('-card-hover', page => page.locator('.feature-card').first().hover(), page => page.mouse.move(0, 0));
+        return;
+    }
+    await capture('-center', page => page.locator('#settings-center-button').click(), page => page.keyboard.press('Escape'));
+    await capture('-field-focus', page => page.locator('#settings-name').focus(), page => page.locator('#settings-name').blur());
+    await capture('-field-hover', page => page.locator('#settings-name').hover(), page => page.mouse.move(0, 0));
+    await capture('-specialty-hover', page => page.locator('.specialty-add').hover(), page => page.mouse.move(0, 0));
+    await capture('-specialty', page => page.locator('.specialty-add').click(), page => page.keyboard.press('Escape'));
+    // This confirmation has no opener when the fictional account has no specialty.
+    await capture('-specialty-remove', page => page.locator('#specialty-remove-dialog').evaluate(dialog => dialog.showModal()), page => page.keyboard.press('Escape'));
+    await capture('-sessions', async page => {
+        await page.locator(profile).click(); await page.locator('[data-sessions]').click();
+        await page.waitForFunction(() => document.querySelector('#session-list').getAttribute('aria-busy') === 'false');
+    }, page => page.keyboard.press('Escape'));
+    await capture('-notifications', async page => {
+        await page.locator(profile).click(); await page.locator('[data-security-notifications]').click();
+    }, page => page.keyboard.press('Escape'));
+    await Promise.all(pair.map(page => page.locator('#privacy-tab').click()));
+    await capturePair(pair, name + '-privacy', report.interactions);
+    await capture('-password', page => page.locator('.reset-password').click(), page => page.keyboard.press('Escape'));
+}
 (async () => {
     fs.mkdirSync(path.join(output, 'screenshots'), {recursive: true});
     if (fullStyles) fs.mkdirSync(path.join(output, 'computed-styles'), {recursive: true});
@@ -188,17 +229,29 @@ async function navigate(pair, file, theme, bases, locale) {
         const proxy = process.env.BASELINE_REFERENCE_PROXY_URL;
         const addedBaseSheet = process.env.BASELINE_ADDED_BASE_SHEET === '1';
         assert(!addedBaseSheet || (fullStyles && proxy), 'An empty base-sheet counterpart requires the strict same-origin gate');
-        const bases = [proxy ? currentBase : process.env.BASELINE_REFERENCE_URL || 'http://127.0.0.1:8092', currentBase];
+        const bases = [proxy || referenceCss ? currentBase : process.env.BASELINE_REFERENCE_URL || 'http://127.0.0.1:8092', currentBase];
         const contexts = [];
-        const requestedMatrix = {sizes: matrix, locales, themes: ['dark', 'light'], pixelLimit, fullStyles, addedBaseSheet};
+        const requestedMatrix = {sizes: matrix, locales, themes: ['dark', 'light'], pixelLimit, fullStyles, addedBaseSheet,
+            ignoreCustomProperties, exactPixels, pilotStates: process.env.BASELINE_PILOT_STATES === '1'};
         if (process.argv.includes('--resume') && report.matrix) assert.deepEqual(report.matrix, requestedMatrix, 'Resume matrix changed');
         report.matrix = requestedMatrix;
         report.browser = browser.version();
         report.externalTileFixture = fullStyles;
         report.referenceBaseSheetPlaceholder = addedBaseSheet;
+        report.sessionDataFixture = process.env.BASELINE_PILOT_STATES === '1';
         for (const [copy, base] of bases.entries()) {
             const staff = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
             const publicContext = await browser.newContext({viewport: {width: 1440, height: 900}, locale: 'es-UY', timezoneId: 'America/Montevideo'});
+            if (referenceCss && copy === 0) for (const context of [staff, publicContext]) {
+                // CSS-only changes use the same live HTML/API/assets in both contexts.
+                await context.route(url => url.origin === new URL(base).origin && url.pathname.endsWith('.css'), async route => {
+                    const relative = new URL(route.request().url()).pathname.slice(1);
+                    const file = path.resolve(referenceCss, relative);
+                    assert(file.startsWith(path.resolve(referenceCss) + path.sep), 'Reference stylesheet path');
+                    if (!fs.existsSync(file)) return route.continue();
+                    await route.fulfill({status: 200, contentType: 'text/css', body: fs.readFileSync(file)});
+                });
+            }
             if (proxy && copy === 0) for (const context of [staff, publicContext]) {
                 // Present both copies at one browser origin, so real QR/link data stays equal.
                 await context.route(base + '/**', async route => {
@@ -258,6 +311,15 @@ async function navigate(pair, file, theme, bases, locale) {
                 }
             }
             for (const context of [staff, publicContext]) await context.route(/\/api\/v1\/settings(?:\/diagnostics\.php|\.php\?action=diagnostics)$/, route => route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({success: true, data: {recorded: true}})}));
+            if (process.env.BASELINE_PILOT_STATES === '1') for (const context of [staff, publicContext]) {
+                // Independent logins have different "current session" rows. Use equal fictional display data.
+                await context.route(/\/api\/v1\/auth\.php\?action=sessions$/, route => route.fulfill({
+                    status: 200, contentType: 'application/json', body: JSON.stringify({success: true, data: [
+                        {id: '00000000-0000-4000-8000-000000000001', is_current: true, user_agent: 'Chrome', last_seen_at: '2026-10-22T14:59:00Z'},
+                        {id: '00000000-0000-4000-8000-000000000002', is_current: false, user_agent: 'Firefox', last_seen_at: '2026-10-22T14:40:00Z'}
+                    ]})
+                }));
+            }
             const login = await staff.newPage(); await login.goto(base + '/', {waitUntil: 'domcontentloaded'}); await ready(login);
             await login.evaluate(async ({password, endpoint}) => HospitalApi.post(endpoint, {username: 'system_admin', password}), {password: env.HOSPITAL_ADMIN_PASSWORD, endpoint: base === bases[0] && !referencePhp ? 'auth/login.php' : 'auth.php?action=login'});
             await login.close(); contexts.push({staff, public: publicContext});
@@ -316,6 +378,8 @@ async function navigate(pair, file, theme, bases, locale) {
                         await Promise.all(pair.map(page => page.locator('.sidebar-action').click()));
                         await pair[0].waitForTimeout(200);
                     }
+                    if (process.env.BASELINE_PILOT_STATES === '1' && /(?:main-menu|settings)\.php$/.test(file))
+                        await pilotStates(pair, file, name, locale);
                     if (/ambulances\.(html|php)$/.test(file)) {
                         await Promise.all(pair.map(page => page.locator('#new-ambulance').click()));
                         await capturePair(pair, name + '-dialog', report.interactions);
@@ -362,6 +426,7 @@ async function navigate(pair, file, theme, bases, locale) {
         assert.equal(report.errors.length, 0, JSON.stringify(report.errors));
         assert.equal(report.assetErrors?.length || 0, 0, 'Missing local assets');
         if (fullStyles) {
+            if (process.env.BASELINE_PILOT_STATES === '1') assert.equal(report.consoleErrors.length, 0, 'Pilot console errors');
             const errors = new Map();
             for (const row of report.consoleErrors) {
                 const key = row.file + ':' + row.message.replace(/\brequest_id: [a-f0-9]{24}\b/g, 'request_id: [id]');

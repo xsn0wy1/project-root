@@ -1,0 +1,22 @@
+{
+  "public/src/css/base.css": {
+    "before_sha256": "8f95e90d8464555c12657b4a809cecc73323eaec21d15110b41ebb68bebf4e20",
+    "after_sha256": "c1f97afa1005c5a96496826f0bd2d735f9449706123ccf0add043e179936f390",
+    "reason": "Approved pilot palette with renamed colors, three exact RGB channels and temporary legacy light aliases."
+  },
+  "public/src/css/main-menu.css": {
+    "before_sha256": "644430f6a9b7b48afc742a95cf5cda44a3b27b860e81f11f173f0a67cc52b199",
+    "after_sha256": "42ef581c24ba4532d0747de18cdda159ed8f76af7e49d03c164b088159086ea3",
+    "reason": "Use approved exact color pairs/channels without changing layout, effects, motion or opacity."
+  },
+  "public/src/css/settings.css": {
+    "before_sha256": "b251962e68a8b9d92ef5c258e1e16af33def558e5fac22d01023f6cc0b88586f",
+    "after_sha256": "98003a9f0a9d9e0c0e84adf36d763c15c2fd075ae52c6e43a958443115fbdf8a",
+    "reason": "Use approved exact color pairs/channels and remove only the covered embedded light overrides."
+  },
+  "public/src/css/theme.css": {
+    "before_sha256": "2312bbf5c55886c72ab2bea2ba073e686625ffffff2b16e46e8de1f80204260d",
+    "after_sha256": "7f61bd6d2066389f626243ed083b51ee125d9cc8a3f005b816bf598cd1941465",
+    "reason": "Remove covered Home/Settings light declarations and approved R036/R092/R103/R104; retain variable-backed search/hover priority and native-select background reset to preserve all computed styles."
+  }
+}

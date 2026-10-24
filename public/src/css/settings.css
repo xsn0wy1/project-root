@@ -2,7 +2,7 @@
     --trace-panel: #111934;
     --trace-card: rgba(18, 26, 55, 0.68);
     --trace-border: rgba(150, 163, 209, 0.24);
-    --trace-muted: rgba(238, 238, 238, 0.55);
+    --trace-muted: var(--text-muted);
     font-family: "Inclusive Sans", "Inter", "Segoe UI", sans-serif;
 }
 
@@ -34,9 +34,9 @@
     width: 100%;
     margin-left: 0;
     padding: 12px 20px 16px;
-    border: 1px solid rgba(238, 238, 238, 0.18);
+    border: 1px solid var(--line-default);
     border-radius: 30px;
-    background: rgba(16, 23, 50, 0.38);
+    background: var(--surface-raised);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     flex: 1;
@@ -97,7 +97,7 @@ button {
 
 .settings-search-host.search-active .search-wrapper {
     width: var(--search-expanded-width);
-    border-color: rgba(238, 238, 238, 0.14);
+    border-color: var(--line-soft);
     background: rgba(8, 12, 28, 0.85);
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
 }
@@ -126,7 +126,7 @@ button {
 
 .settings-heading h1 {
     margin: 0;
-    color: #eeeeee;
+    color: var(--text-primary);
     font-size: clamp(2rem, 2.5vw, 2.5rem);
     font-weight: 700;
     line-height: 1.1;
@@ -144,7 +144,7 @@ button {
     padding: 0 0 7px;
     border: 0;
     background: transparent;
-    color: rgba(238, 238, 238, 0.55);
+    color: var(--text-muted);
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.2;
@@ -194,7 +194,7 @@ button {
 }
 
 .user-control:hover {
-    color: #eeeeee;
+    color: var(--text-primary);
     transform: translateY(-2px);
 }
 
@@ -211,7 +211,7 @@ button {
     overflow: hidden;
     border: 2px solid rgba(238, 238, 238, 0.45);
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.025);
+    background: rgba(var(--tint), 0.025);
     transition:
         border-color 0.24s ease,
         background 0.24s ease;
@@ -219,7 +219,7 @@ button {
 
 .user-control:hover .user-avatar {
     border-color: rgba(238, 238, 238, 0.72);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(var(--tint), 0.06);
 }
 
 .user-avatar img {
@@ -227,7 +227,7 @@ button {
     height: 31px;
     object-fit: contain;
     opacity: 0.68;
-    filter: brightness(0) invert(1);
+    filter: var(--icon-filter);
 }
 
 .user-avatar img[src="#"] {
@@ -316,7 +316,7 @@ button {
     border: 2px solid rgba(143, 158, 207, 0.24);
     border-radius: 14px;
     outline: none;
-    background: rgba(8, 13, 32, 0.13);
+    background: rgba(var(--shade), 0.13);
     color: rgba(238, 238, 238, 0.74);
     font-size: 1.05rem;
 transition:
@@ -361,14 +361,14 @@ transition:
 .settings-field select:hover,
 .select-setting select:hover {
     border-color: rgba(171, 186, 234, 0.4);
-    background-color: rgba(255, 255, 255, 0.018);
+    background-color: rgba(var(--tint), 0.018);
 }
 
 .settings-field input:focus,
 .settings-field select:focus,
 .select-setting select:focus {
     border-color: rgba(171, 186, 234, 0.64);
-    background-color: rgba(255, 255, 255, 0.025); /* Changed from background */
+    background-color: rgba(var(--tint), 0.025); /* Changed from background */
     box-shadow: 0 0 0 4px rgba(122, 145, 220, 0.08);
     transform: translateY(-1px);
 }
@@ -390,7 +390,7 @@ transition:
     height: 52px;
     border: 2px solid rgba(143, 158, 207, 0.18);
     color: rgba(238, 238, 238, 0.57);
-    background: rgba(8, 13, 32, 0.1);
+    background: rgba(var(--shade), 0.1);
     cursor: pointer;
     transition:
         color 0.22s ease,
@@ -417,9 +417,9 @@ transition:
 
 .specialty-chip:hover,
 .specialty-add:hover {
-    color: #eeeeee;
+    color: var(--text-primary);
     border-color: rgba(171, 186, 234, 0.42);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(var(--tint), 0.04);
     box-shadow: 0 10px 20px rgba(3, 7, 21, 0.18);
     transform: translateY(-3px);
 }
@@ -451,7 +451,7 @@ transition:
     justify-content: center;
     gap: 14px;
     color: rgba(238, 238, 238, 0.58);
-    background: rgba(8, 13, 32, 0.08);
+    background: rgba(var(--shade), 0.08);
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 700;
@@ -467,7 +467,7 @@ transition:
 .upload-box:hover {
     color: rgba(238, 238, 238, 0.84);
     border-color: rgba(171, 186, 234, 0.58);
-    background: rgba(255, 255, 255, 0.025);
+    background: rgba(var(--tint), 0.025);
     box-shadow: 0 15px 30px rgba(3, 7, 21, 0.16);
     transform: translateY(-3px);
 }
@@ -488,7 +488,7 @@ transition:
     height: 100%;
     object-fit: contain;
     opacity: 0.74;
-    filter: brightness(0) invert(1);
+    filter: var(--icon-filter);
 }
 
 .upload-icon img[src="#"] {
@@ -507,7 +507,7 @@ transition:
 }
 
 .toggle-line > span {
-    color: rgba(238, 238, 238, 0.55);
+    color: var(--text-muted);
     font-size: 1rem;
     line-height: 1.45;
 }
@@ -623,7 +623,7 @@ transition:
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     overflow: hidden;
-    background: rgba(8, 13, 32, 0.12);
+    background: rgba(var(--shade), 0.12);
 }
 
 .theme-highlight {
@@ -654,7 +654,7 @@ transition:
     display: grid;
     place-items: center;
     background: transparent;
-    color: rgba(238, 238, 238, 0.6);
+    color: var(--text-secondary);
     cursor: pointer;
     transition:
         color 0.24s ease,
@@ -662,7 +662,7 @@ transition:
 }
 
 .theme-option:hover {
-    color: #eeeeee;
+    color: var(--text-primary);
     transform: translateY(-2px);
 }
 
@@ -676,7 +676,7 @@ transition:
     height: 31px;
     object-fit: contain;
     opacity: 0.72;
-    filter: brightness(0) invert(1);
+    filter: var(--icon-filter);
 }
 
 .theme-option img[src="#"] {
@@ -693,7 +693,7 @@ transition:
 }
 
 .theme-option.active {
-    color: #eeeeee;
+    color: var(--text-primary);
 }
 
 .password-setting {
@@ -937,7 +937,7 @@ transition:
     --dialog-control: #182244;
     --dialog-hover: rgba(171, 186, 234, .12);
     --dialog-focus: #1c294b;
-    --dialog-accent: #abbaea;
+    --dialog-accent: var(--accent);
     --dialog-glow: rgba(122, 145, 220, .13);
     --dialog-danger: #ff9eae;
     --dialog-danger-line: rgba(244, 63, 94, .4);
@@ -948,8 +948,8 @@ transition:
     padding: 0;
     border: 1px solid rgba(150, 163, 209, .4);
     border-radius: 22px;
-    background: #101732;
-    color: #eee;
+    background: var(--surface-base);
+    color: var(--text-primary);
     font: inherit;
 }
 .settings-dialog[open] { animation: settings-dialog-enter .24s cubic-bezier(.2,.8,.2,1) both; }
@@ -988,7 +988,7 @@ transition:
 .settings-dialog .icon-button { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 1px solid transparent; border-radius: 9px; background: transparent; }
 .settings-dialog .icon-button:is(:hover,:focus-visible):not(:disabled) { transform: translateY(-1px); border-color: var(--dialog-danger-line); background-color: var(--dialog-danger-bg); box-shadow: 0 4px 12px var(--dialog-glow); }
 .settings-dialog .icon-button:active:not(:disabled) { transform: scale(.98); }
-.settings-dialog .icon-button img { width: 18px; height: 18px; filter: brightness(0) invert(1); }
+.settings-dialog .icon-button img { width: 18px; height: 18px; filter: var(--icon-filter); }
 .settings-dialog-actions .save-button { border-color: #6689ef; background: #4b6dde url('../../assets/special-bg.png') center / cover; color: #fff; }
 .settings-dialog-actions .delete-button { border-color: var(--dialog-danger-line); background: var(--dialog-danger-bg); color: var(--dialog-danger); }
 .settings-dialog-actions .delete-button:is(:hover,:focus-visible):not(:disabled) { border-color: var(--dialog-danger); background-color: var(--dialog-danger-hover); }
@@ -1000,14 +1000,12 @@ transition:
 .settings-profile-wrapper.profile-active .profile-menu { transform: none; }
 .settings-profile-wrapper .profile-menu-item { display: flex; justify-content: flex-start; align-items: center; gap: 12px; min-height: 44px; height: auto; padding: 10px; border-radius: 9px; color: inherit; font: inherit; font-size: .85rem; text-align: left; transition: transform .2s ease, background-color .2s ease; }
 .settings-profile-wrapper .profile-menu-item:is(:hover,:focus-visible) { transform: translateX(2px); background: rgba(171,186,234,.12); }
-.settings-profile-wrapper .profile-menu-item:focus-visible { outline: 2px solid #abbaea; outline-offset: -2px; }
+.settings-profile-wrapper .profile-menu-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .settings-profile-wrapper .profile-menu-item:active { transform: scale(.98); }
 .settings-profile-wrapper .profile-menu-item img { width: 22px; height: 22px; flex: none; }
 .settings-profile-wrapper .profile-menu-divider { width: auto; margin: 3px 10px; }
 html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog-actions .save-button { border-color: #6689ef; background: #4b6dde url('../../assets/special-bg-light.jpg') center / cover; color: #fff; }
-html[data-theme="light"][data-theme-styles~="settings"] .settings-dialog .icon-button img { filter: var(--light-icon-filter); }
 html[data-theme="light"] .settings-profile-wrapper .profile-menu-item:is(:hover,:focus-visible) { background: rgba(89,110,167,.12); }
-html[data-theme="light"] .settings-profile-wrapper .profile-menu-item:focus-visible { outline-color: var(--light-accent); }
 @keyframes settings-dialog-enter { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 @keyframes settings-backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
