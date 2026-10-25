@@ -1,0 +1,17 @@
+{
+  "backend/php/modules/auth.php": {
+    "after_sha256": "00e0393a45f81bce6a38edd601ebee38b253ce90463329b083334c8679077751",
+    "before_sha256": "1922801d2f4c689625586b3cd0bd065403309c745c09af9d29135d89b6888184",
+    "reason": "PHP readability only: explicit guards/loop bodies and conventional statement layout; caught exceptions and prepared statements have descriptive names. Only identifiers/braces/trivia change; SQL, strings, HTML, authentication budgets/locks/refunds, mail-worker behavior and response fields are preserved."
+  },
+  "backend/php/modules/mail.php": {
+    "after_sha256": "b2b483557dfe2e330c5993d9d76e707a9892779a7f707af43da5af2455843407",
+    "before_sha256": "74ad558061b87b3832e10a16fb38e10cf644211606fbac5fa01774a038a8de8e",
+    "reason": "PHP readability only: explicit guards/loop bodies and conventional statement layout; caught exceptions and prepared statements have descriptive names. Only identifiers/braces/trivia change; SQL, strings, HTML, authentication budgets/locks/refunds, mail-worker behavior and response fields are preserved."
+  },
+  "backend/php/modules/settings.php": {
+    "after_sha256": "044365a4870968491101d10ef802fb7f3b25d24fa53d164f31efac677e47b0c9",
+    "before_sha256": "02d7162b66f9d2022ca08aea1d94ef04b25850875b621b91b9aae2b86c6c2b05",
+    "reason": "PHP readability only: explicit guards/loop bodies and conventional statement layout; caught exceptions and prepared statements have descriptive names. Only identifiers/braces/trivia change; SQL, strings, HTML, authentication budgets/locks/refunds, mail-worker behavior and response fields are preserved."
+  }
+}

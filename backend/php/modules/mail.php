@@ -101,8 +101,9 @@ function mail_worker_program(array $config): string
         $absolute = PHP_OS_FAMILY === 'Windows'
             ? preg_match('~^(?:[a-zA-Z]:[\\\\/]|\\\\\\\\[^\\\\]+[\\\\])~', $path)
             : str_starts_with($path, '/');
-        if ($absolute && !preg_match('/[\x00-\x1f]/', $path) && is_file($path) && is_executable($path))
+        if ($absolute && !preg_match('/[\x00-\x1f]/', $path) && is_file($path) && is_executable($path)) {
             return $path;
+        }
     }
     return '';
 }
@@ -124,8 +125,9 @@ function mail_worker_probe(string $program): bool
         null,
         $environment
     );
-    if (!is_resource($process))
+    if (!is_resource($process)) {
         return false;
+    }
     try {
         stream_set_blocking($pipes[1], false);
         $output = '';
@@ -133,8 +135,9 @@ function mail_worker_probe(string $program): bool
         do {
             $output .= fread($pipes[1], 256);
             $status = proc_get_status($process);
-            if (!$status || !$status['running'] || strlen($output) > 128)
-            break;
+            if (!$status || !$status['running'] || strlen($output) > 128) {
+                break;
+            }
             usleep(10000);
         } while (microtime(true) < $deadline);
         if (!$status || $status['running']) {
@@ -154,8 +157,9 @@ function mail_worker_environment(array $config): array
     // Secrets travel only in the child environment, never command arguments.
     $environment = ['PATH' => getenv('PATH') ?: '', 'SystemRoot' => getenv('SystemRoot') ?: ''];
     foreach (['SSL_CERT_FILE', 'SSL_CERT_DIR', 'CURL_CA_BUNDLE'] as $name) {
-        if (getenv($name) !== false)
+        if (getenv($name) !== false) {
             $environment[$name] = getenv($name);
+        }
     }
     foreach (
         [
@@ -171,8 +175,9 @@ function mail_worker_environment(array $config): array
     ) {
         $environment['HOSPITAL_' . strtoupper($name)] = (string) $config[$name];
     }
-    foreach ($config['db'] as $name => $value)
+    foreach ($config['db'] as $name => $value) {
         $environment['HOSPITAL_DB_' . strtoupper($name)] = (string) $value;
+    }
     return $environment;
 }
 
@@ -184,21 +189,31 @@ function mail_queue_reset(array $config, string $id, string $email, string $url,
     $key = bin2hex(random_bytes(32));
     $path = $storage->path('mail', $key);
     $temporary = $path . '.tmp';
-    $job = ['user_id' => $id, 'email' => $email, 'url' => $url, 'hash' => $hash, 'locale' => I18n::locale(), 'created_at' => time()];
+    $job = [
+        'user_id' => $id,
+        'email' => $email,
+        'url' => $url,
+        'hash' => $hash,
+        'locale' => I18n::locale(),
+        'created_at' => time()
+    ];
     $old = umask(0077);
     try {
         $file = fopen($temporary, 'x');
-        if (!$file)
+        if (!$file) {
             throw new RuntimeException('Mail queue unavailable.');
+        }
         try {
             $data = json_encode($job, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-            if (fwrite($file, $data) !== strlen($data))
+            if (fwrite($file, $data) !== strlen($data)) {
                 throw new RuntimeException('Mail queue write failed.');
+            }
         } finally {
             fclose($file);
         }
-        if (!rename($temporary, $path))
+        if (!rename($temporary, $path)) {
             throw new RuntimeException('Mail queue publish failed.');
+        }
     } catch (Throwable $error) {
         @unlink($temporary);
         throw $error;
@@ -208,14 +223,22 @@ function mail_queue_reset(array $config, string $id, string $email, string $url,
     try {
         $environment = mail_worker_environment($config);
         $program = mail_worker_program($config);
-        if ($program === '')
+        if ($program === '') {
             throw new RuntimeException('Mail worker unavailable.');
+        }
         $command = escapeshellarg($program) . ' ' . escapeshellarg(dirname(__DIR__) . '/cli/send-reset-mail.php') . ' ' . escapeshellarg($key);
         $null = PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
         $command = PHP_OS_FAMILY === 'Windows' ? 'start /B "" ' . $command : $command . ' < /dev/null > /dev/null 2>&1 &';
-        $process = proc_open($command, [0 => ['file', $null, 'r'], 1 => ['file', $null, 'a'], 2 => ['file', $null, 'a']], $pipes, null, $environment);
-        if (!is_resource($process) || proc_close($process) !== 0)
+        $process = proc_open(
+            $command,
+            [0 => ['file', $null, 'r'], 1 => ['file', $null, 'a'], 2 => ['file', $null, 'a']],
+            $pipes,
+            null,
+            $environment
+        );
+        if (!is_resource($process) || proc_close($process) !== 0) {
             throw new RuntimeException('Mail worker unavailable.');
+        }
     } catch (Throwable $error) {
         @unlink($path);
         throw $error;
@@ -226,14 +249,17 @@ function mail_queue_reset(array $config, string $id, string $email, string $url,
 
 function mail_deliver_job(PDO $db, array $config, string $key): bool
 {
-    if (PHP_SAPI !== 'cli' || !preg_match('/^[a-f0-9]{64}$/D', $key))
+    if (PHP_SAPI !== 'cli' || !preg_match('/^[a-f0-9]{64}$/D', $key)) {
         throw new RuntimeException('Invalid mail job.');
+    }
     $path = (new Hospital\Storage\PrivateStorage($config))->path('mail', $key);
-    if (!is_file($path))
+    if (!is_file($path)) {
         return false;
+    }
     $file = @fopen($path, 'r+');
-    if (!$file)
+    if (!$file) {
         return false;
+    }
     if (!flock($file, LOCK_EX | LOCK_NB)) {
         fclose($file);
         return false;
@@ -241,12 +267,14 @@ function mail_deliver_job(PDO $db, array $config, string $key): bool
     $job = null;
     $credential = false;
     try {
-        if (!is_file($path))
+        if (!is_file($path)) {
             return false;
+        }
         $job = json_decode(stream_get_contents($file, 8192), true, 16, JSON_THROW_ON_ERROR);
         $credential = is_array($job) && is_string($job['user_id'] ?? null) && preg_match('/^[1-9][0-9]*$/D', $job['user_id']) && is_string($job['hash'] ?? null) && preg_match('/^[a-f0-9]{64}$/D', $job['hash']);
-        if (!$credential || !is_int($job['created_at'] ?? null) || $job['created_at'] < time() - 1800)
+        if (!$credential || !is_int($job['created_at'] ?? null) || $job['created_at'] < time() - 1800) {
             return false;
+        }
         $stmt = $db->prepare('SELECT token_hash, auth_version, expires_at FROM password_reset_tokens WHERE user_id = ?');
         $stmt->execute([$job['user_id']]);
         $reset = $stmt->fetch();
@@ -258,8 +286,9 @@ function mail_deliver_job(PDO $db, array $config, string $key): bool
             || !password_recovery_eligible($user)
             || (int)$reset['auth_version'] !== (int)$user['auth_version']
             || $user['email'] !== $job['email']
-        )
+        ) {
             return false;
+        }
         $_SERVER['HTTP_X_HOSPITAL_LOCALE'] = $job['locale'] === 'en' ? 'en' : 'es-UY';
         mail_send_reset($config, $job['email'], $job['url']);
         return true;

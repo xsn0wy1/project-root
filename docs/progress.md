@@ -401,3 +401,5 @@ Batch 7 survey/participant scripts are verified: 93 workflow, 103 UI, 71 languag
 Batch 8 shared API infrastructure is verified: i18n/theme/dropdown/workflow/boundary/source gates pass. All-page UI passed 1,584 checks before its direct negative-login probe raced anonymous CSRF startup; tests/ui_browser.cjs now awaits readiness and uses the shared CSRF request, and the focused 62-check security rerun passes with the strict 401 assertion. Repeat full UI at final regression. Continue PHP core/CLI, auth/settings/mail, catalogs, and document/transfer/survey modules.
 
 Batch 9 core PHP is verified: 172 isolated SQL/API checks and the full all-page UI suite pass, resolving batch 8's deferred full rerun after the CSRF test-startup correction. Source equivalence passes with 27 exact PHP files; autoload/SQL/HTML remain unchanged. Continue PHP auth/settings/mail, then catalog and remaining domain modules.
+
+Batch 10 PHP auth/settings/mail is verified: 161 SQL/API, 61 theme/session, 71 i18n/first-paint and 197 UI checks pass, as does source equivalence. Continue the six catalog modules and remaining seven document/transfer/survey modules; full final regression still due.

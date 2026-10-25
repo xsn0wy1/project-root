@@ -72,3 +72,10 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Development proofs permit only identifier changes/additional braces, then require equal formatting token streams and every SQL/string/interpolated-text/inline-HTML byte. Native null coalescing, straightforward nullable values and long SQL literals remain where clearer or frozen.
 - PASS: auth/settings/migrations/i18n/theme SQL/API suites — 172 checks; full all-page desktop/phone UI suite including strict password rejection; source equivalence: 91 PHP / 35 JS / 27 exact files.
 - This full UI pass also verifies batch 8 after its test-startup correction; no application behavior fix was required.
+
+## Batch 10 — authentication, Settings and mail
+
+- Files: backend/php/modules/auth.php, settings.php and mail.php.
+- Added explicit control-structure bodies and conventional statement layout; named caught exceptions and prepared statements. SQL, strings, transaction/lock/refund order, mail-worker behavior and response fields retain the original token/data order.
+- Kept short nullable field choices, environment fallbacks and native password/hash/serialization operations where clearer or safer. No helpers or algorithms were added.
+- PASS: 161 isolated auth/settings/release-fix SQL/API checks (including concurrent budgets/refunds), 61 theme/session, 71 bilingual/first-paint and 197 Settings/account UI checks / 16 cases; source equivalence: 91 PHP / 35 JS / three exact files.

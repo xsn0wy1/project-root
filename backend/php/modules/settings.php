@@ -7,13 +7,14 @@ use Hospital\Http\Request;
 // Profile, preferences and private notifications.
 function settings_text($value, string $field, int $max, bool $blank = true): string
 {
-    if (!is_string($value))
+    if (!is_string($value)) {
         throw new ApiException(
             422,
             'VALIDATION_FAILED',
             \Hospital\I18n::t("errors.campo_no_valido"),
             [$field => \Hospital\I18n::t("errors.se_esperaba_texto")]
         );
+    }
     $value = preg_replace('/\s+/u', ' ', trim($value));
     if (
         $value === null
@@ -34,21 +35,24 @@ function settings_text($value, string $field, int $max, bool $blank = true): str
 
 function settings_lock(PDO $db, string $id, $version): array
 {
-    if ((!is_int($version) && !is_string($version)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $version))
+    if ((!is_int($version) && !is_string($version)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $version)) {
         throw new ApiException(422, 'VERSION_REQUIRED', \Hospital\I18n::t("errors.se_requiere_la_version_actual"));
+    }
     $user = users_by_id($db, $id, true);
     if (
         !$user
         || $user['status'] !== 'active'
         || $user['staff_status'] !== 'active'
         || (int)$user['auth_version'] !== (int)($_SESSION['auth_version'] ?? 0)
-    )
+    ) {
         throw new ApiException(401, 'UNAUTHENTICATED', \Hospital\I18n::t("errors.la_cuenta_no_esta_activa"));
+    }
     $stmt = $db->prepare('SELECT * FROM user_settings WHERE user_id = ? FOR UPDATE');
     $stmt->execute([$id]);
     $settings = $stmt->fetch();
-    if (!$settings || (int) $settings['version'] + (int)$user['staff_version'] !== (int) $version)
+    if (!$settings || (int) $settings['version'] + (int)$user['staff_version'] !== (int) $version) {
         throw new ApiException(409, 'VERSION_CONFLICT', \Hospital\I18n::t("errors.la_configuracion_cambio_en_otra_sesion"));
+    }
     return $user;
 }
 
@@ -61,23 +65,26 @@ function settings_changed(PDO $db, string $id, string $action): void
 
 function settings_profile_fields(array $input): array
 {
-    if (count($input) < 2)
+    if (count($input) < 2) {
         throw new ApiException(422, 'EMPTY_UPDATE', \Hospital\I18n::t("errors.no_se_indicaron_cambios"));
+    }
     $name = array_key_exists('full_name', $input) ? settings_text($input['full_name'], 'full_name', 150) : null;
     $email = null;
     if (array_key_exists('email', $input)) {
         $email = strtolower(settings_text($input['email'], 'email', 254, false));
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new ApiException(
                 422,
                 'VALIDATION_FAILED',
                 \Hospital\I18n::t("errors.email_no_valido"),
                 ['email' => \Hospital\I18n::t("errors.ingresa_un_email_valido")]
             );
+        }
     }
     $facility = null;
-    if (array_key_exists('default_facility_id', $input) && $input['default_facility_id'] !== null)
+    if (array_key_exists('default_facility_id', $input) && $input['default_facility_id'] !== null) {
         $facility = Request::id($input['default_facility_id']);
+    }
     $specialties = null;
     if (array_key_exists('specialties', $input)) {
         $list = $input['specialties'];
@@ -86,8 +93,9 @@ function settings_profile_fields(array $input): array
             || count($list) > 10
             || ($list !== []
             && array_keys($list) !== range(0, count($list) - 1))
-        )
+        ) {
             throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.usa_una_lista_de_hasta_10_especializaciones"));
+        }
         $specialties = [];
         foreach ($input['specialties'] as $label) {
             $label = settings_text($label, 'specialties', 80, false);
@@ -109,8 +117,9 @@ function settings_store_specialties(PDO $db, string $staffId, array $specialties
         $specialtyId = $db->lastInsertId();
         $stmt = $db->prepare("SELECT id FROM specialties WHERE id = ? AND status = 'active' LOCK IN SHARE MODE");
         $stmt->execute([$specialtyId]);
-        if (!$stmt->fetchColumn())
+        if (!$stmt->fetchColumn()) {
             throw new ApiException(422, 'SPECIALTY_UNAVAILABLE', \Hospital\I18n::t("errors.la_especializacion_no_esta_disponible"));
+        }
         $stmt = $db->prepare('INSERT IGNORE INTO staff_specialties (staff_id, specialty_id) VALUES (?, ?)');
         $stmt->execute([$staffId, $specialtyId]);
     }
@@ -127,8 +136,9 @@ function settings_profile(PDO $db, string $id, array $input): void
             // Include archived profiles and legacy crew that have only staff_roles.
             $stmt = $db->prepare("SELECT EXISTS(SELECT 1 FROM doctor_profiles WHERE staff_id = ?) OR EXISTS(SELECT 1 FROM personnel_profiles WHERE staff_id = ?) OR EXISTS(SELECT 1 FROM staff_roles WHERE staff_id = ? AND role_code IN ('driver','copilot'))");
             $stmt->execute([$user['staff_id'], $user['staff_id'], $user['staff_id']]);
-            if ($stmt->fetchColumn())
+            if ($stmt->fetchColumn()) {
                 $name = settings_text($name, 'full_name', 100, false);
+            }
         }
         if ($email !== null) {
             if ($email !== $user['email']) {
@@ -148,8 +158,9 @@ function settings_profile(PDO $db, string $id, array $input): void
             if ($facility !== null) {
                 $stmt = $db->prepare("SELECT id FROM facilities WHERE id = ? AND status = 'active' AND availability = 'active' LOCK IN SHARE MODE");
                 $stmt->execute([$facility]);
-                if (!$stmt->fetchColumn())
+                if (!$stmt->fetchColumn()) {
                     throw new ApiException(422, 'FACILITY_UNAVAILABLE', \Hospital\I18n::t("errors.el_centro_no_esta_disponible"));
+                }
             }
             $stmt = $db->prepare('UPDATE user_settings SET default_facility_id = ? WHERE user_id = ?');
             $stmt->execute([$facility, $id]);
@@ -165,8 +176,9 @@ function settings_profile(PDO $db, string $id, array $input): void
         $db->commit();
     } catch (\PDOException $error) {
         $db->rollBack();
-        if (($error->errorInfo[1] ?? 0) === 1062)
+        if (($error->errorInfo[1] ?? 0) === 1062) {
             throw new ApiException(409, 'ACCOUNT_CONFLICT', \Hospital\I18n::t("errors.los_datos_ya_estan_en_uso"));
+        }
         throw $error;
     } catch (\Throwable $error) {
         $db->rollBack();
@@ -176,20 +188,23 @@ function settings_profile(PDO $db, string $id, array $input): void
 
 function settings_preferences(PDO $db, string $id, array $input): void
 {
-    if (count($input) < 2)
+    if (count($input) < 2) {
         throw new ApiException(422, 'EMPTY_UPDATE', \Hospital\I18n::t("errors.no_se_indicaron_cambios"));
+    }
     $fields = [];
     foreach (['locale' => ['es-UY', 'en'], 'theme' => ['dark', 'light']] as $key => $values) {
         if (array_key_exists($key, $input)) {
-            if (!in_array($input[$key], $values, true))
+            if (!in_array($input[$key], $values, true)) {
                 throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.preferencia_no_valida"));
+            }
             $fields[$key] = $input[$key];
         }
     }
     foreach (['photo_visible_to_staff', 'optional_diagnostics', 'security_notifications', 'automatic_logout'] as $key) {
         if (array_key_exists($key, $input)) {
-            if (!is_bool($input[$key]))
+            if (!is_bool($input[$key])) {
                 throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.se_esperaba_un_booleano"));
+            }
             $fields[$key] = (int) $input[$key];
         }
     }
@@ -235,14 +250,16 @@ function settings_read_notifications(PDO $db, string $id, string $through): void
 
 function settings_diagnostics(PDO $db, string $id, $duration): void
 {
-    if (!is_int($duration) || $duration < 0 || $duration > 120000)
+    if (!is_int($duration) || $duration < 0 || $duration > 120000) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.duracion_no_valida"));
+    }
     $db->beginTransaction();
     try {
         $stmt = $db->prepare('SELECT optional_diagnostics FROM user_settings WHERE user_id = ? FOR UPDATE');
         $stmt->execute([$id]);
-        if (!(bool) $stmt->fetchColumn())
+        if (!(bool) $stmt->fetchColumn()) {
             throw new ApiException(403, 'DIAGNOSTICS_DISABLED', \Hospital\I18n::t("errors.el_analisis_opcional_esta_desactivado"));
+        }
         $stmt = $db->prepare('INSERT INTO user_diagnostics (user_id, sample_count, total_load_ms, last_recorded_at) VALUES (?, 1, ?, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE sample_count = sample_count + 1, total_load_ms = total_load_ms + VALUES(total_load_ms), last_recorded_at = UTC_TIMESTAMP()');
         $stmt->execute([$id, $duration]);
         $db->commit();
@@ -261,24 +278,28 @@ function avatar_directory(array $config, bool $create = false): string
 
 function avatar_path(array $config, string $key): string
 {
-    if (!preg_match('/^[a-f0-9]{64}$/', $key))
+    if (!preg_match('/^[a-f0-9]{64}$/', $key)) {
         throw new \RuntimeException('Invalid storage key.');
+    }
     return avatar_directory($config) . '/' . $key . '.png';
 }
 
 function avatar_normalize(array $file): string
 {
     $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
-    if (!is_int($error) || $error !== UPLOAD_ERR_OK)
+    if (!is_int($error) || $error !== UPLOAD_ERR_OK) {
         throw new ApiException(
             in_array($error, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? 413 : 422,
             'INVALID_UPLOAD',
             \Hospital\I18n::t("errors.no_se_recibio_una_imagen_valida")
         );
-    if (!is_string($file['tmp_name'] ?? null) || !is_uploaded_file($file['tmp_name']))
+    }
+    if (!is_string($file['tmp_name'] ?? null) || !is_uploaded_file($file['tmp_name'])) {
         throw new ApiException(422, 'INVALID_UPLOAD', \Hospital\I18n::t("errors.no_se_recibio_una_imagen_valida"));
-    if (filesize($file['tmp_name']) > 5 * 1024 * 1024)
+    }
+    if (filesize($file['tmp_name']) > 5 * 1024 * 1024) {
         throw new ApiException(413, 'FILE_TOO_LARGE', \Hospital\I18n::t("errors.la_imagen_supera_5_mib"));
+    }
     $bytes = file_get_contents($file['tmp_name']);
     $info = @getimagesizefromstring($bytes);
     if (
@@ -287,13 +308,16 @@ function avatar_normalize(array $file): string
         || $info[0] > 4096
         || $info[1] > 4096
         || $info[0] * $info[1] > 8000000
-    )
+    ) {
         throw new ApiException(415, 'INVALID_IMAGE', \Hospital\I18n::t("errors.usa_una_imagen_png_jpeg_o_webp_de_dimensiones_permitidas"));
-    if (!function_exists('imagecreatefromstring'))
+    }
+    if (!function_exists('imagecreatefromstring')) {
         throw new \RuntimeException('GD extension required.');
+    }
     $source = @imagecreatefromstring($bytes);
-    if (!$source)
+    if (!$source) {
         throw new ApiException(415, 'INVALID_IMAGE', \Hospital\I18n::t("errors.no_se_pudo_decodificar_la_imagen"));
+    }
     $scale = min(1, 512 / max($info[0], $info[1]));
     $width = max(1, (int) round($info[0] * $scale));
     $height = max(1, (int) round($info[1] * $scale));
@@ -306,8 +330,9 @@ function avatar_normalize(array $file): string
     $normalized = ob_get_clean();
     imagedestroy($source);
     imagedestroy($image);
-    if (!is_string($normalized) || $normalized === '')
+    if (!is_string($normalized) || $normalized === '') {
         throw new \RuntimeException('Image encoding failed.');
+    }
     return $normalized;
 }
 
@@ -323,17 +348,20 @@ function avatar_replace(PDO $db, array $config, string $id, $version, ?array $fi
         $oldMask = umask(0077);
         try {
             $handle = fopen($newPath, 'xb');
-            if (!$handle)
+            if (!$handle) {
                 throw new \RuntimeException('Private storage unavailable.');
+            }
             try {
-                if (fwrite($handle, $bytes) !== strlen($bytes))
+                if (fwrite($handle, $bytes) !== strlen($bytes)) {
                     throw new \RuntimeException('Incomplete private file write.');
+                }
             } finally {
                 fclose($handle);
             }
         } catch (\Throwable $error) {
-            if (is_file($newPath))
+            if (is_file($newPath)) {
                 unlink($newPath);
+            }
             throw $error;
         } finally {
             umask($oldMask);
@@ -363,14 +391,16 @@ function avatar_replace(PDO $db, array $config, string $id, $version, ?array $fi
         $db->commit();
     } catch (\Throwable $error) {
         $db->rollBack();
-        if ($newPath !== null && is_file($newPath))
+        if ($newPath !== null && is_file($newPath)) {
             unlink($newPath);
+        }
         throw $error;
     }
     if ($oldKey !== null) {
         $oldPath = avatar_path($config, $oldKey);
-        if (is_file($oldPath) && !@unlink($oldPath))
+        if (is_file($oldPath) && !@unlink($oldPath)) {
             error_log('Hospital private avatar cleanup deferred.');
+        }
     }
 }
 
@@ -379,10 +409,12 @@ function avatar_content(PDO $db, array $config, string $viewer, string $target):
     $stmt = $db->prepare("SELECT f.storage_key, f.byte_size, s.photo_visible_to_staff FROM user_settings s JOIN users u ON u.id = s.user_id JOIN staff st ON st.id = u.staff_id JOIN stored_files f ON f.id = s.avatar_file_id AND f.owner_user_id = u.id AND f.state = 'ready' WHERE u.id = ? AND u.status = 'active' AND st.status = 'active'");
     $stmt->execute([$target]);
     $file = $stmt->fetch();
-    if (!$file || ($viewer !== $target && !$file['photo_visible_to_staff']))
+    if (!$file || ($viewer !== $target && !$file['photo_visible_to_staff'])) {
         throw new ApiException(404, 'PHOTO_NOT_FOUND', \Hospital\I18n::t("errors.no_se_encontro_la_imagen"));
+    }
     $path = avatar_path($config, $file['storage_key']);
-    if (!is_file($path))
+    if (!is_file($path)) {
         throw new ApiException(404, 'PHOTO_NOT_FOUND', \Hospital\I18n::t("errors.no_se_encontro_la_imagen"));
+    }
     return ['path' => $path, 'size' => $file['byte_size']];
 }
