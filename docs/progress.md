@@ -385,3 +385,5 @@ Disposable SQL/browser fixtures, servers, storage and credentials were cleaned u
 ## Final readability pass — in progress (2026-10-24)
 
 The owner stopped Phase 2 at the pilot: no rollout and no legacy palette fold. The new authorized pass rewrites advanced/dense syntax into readable JS first and PHP second, keeping concise constructs when they are clearer or safer. CSS declarations, HTML, payloads, SQL, keys and behavior stay unchanged. See `docs/readability-final.md` for batches and the final required regression. Batch 1 (authentication scripts and CSS header notes) passes 130 recovery + 61 theme/login browser checks and source equivalence; later batches and the full regression remain required.
+
+Batch 2 shared-control/Settings readability work is verified: 161 UI checks, 136 dropdown checks (52 variants), 98 decision/edge checks, and source equivalence pass. Continue the management scripts; full end-of-pass regression remains due.

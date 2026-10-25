@@ -1,3 +1,7 @@
+/* Edits profile/preferences/photos and opens account-security dialogs.
+ * API: settings get/profile-update/preferences-update/photo/photo-delete/notifications/notifications-read;
+ * auth change-password/sessions/revoke-session. DOM: general-tab, privacy-tab, settings-* and *-dialog.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
   await window.HospitalI18n.ready;
@@ -15,10 +19,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let specialtiesBusy = false;
   let pendingSpecialty = null;
   const centerNames = ['Hospital de Clinicas de Montevideo', 'Facultad de Medicina'];
-  const centerSelect = byId('settings-center'),
-    centerButton = byId('settings-center-button');
-  const centerMenu = byId('settings-center-menu'),
-    centerRoot = centerButton.parentElement;
+  const centerSelect = byId('settings-center');
+  const centerButton = byId('settings-center-button');
+  const centerMenu = byId('settings-center-menu');
+  const centerRoot = centerButton.parentElement;
 
   window.HospitalDropdown.enhance(centerSelect, {
     button: centerButton,
@@ -27,10 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     label: byId('settings-center-label'),
     hideEmpty: true,
     choiceAttribute: 'facilityId',
-    labelText: value =>
-      value
-        ? centerSelect.selectedOptions[0]?.textContent
-        : window.HospitalI18n.t('settings.selecciona_un_centro')
+    labelText: value => {
+      if (value) {
+        return centerSelect.selectedOptions[0]?.textContent;
+      } else {
+        return window.HospitalI18n.t('settings.selecciona_un_centro');
+      }
+    }
   });
   const closeCenter = () => window.HospitalDropdown.closeAll();
   function syncCenter() {
@@ -53,17 +60,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => openTab(tab));
     tab.addEventListener('keydown', event => {
-      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+        return;
+      }
       event.preventDefault();
       let next;
       if (event.key === 'Home') {
         next = 0;
+      } else if (event.key === 'End') {
+        next = tabs.length - 1;
       } else {
-        if (event.key === 'End') {
-          next = tabs.length - 1;
-        } else {
-          next = (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-        }
+        next = (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
       }
       openTab(tabs[next]);
       tabs[next].focus();
@@ -99,11 +106,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     select.value = dirty.has('default_facility_id') ? previous : values.default_facility_id;
     Object.entries(controls).forEach(([field, id]) => {
-      if (!dirty.has(field)) byId(id).value = values[field];
+      if (!dirty.has(field)) {
+        byId(id).value = values[field];
+      }
     });
     syncCenter();
     document.querySelectorAll('[data-preference]').forEach(button => {
-      if (dirty.has(button.dataset.preference)) return;
+      if (dirty.has(button.dataset.preference)) {
+        return;
+      }
       const on = settings[button.dataset.preference];
       button.classList.toggle('is-on', on);
       button.setAttribute('aria-checked', String(on));
@@ -154,21 +165,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function save(endpoint, fields, formData = null) {
     const job = saveQueue.then(async () => {
-      if (!state) return false;
+      if (!state) {
+        return false;
+      }
       try {
         let payload;
         if (formData) {
           formData.set('version', String(state.settings.version));
           payload = await api.request(endpoint, { method: 'POST', body: formData });
-        } else payload = await api.post(endpoint, { version: state.settings.version, ...fields });
+        } else {
+          payload = await api.post(endpoint, { version: state.settings.version, ...fields });
+        }
         Object.entries(fields).forEach(([key, value]) => {
-          if (dirty.get(key) === value) dirty.delete(key);
+          if (dirty.get(key) === value) {
+            dirty.delete(key);
+          }
         });
         auth.settingsChanged(payload);
         return true;
       } catch (error) {
         api.report(error, 'settings');
-        if (error.code === 'VERSION_CONFLICT') await auth.refresh();
+        if (error.code === 'VERSION_CONFLICT') {
+          await auth.refresh();
+        }
         return false;
       }
     });
@@ -186,7 +205,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const input = byId(id);
     input.addEventListener('input', () => dirty.set(field, input.value));
     input.addEventListener('change', () => {
-      if (!input.checkValidity()) return;
+      if (!input.checkValidity()) {
+        return;
+      }
       save('settings.php?action=profile-update', { [field]: input.value });
     });
   }
@@ -214,49 +235,63 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.querySelectorAll('[data-preference]').forEach(button =>
     button.addEventListener('click', async () => {
-      if (!state || button.disabled) return;
+      if (!state || button.disabled) {
+        return;
+      }
       const field = button.dataset.preference;
       const value = button.getAttribute('aria-checked') !== 'true';
       dirty.set(field, value);
       button.disabled = true;
       const success = await save('settings.php?action=preferences-update', { [field]: value });
       dirty.delete(field);
-      if (success || state) render(state);
+      if (success || state) {
+        render(state);
+      }
       button.disabled = false;
     })
   );
   document.querySelectorAll('[data-theme-option]').forEach(button =>
     button.addEventListener('click', async () => {
-      if (!state || button.disabled || button.dataset.themeOption === window.HospitalTheme.current) return;
+      if (!state || button.disabled || button.dataset.themeOption === window.HospitalTheme.current) {
+        return;
+      }
       const theme = button.dataset.themeOption;
       const choice = window.HospitalTheme.preview(theme);
       dirty.set('theme', theme);
       render(state);
       await save('settings.php?action=preferences-update', { theme });
-      if (dirty.get('theme') === theme) dirty.delete('theme');
+      if (dirty.get('theme') === theme) {
+        dirty.delete('theme');
+      }
       window.HospitalTheme.settle(choice);
       render(state);
     })
   );
 
-  const passwordDialog = byId('password-dialog'),
-    passwordForm = byId('password-form');
+  const passwordDialog = byId('password-dialog');
+  const passwordForm = byId('password-form');
   document.querySelector('.reset-password').addEventListener('click', () => {
     passwordDialog.showModal();
     byId('current-password').focus();
   });
   byId('password-recovery-link').addEventListener('click', event => {
     const url = new URL(api.page('src/views/register-restore/restore-password.php'));
-    if (window.HospitalI18n.locale === 'en') url.searchParams.set('lang', 'en');
+    if (window.HospitalI18n.locale === 'en') {
+      url.searchParams.set('lang', 'en');
+    }
     event.currentTarget.href = url.href;
   });
   passwordDialog.addEventListener('cancel', event => {
-    if (passwordForm.dataset.busy) event.preventDefault();
+    if (passwordForm.dataset.busy) {
+      event.preventDefault();
+    }
   });
   passwordDialog.addEventListener('close', () => passwordForm.reset());
   passwordForm.addEventListener('submit', async event => {
     event.preventDefault();
-    if (passwordForm.dataset.busy) return;
+    if (passwordForm.dataset.busy) {
+      return;
+    }
     if (!passwordForm.checkValidity()) {
       api.report(new Error(window.HospitalI18n.t('errors.revisa_los_campos_indicados')), 'change-password');
       return;
@@ -296,9 +331,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       for (const session of sessions) {
         const item = document.createElement('li');
         item.className = 'session-row';
-        const details = document.createElement('div'),
-          label = document.createElement('strong'),
-          seen = document.createElement('p');
+        const details = document.createElement('div');
+        const label = document.createElement('strong');
+        const seen = document.createElement('p');
         const browser = ['Edg', 'Firefox', 'Chrome', 'Safari'].find(name =>
           (session.user_agent || '').includes(name)
         );
@@ -334,8 +369,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           revoke.disabled = true;
           try {
             const result = await api.post('auth.php?action=revoke-session', { session_id: session.id });
-            if (result.current_session_revoked) location.assign(api.page('index.php'));
-            else await showSessions();
+            if (result.current_session_revoked) {
+              location.assign(api.page('index.php'));
+            } else {
+              await showSessions();
+            }
           } catch (error) {
             api.report(error, 'sessions');
             revoke.disabled = false;
@@ -366,7 +404,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     byId('specialty-name').focus();
   });
   async function changeSpecialties(names) {
-    if (specialtiesBusy) return false;
+    if (specialtiesBusy) {
+      return false;
+    }
     specialtiesBusy = true;
     render(state);
     document.querySelectorAll('#specialty-form,#specialty-remove-form').forEach(form => {
@@ -388,7 +428,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   byId('specialty-form').addEventListener('submit', async event => {
     event.preventDefault();
-    if (!event.target.checkValidity() || specialtiesBusy || !state) return;
+    if (!event.target.checkValidity() || specialtiesBusy || !state) {
+      return;
+    }
     const name = byId('specialty-name').value.trim();
     if (await changeSpecialties([...state.settings.specialties.map(item => item.name), name])) {
       byId('specialty-name').value = '';
@@ -397,17 +439,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   byId('specialty-remove-form').addEventListener('submit', async event => {
     event.preventDefault();
-    if (!pendingSpecialty || specialtiesBusy || !state) return;
+    if (!pendingSpecialty || specialtiesBusy || !state) {
+      return;
+    }
     if (
       await changeSpecialties(
         state.settings.specialties.filter(item => item.id !== pendingSpecialty.id).map(item => item.name)
       )
-    )
+    ) {
       byId('specialty-remove-dialog').close();
+    }
   });
   for (const dialog of [specialtyDialog, byId('specialty-remove-dialog')]) {
     dialog.addEventListener('cancel', event => {
-      if (specialtiesBusy) event.preventDefault();
+      if (specialtiesBusy) {
+        event.preventDefault();
+      }
     });
   }
   byId('specialty-remove-dialog').addEventListener('close', () => {
@@ -423,7 +470,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   upload.addEventListener('click', () => photoInput.click());
   photoInput.addEventListener('change', async () => {
     const photo = photoInput.files?.[0];
-    if (!photo || !state) return;
+    if (!photo || !state) {
+      return;
+    }
     if (photo.size > 5 * 1024 * 1024) {
       api.report(new Error(window.HospitalI18n.t("settings.la_foto_supera_5_mib")), 'settings');
       return;
@@ -431,7 +480,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     upload.disabled = true;
     const data = new FormData();
     data.set('photo', photo);
-    if (await save('settings.php?action=photo', {}, data)) photoInput.value = '';
+    if (await save('settings.php?action=photo', {}, data)) {
+      photoInput.value = '';
+    }
     upload.disabled = false;
   });
   document.querySelector('[data-photo-delete]').addEventListener('click', async event => {
@@ -442,7 +493,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('[data-close-dialog]').forEach(button =>
     button.addEventListener('click', () => {
-      if (!button.closest('form')?.dataset.busy) button.closest('dialog').close();
+      if (!button.closest('form')?.dataset.busy) {
+        button.closest('dialog').close();
+      }
     })
   );
   document.querySelector('[data-security-notifications]').addEventListener('click', async () => {
@@ -466,8 +519,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
         list.append(item);
       });
-      if (notifications.length)
+      if (notifications.length) {
         await api.post('settings.php?action=notifications-read', { through_id: notifications[0].id });
+      }
     } catch (error) {
       api.report(error, 'notifications');
     }
@@ -482,7 +536,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('hospital:session', event => render(event.detail));
   auth.ready
     .then(async payload => {
-      if (!payload) return;
+      if (!payload) {
+        return;
+      }
       inputs.forEach(input => {
         input.disabled = false;
       });
@@ -493,25 +549,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       ]);
       if (results[0].status === 'fulfilled') {
         // Restrict this preference to the two requested institutions; save real catalog IDs.
-        const nameKey = name =>
-          name
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim()
-            .toLowerCase();
+        const nameKey = name => {
+          const normalizedText = name.normalize('NFD');
+          const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+          const trimmedText = replacedText.trim();
+          return trimmedText.toLowerCase();
+        };
         facilities = centerNames.flatMap(name => {
           const facility = results[0].value.find(
             item => nameKey(item.name.split(' · ')[0]) === nameKey(name)
           );
-          return facility ? [{ ...facility, name }] : [];
+          if (facility) {
+            return [{ ...facility, name }];
+          } else {
+            return [];
+          }
         });
         render(state);
-      } else api.report(results[0].reason, 'catalogs');
-      if (results[1].status === 'fulfilled')
+      } else {
+        api.report(results[0].reason, 'catalogs');
+      }
+      if (results[1].status === 'fulfilled') {
         results[1].value.forEach(item =>
           byId('specialty-options').append(window.HospitalI18n.option(() => item.name, item.name))
         );
-      else api.report(results[1].reason, 'catalogs');
+      } else {
+        api.report(results[1].reason, 'catalogs');
+      }
     })
     .catch(error => api.report(error, 'settings'));
 });

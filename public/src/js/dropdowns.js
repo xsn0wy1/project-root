@@ -1,3 +1,7 @@
+/* Gives selects and suggestions the shared Documents dropdown behavior.
+ * API: none; values and change events stay on the original form controls.
+ * DOM: existing select/input IDs and their generated -button/-menu companions.
+ */
 (() => {
   'use strict';
   function initialChoice(event, choices, select) {
@@ -7,26 +11,36 @@
     if (event.key === 'End') {
       return choices.at(-1);
     }
-    return (
-      choices.find(c => c.dataset.value === select.value) ||
-      (event.key === 'ArrowUp' ? choices.at(-1) : choices[0])
-    );
+    const selectedChoice = choices.find(choice => choice.dataset.value === select.value);
+    if (selectedChoice) {
+      return selectedChoice;
+    }
+    if (event.key === 'ArrowUp') {
+      return choices.at(-1);
+    }
+    return choices[0];
   }
 
-  const controls = new Map(),
-    suggestions = new Map();
-  let opened = null,
-    serial = 0;
+  const controls = new Map();
+  const suggestions = new Map();
+  let opened = null;
+  let serial = 0;
 
   function focusChoice(choice, menu) {
-    if (!choice) return;
+    if (!choice) {
+      return;
+    }
     choice.focus({ preventScroll: true });
-    if (choice.offsetTop < menu.scrollTop) menu.scrollTop = choice.offsetTop;
-    else if (choice.offsetTop + choice.offsetHeight > menu.scrollTop + menu.clientHeight)
+    if (choice.offsetTop < menu.scrollTop) {
+      menu.scrollTop = choice.offsetTop;
+    } else if (choice.offsetTop + choice.offsetHeight > menu.scrollTop + menu.clientHeight) {
       menu.scrollTop = choice.offsetTop + choice.offsetHeight - menu.clientHeight;
+    }
   }
   function close() {
-    if (!opened) return;
+    if (!opened) {
+      return;
+    }
     opened.menu.hidden = true;
     opened.button.setAttribute('aria-expanded', 'false');
     opened = null;
@@ -36,28 +50,39 @@
       syncSuggestions(item);
       return;
     }
-    const { select, button, label, menu } = item;
+    const select = item.select;
+    const button = item.button;
+    const label = item.label;
+    const menu = item.menu;
     const options = [...select.options];
     const selected = select.selectedOptions[0];
-    const text = item.labelText
-      ? item.labelText(select.value)
-      : selected?.textContent || select.getAttribute('aria-label') || '';
-    if (label.textContent !== text) label.textContent = text;
+    let textValue;
+    if (item.labelText) {
+      textValue = item.labelText(select.value);
+    } else {
+      textValue = selected?.textContent || select.getAttribute('aria-label') || '';
+    }
+    const text = textValue;
+    if (label.textContent !== text) {
+      label.textContent = text;
+    }
     button.disabled = select.disabled;
     button.setAttribute('aria-required', String(select.required));
     const signature = options
-      .map(o => [o.value, o.textContent, o.disabled, o.hidden].join('\0'))
+      .map(option => [option.value, option.textContent, option.disabled, option.hidden].join('\0'))
       .join('\u0001');
     if (item.signature !== signature) {
       item.signature = signature;
       menu.replaceChildren(
         ...options
-          .filter(o => !o.hidden && !(item.hideEmpty && !o.value))
+          .filter(option => !option.hidden && !(item.hideEmpty && !option.value))
           .map(option => {
             const choice = document.createElement('button');
             choice.type = 'button';
             choice.dataset.value = option.value;
-            if (item.choiceAttribute) choice.dataset[item.choiceAttribute] = option.value;
+            if (item.choiceAttribute) {
+              choice.dataset[item.choiceAttribute] = option.value;
+            }
             choice.textContent = option.textContent;
             choice.disabled = option.disabled;
             choice.setAttribute('role', 'option');
@@ -72,22 +97,28 @@
       choice.setAttribute('aria-selected', String(active));
       choice.setAttribute('aria-pressed', String(active));
     }
-    if (select.disabled && opened === item) close();
+    if (select.disabled && opened === item) {
+      close();
+    }
   }
   function open(item) {
-    if (item.select.disabled) return;
+    if (item.select.disabled) {
+      return;
+    }
     close();
     sync(item);
     // The menu lives in the dialog's top layer, or the document, outside scroll clips.
     const host = item.select.closest('dialog') || document.body;
-    if (item.menu.parentElement !== host) host.append(item.menu);
+    if (item.menu.parentElement !== host) {
+      host.append(item.menu);
+    }
     item.menu.style.position = 'fixed';
     item.menu.style.margin = '0';
     item.menu.hidden = false;
     const rect = item.button.getBoundingClientRect();
     item.anchor = { x: rect.left, y: rect.top };
-    const roomBelow = innerHeight - rect.bottom - 14,
-      roomAbove = rect.top - 14;
+    const roomBelow = innerHeight - rect.bottom - 14;
+    const roomAbove = rect.top - 14;
     const above = roomBelow < Math.min(250, item.menu.scrollHeight) && roomAbove > roomBelow;
     Object.assign(item.menu.style, {
       position: 'fixed',
@@ -104,13 +135,16 @@
     opened = item;
   }
   function typeChoice(item, event) {
-    if (event.key.length !== 1 || !event.key.trim() || event.ctrlKey || event.metaKey || event.altKey)
+    if (event.key.length !== 1 || !event.key.trim() || event.ctrlKey || event.metaKey || event.altKey) {
       return false;
+    }
     event.preventDefault();
     item.search =
       (Date.now() - (item.typedAt || 0) < 700 ? item.search || '' : '') + event.key.toLocaleLowerCase();
     item.typedAt = Date.now();
-    if (opened !== item) open(item);
+    if (opened !== item) {
+      open(item);
+    }
     focusChoice(
       [...item.menu.children].find(
         choice => !choice.disabled && choice.textContent.toLocaleLowerCase().startsWith(item.search)
@@ -120,9 +154,13 @@
     return true;
   }
   function enhance(select, options = {}) {
-    if (controls.has(select)) return controls.get(select);
+    if (controls.has(select)) {
+      return controls.get(select);
+    }
     // These existing backed menus already use the shared design and their own IDs.
-    if (select.multiple || (select.hidden && !options.button) || select.closest('.trace-select')) return null;
+    if (select.multiple || (select.hidden && !options.button) || select.closest('.trace-select')) {
+      return null;
+    }
     const computed = getComputedStyle(select);
     const style = { height: computed.height, font: computed.font, letterSpacing: computed.letterSpacing };
     const adopted = Boolean(options.button);
@@ -135,10 +173,14 @@
       root.append(select);
     }
     root.classList.add('document-filter');
-    if (!adopted) root.classList.add('hospital-select');
-    if (fieldRoot) root.classList.add('hospital-field-select');
-    else if (root.parentElement.matches('.builder-select'))
+    if (!adopted) {
+      root.classList.add('hospital-select');
+    }
+    if (fieldRoot) {
+      root.classList.add('hospital-field-select');
+    } else if (root.parentElement.matches('.builder-select')) {
       root.parentElement.classList.add('hospital-select-container');
+    }
     if (!adopted) {
       select.classList.add('hospital-native-select');
       select.tabIndex = -1;
@@ -146,10 +188,14 @@
     }
     const button = options.button || document.createElement('button');
     button.type = 'button';
-    if (!adopted) button.className = 'filter-trigger hospital-select-trigger';
+    if (!adopted) {
+      button.className = 'filter-trigger hospital-select-trigger';
+    }
     button.id ||= (select.id || 'hospital-select-' + ++serial) + '-button';
     const label = options.label || document.createElement('span');
-    if (!adopted) label.className = 'hospital-select-label';
+    if (!adopted) {
+      label.className = 'hospital-select-label';
+    }
     const arrow = document.createElement('span');
     arrow.className = 'filter-chevron';
     arrow.setAttribute('aria-hidden', 'true');
@@ -162,9 +208,15 @@
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-haspopup', 'listbox');
     const field = select.labels[0];
-    const fieldLabel = field?.contains(select)
-      ? [...field.children].find(node => node !== root && node.matches('i18n-text,[data-i18n],span'))
-      : field;
+    let fieldLabelValue;
+    if (field?.contains(select)) {
+      fieldLabelValue = [...field.children].find(
+        node => node !== root && node.matches('i18n-text,[data-i18n],span')
+      );
+    } else {
+      fieldLabelValue = field;
+    }
+    const fieldLabel = fieldLabelValue;
     if (fieldLabel && !adopted) {
       fieldLabel.id ||= button.id + '-field';
       label.id = button.id + '-label';
@@ -177,14 +229,18 @@
       menu.setAttribute('aria-label', name);
     }
     // Keep the native element in layout/form validation; only its painting is replaced.
-    if (!adopted && !fieldRoot && style.height && style.height !== 'auto') select.style.height = style.height;
+    if (!adopted && !fieldRoot && style.height && style.height !== 'auto') {
+      select.style.height = style.height;
+    }
     if (!adopted) {
       button.style.font = style.font;
       button.style.letterSpacing = style.letterSpacing;
     }
     if (fieldRoot) {
       const icon = [...root.children].find(node => node.matches('img,.status-dot'));
-      if (icon) button.append(icon.cloneNode(true));
+      if (icon) {
+        button.append(icon.cloneNode(true));
+      }
     }
     if (!adopted) {
       button.append(label, arrow);
@@ -196,24 +252,34 @@
     sync(item);
     button.addEventListener('click', event => {
       event.preventDefault();
-      opened === item ? close() : open(item);
+      if (opened === item) {
+        close();
+      } else {
+        open(item);
+      }
     });
     button.addEventListener('keydown', event => {
-      if (typeChoice(item, event)) return;
-      if (!['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape'].includes(event.key)) return;
+      if (typeChoice(item, event)) {
+        return;
+      }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End', 'Escape'].includes(event.key)) {
+        return;
+      }
       event.preventDefault();
       if (event.key === 'Escape') {
         close();
         return;
       }
       open(item);
-      const choices = [...menu.children].filter(c => !c.disabled);
+      const choices = [...menu.children].filter(choice => !choice.disabled);
 
       focusChoice(initialChoice(event, choices, select), menu);
     });
     menu.addEventListener('click', event => {
       const choice = event.target.closest('button');
-      if (!choice || choice.disabled || select.disabled) return;
+      if (!choice || choice.disabled || select.disabled) {
+        return;
+      }
       const changed = select.value !== choice.dataset.value;
       select.value = choice.dataset.value;
       close();
@@ -225,7 +291,7 @@
       }
     });
     menu.addEventListener('keydown', event => {
-      const choices = [...menu.children].filter(c => !c.disabled);
+      const choices = [...menu.children].filter(choice => !choice.disabled);
       if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
         event.preventDefault();
         const index = choices.indexOf(document.activeElement);
@@ -245,8 +311,11 @@
         event.stopPropagation();
         close();
         button.focus();
-      } else if (event.key === 'Tab') close();
-      else typeChoice(item, event);
+      } else if (event.key === 'Tab') {
+        close();
+      } else {
+        typeChoice(item, event);
+      }
     });
     select.addEventListener('invalid', () => button.focus());
     if (!adopted) {
@@ -258,12 +327,11 @@
     return item;
   }
   function syncSuggestions(item) {
-    const input = item.select,
-      query = input.value
-        .trim()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
+    const input = item.select;
+    const trimmedText = input.value.trim();
+    const normalizedText = trimmedText.normalize('NFD');
+    const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+    const query = replacedText.toLowerCase();
     const list = document.getElementById(item.suggestions);
     const choices = [...(list?.options || [])].filter(
       option =>
@@ -276,7 +344,9 @@
           .includes(query)
     );
     const signature = choices.map(option => option.value + '\0' + option.label).join('\u0001');
-    if (signature === item.signature) return;
+    if (signature === item.signature) {
+      return;
+    }
     item.signature = signature;
     item.index = -1;
     input.removeAttribute('aria-activedescendant');
@@ -296,9 +366,13 @@
     );
   }
   function enhanceSuggestions(input) {
-    if (suggestions.has(input)) return;
+    if (suggestions.has(input)) {
+      return;
+    }
     const list = input.getAttribute('list');
-    if (!list) return;
+    if (!list) {
+      return;
+    }
     input.dataset.hospitalList = list;
     input.removeAttribute('list');
     const menu = document.createElement('div');
@@ -321,9 +395,11 @@
     suggestions.set(input, item);
     const show = () => {
       syncSuggestions(item);
-      if (!input.disabled && !input.readOnly && menu.children.length && item.dismissedValue !== input.value)
+      if (!input.disabled && !input.readOnly && menu.children.length && item.dismissedValue !== input.value) {
         open(item);
-      else if (opened === item) close();
+      } else if (opened === item) {
+        close();
+      }
     };
     const choose = choice => {
       input.value = choice.dataset.value;
@@ -332,7 +408,9 @@
       input.dispatchEvent(new Event('input', { bubbles: true }));
       input.dispatchEvent(new Event('change', { bubbles: true }));
       item.dismissedValue = input.value;
-      if (opened === item) close();
+      if (opened === item) {
+        close();
+      }
     };
     input.addEventListener('focus', () => {
       item.dismissedValue = null;
@@ -346,7 +424,9 @@
       if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
         show();
         const choices = [...menu.children];
-        if (!choices.length) return;
+        if (!choices.length) {
+          return;
+        }
         event.preventDefault();
         item.index = (item.index + (event.key === 'ArrowDown' ? 1 : -1) + choices.length) % choices.length;
         choices.forEach((choice, index) =>
@@ -354,9 +434,11 @@
         );
         input.setAttribute('aria-activedescendant', choices[item.index].id);
         const choice = choices[item.index];
-        if (choice.offsetTop < menu.scrollTop) menu.scrollTop = choice.offsetTop;
-        else if (choice.offsetTop + choice.offsetHeight > menu.scrollTop + menu.clientHeight)
+        if (choice.offsetTop < menu.scrollTop) {
+          menu.scrollTop = choice.offsetTop;
+        } else if (choice.offsetTop + choice.offsetHeight > menu.scrollTop + menu.clientHeight) {
           menu.scrollTop = choice.offsetTop + choice.offsetHeight - menu.clientHeight;
+        }
       } else if (event.key === 'Enter' && opened === item && item.index >= 0) {
         event.preventDefault();
         choose(menu.children[item.index]);
@@ -365,15 +447,21 @@
         event.stopPropagation();
         item.dismissedValue = input.value;
         close();
-      } else if (event.key === 'Tab') close();
+      } else if (event.key === 'Tab') {
+        close();
+      }
     });
     menu.addEventListener('pointerdown', event => event.preventDefault());
     menu.addEventListener('click', event => {
       const choice = event.target.closest('button');
-      if (choice && !input.disabled) choose(choice);
+      if (choice && !input.disabled) {
+        choose(choice);
+      }
     });
     item.refresh = () => {
-      if (document.activeElement === input) show();
+      if (document.activeElement === input) {
+        show();
+      }
     };
   }
   function refresh() {
@@ -383,7 +471,9 @@
       if (!input.isConnected) {
         item.menu.remove();
         suggestions.delete(input);
-      } else item.refresh();
+      } else {
+        item.refresh();
+      }
     }
     for (const [select, item] of controls) {
       if (!select.isConnected) {
@@ -395,18 +485,26 @@
     }
   }
   document.addEventListener('click', event => {
-    if (opened && !opened.root.contains(event.target) && !opened.menu.contains(event.target)) close();
+    if (opened && !opened.root.contains(event.target) && !opened.menu.contains(event.target)) {
+      close();
+    }
   });
   document.addEventListener('focusin', event => {
-    if (opened && !opened.root.contains(event.target) && !opened.menu.contains(event.target)) close();
+    if (opened && !opened.root.contains(event.target) && !opened.menu.contains(event.target)) {
+      close();
+    }
   });
   document.addEventListener(
     'scroll',
     event => {
-      if (!opened || opened.menu.contains(event.target)) return;
+      if (!opened || opened.menu.contains(event.target)) {
+        return;
+      }
       const rect = opened.button.getBoundingClientRect();
       // Ignore an already-queued scroll that occurred before this menu opened.
-      if (Math.abs(rect.left - opened.anchor.x) > 1 || Math.abs(rect.top - opened.anchor.y) > 1) close();
+      if (Math.abs(rect.left - opened.anchor.x) > 1 || Math.abs(rect.top - opened.anchor.y) > 1) {
+        close();
+      }
     },
     true
   );
@@ -428,8 +526,9 @@
                 node.querySelector('select,input[list],datalist'))
           )
       )
-    )
+    ) {
       refresh();
+    }
   });
   function start() {
     refresh();
@@ -441,7 +540,10 @@
       attributeFilter: ['disabled', 'selected', 'required', 'open', 'hidden', 'label']
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
-  else start();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
   window.HospitalDropdown = Object.freeze({ enhance, refresh, closeAll: close });
 })();

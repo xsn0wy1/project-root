@@ -13,3 +13,10 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Kept native form serialization, optional element guards, Unicode/UTF-8 password checks and simple callbacks because they are clearer and preserve edge behavior.
 - PASS: 130 recovery browser checks, 61 theme/login browser checks, 58 recovery and 15 theme SQL/API checks; source equivalence: 91 PHP / 35 JS / five exact intentional files. CSS declarations are byte-identical after removing their replaced leading comments.
 - No behavior, CSS declarations, HTML templates, API actions or translation keys changed. Full visual/translation/SQL regression remains due after all batches.
+
+## Batch 2 — shared page controls and Settings
+
+- Files: main-menu.js, ui.js, dropdowns.js and settings.js.
+- Added purpose/API/DOM headers; expanded guards and multi-declarations, named the text-normalization stages, and replaced cryptic option/choice/event names. Navigation option defaults now use explicit statements with the same undefined-only fallback.
+- Retained short class/attribute ternaries, simple callbacks, two-field destructuring and optional element access where clearer. No new application helpers or UI markup changes.
+- PASS: 161 Settings/navigation UI checks, 136 dropdown checks across 52 variants/two persistence journeys, 98 existing boundary/lazy-read checks; source equivalence: 91 PHP / 35 JS / four exact JS files.
