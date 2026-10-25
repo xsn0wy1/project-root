@@ -8,8 +8,9 @@ final class Database
     {
         $db = $config['db'];
         $dsn = $db['socket'] !== '' ? 'mysql:unix_socket=' . $db['socket'] : 'mysql:host=' . $db['host'] . ';port=' . $db['port'];
-        if ($selectDatabase)
+        if ($selectDatabase) {
             $dsn .= ';dbname=' . $db['name'];
+        }
         $pdo = new \PDO(
             $dsn . ';charset=utf8mb4',
             $db['user'],

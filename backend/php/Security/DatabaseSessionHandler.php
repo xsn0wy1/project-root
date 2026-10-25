@@ -40,8 +40,9 @@ final class DatabaseSessionHandler implements \SessionHandlerInterface, \Session
         $name = 'hs:' . substr(hash('sha256', $id), 0, 61);
         $lock = $this->db->prepare('SELECT GET_LOCK(?, 5)');
         $lock->execute([$name]);
-        if ((int) $lock->fetchColumn() !== 1)
+        if ((int) $lock->fetchColumn() !== 1) {
             throw new \RuntimeException('Session lock unavailable.');
+        }
         $this->lock = $name;
         $stmt = $this->db->prepare('SELECT payload FROM user_sessions WHERE session_hash = ? AND revoked_at IS NULL AND expires_at > UTC_TIMESTAMP() AND absolute_expires_at > UTC_TIMESTAMP()');
         $stmt->execute([hash('sha256', $id)]);

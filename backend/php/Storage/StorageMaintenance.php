@@ -25,8 +25,9 @@ final class StorageMaintenance
         if (
             ($this->config['brevo_api_key'] ?? '') !== ''
             || is_dir(rtrim($this->config['storage_path'], '/') . '/mail')
-        )
+        ) {
             $areas[] = 'mail';
+        }
         foreach ($areas as $area) {
             $path = rtrim($this->config['storage_path'], '/') . '/' . $area;
             $result['areas'][$area] = ['exists' => is_dir($path), 'readable' => is_readable($path), 'writable' => is_writable($path)];
@@ -37,60 +38,76 @@ final class StorageMaintenance
             $area = $row['purpose'] === 'avatar' ? 'users' : 'documents';
             $extension = $area === 'users' ? 'png' : 'bin';
             $path = rtrim($this->config['storage_path'], '/') . '/' . $area . '/' . $row['storage_key'] . '.' . $extension;
-            if (!preg_match('/^[a-f0-9]{64}$/', $row['storage_key']) || !is_file($path) || is_link($path))
+            if (!preg_match('/^[a-f0-9]{64}$/', $row['storage_key']) || !is_file($path) || is_link($path)) {
                 $result['missing'][] = (string)$row['id'];
-            elseif (
+            } elseif (
                 filesize($path) !== (int)$row['byte_size']
                 || !hash_equals($row['sha256'], hash_file('sha256', $path))
-            )
+            ) {
                 $result['mismatched'][] = (string)$row['id'];
+            }
         }
         return $result;
     }
     public function prepare(?string $webUser = null): void
     {
-        if (PHP_SAPI !== 'cli')
+        if (PHP_SAPI !== 'cli') {
             throw new \RuntimeException('CLI only.');
+        }
         $identity = null;
         if ($webUser !== null) {
             if (
                 !preg_match('/^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$/', $webUser)
                 || !function_exists('posix_getpwnam')
                 || !($identity = posix_getpwnam($webUser))
-            )
+            ) {
                 throw new \RuntimeException('Unknown web-server user.');
+            }
         }
         $storage = new PrivateStorage($this->config);
         foreach (['users', 'documents', 'quarantine', 'mail'] as $area) {
             $path = $storage->directory($area, true);
-            if (!chmod($path, 0700))
+            if (!chmod($path, 0700)) {
                 throw new \RuntimeException('Cannot protect storage area.');
+            }
         }
         $root = realpath($this->config['storage_path']);
-        if (!chmod($root, 0700))
+        if (!chmod($root, 0700)) {
             throw new \RuntimeException('Cannot protect storage root.');
-        if ($webUser === null)
-        return;
+        }
+        if ($webUser === null) {
+            return;
+        }
         if (PHP_OS_FAMILY === 'Darwin') {
             $this->acl($root, 'user:' . $webUser . ' allow search,readattr,readsecurity');
-            foreach (['users', 'documents', 'quarantine', 'mail'] as $area)
+            foreach (['users', 'documents', 'quarantine', 'mail'] as $area) {
                 $this->acl(
                     $storage->directory($area),
                     'user:' . $webUser . ' allow list,search,add_file,add_subdirectory,delete_child,readattr,readextattr,readsecurity'
                 );
-            foreach (['users' => 'png', 'documents' => 'bin', 'mail' => 'bin'] as $area => $extension)
-                foreach (glob($storage->directory($area) . '/*.' . $extension) as $file)
-                    if (!is_link($file))
+            }
+            foreach (['users' => 'png', 'documents' => 'bin', 'mail' => 'bin'] as $area => $extension) {
+                foreach (glob($storage->directory($area) . '/*.' . $extension) as $file) {
+                    if (!is_link($file)) {
                         $this->acl($file, 'user:' . $webUser . ' allow read,readattr,readextattr,readsecurity');
+                    }
+                }
+            }
         } else {
-            if (!chown($root, $identity['uid']))
+            if (!chown($root, $identity['uid'])) {
                 throw new \RuntimeException('Run storage preparation with ownership-changing privileges.');
-            foreach (['users' => 'png', 'documents' => 'bin', 'quarantine' => 'bin', 'mail' => 'bin'] as $area => $extension) {
-                if (!chown($storage->directory($area), $identity['uid']))
+            }
+            foreach (
+                ['users' => 'png', 'documents' => 'bin', 'quarantine' => 'bin', 'mail' => 'bin'] as $area => $extension
+            ) {
+                if (!chown($storage->directory($area), $identity['uid'])) {
                     throw new \RuntimeException('Cannot set storage ownership.');
-                foreach (glob($storage->directory($area) . '/*.' . $extension) as $file)
-                    if (!is_link($file) && !chown($file, $identity['uid']))
+                }
+                foreach (glob($storage->directory($area) . '/*.' . $extension) as $file) {
+                    if (!is_link($file) && !chown($file, $identity['uid'])) {
                         throw new \RuntimeException('Cannot set file ownership.');
+                    }
+                }
             }
         }
     }
@@ -101,13 +118,19 @@ final class StorageMaintenance
             [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
             $pipes
         );
-        if (!is_resource($process) || proc_close($process) !== 0)
+        if (!is_resource($process) || proc_close($process) !== 0) {
             throw new \RuntimeException('Cannot grant web-server storage access.');
+        }
     }
     public function recover(string $backup): array
     {
-        if (PHP_SAPI !== 'cli' || !str_starts_with($backup, DIRECTORY_SEPARATOR) || !($backup = realpath($backup)))
+        if (
+            PHP_SAPI !== 'cli'
+            || !str_starts_with($backup, DIRECTORY_SEPARATOR)
+            || !($backup = realpath($backup))
+        ) {
             throw new \RuntimeException('Use an existing absolute private backup directory.');
+        }
         $storage = new PrivateStorage($this->config);
         $restored = [];
         $unavailable = [];
@@ -122,8 +145,9 @@ final class StorageMaintenance
             $ext = $area === 'users' ? 'png' : 'bin';
             $directory = $storage->directory($area, true);
             $target = $storage->path($area, $row['storage_key'], $ext);
-            if (file_exists($target))
-            continue;
+            if (file_exists($target)) {
+                continue;
+            }
             $source = $backup . '/' . $area . '/' . $row['storage_key'] . '.' . $ext;
             if (
                 !is_file($source)
@@ -138,8 +162,9 @@ final class StorageMaintenance
             $in = fopen($source, 'rb');
             $out = fopen($target, 'xb');
             umask($old);
-            if (!$in || !$out)
+            if (!$in || !$out) {
                 throw new \RuntimeException('Cannot restore private file.');
+            }
             try {
                 $size = stream_copy_to_stream($in, $out);
             } finally {

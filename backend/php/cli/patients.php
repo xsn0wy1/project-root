@@ -23,8 +23,9 @@ try {
             $stmt = $db->prepare('SELECT version FROM patients WHERE id=?');
             $stmt->execute([$id]);
             $version = $stmt->fetchColumn();
-            if (!$version)
+            if (!$version) {
                 throw new RuntimeException('Patient not found.');
+            }
             patients_archive($db, $config, null, $id, (int)$version, $command === 'restore');
         }
         echo 'Patient catalog updated: ' . $id . "\n";
@@ -33,8 +34,9 @@ try {
         exit(1);
     }
 } catch (Throwable $error) {
-    if (isset($db) && $db->inTransaction())
+    if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
+    }
     fwrite(STDERR, "Patient catalog operation failed. Check input, duplicates and database access.\n");
     exit(1);
 }

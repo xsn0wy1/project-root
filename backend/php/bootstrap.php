@@ -6,7 +6,9 @@ $GLOBALS['request_id'] = bin2hex(random_bytes(12));
 ini_set('display_errors', '0');
 $requestPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '');
 $pageBuffer = PHP_SAPI !== 'cli' && !preg_match('#/api/v1(?:/|$)#', $requestPath) ? ob_get_level() : null;
-if ($pageBuffer !== null) ob_start();
+if ($pageBuffer !== null) {
+    ob_start();
+}
 set_exception_handler(static function (Throwable $error) use ($pageBuffer): void {
     if (!$error instanceof Hospital\Http\ApiException) {
         // Do not log SQL parameters, request bodies, credentials, CI or session IDs.
@@ -14,10 +16,12 @@ set_exception_handler(static function (Throwable $error) use ($pageBuffer): void
         if ($error instanceof PDOException) {
             $state = $error->errorInfo[0] ?? '';
             $number = $error->errorInfo[1] ?? 0;
-            if (is_string($state) && preg_match('/^[A-Z0-9]{5}$/', $state))
+            if (is_string($state) && preg_match('/^[A-Z0-9]{5}$/', $state)) {
                 $diagnostic .= ' SQLSTATE=' . $state;
-            if (is_int($number))
+            }
+            if (is_int($number)) {
                 $diagnostic .= ' driver_code=' . $number;
+            }
         }
         error_log('Hospital request ' . $GLOBALS['request_id'] . ' failed: ' . $diagnostic);
         $error = new Hospital\Http\ApiException(
@@ -27,7 +31,9 @@ set_exception_handler(static function (Throwable $error) use ($pageBuffer): void
         );
     }
     if ($pageBuffer !== null) {
-        while (ob_get_level() > $pageBuffer) ob_end_clean();
+        while (ob_get_level() > $pageBuffer) {
+            ob_end_clean();
+        }
         require_once dirname(__DIR__, 2) . '/public/src/views/error.php';
         $status = in_array($error->status, [403, 404, 503], true) ? $error->status : 500;
         render_error_page($status);
@@ -60,6 +66,7 @@ if (PHP_SAPI !== 'cli') {
     ]);
     session_set_save_handler(new Hospital\Security\DatabaseSessionHandler($db, $config), true);
     session_start();
-    if (!isset($_SESSION['_created_at']))
+    if (!isset($_SESSION['_created_at'])) {
         $_SESSION['_created_at'] = time();
+    }
 }

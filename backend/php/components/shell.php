@@ -6,9 +6,13 @@ const ASSET_VERSION = '20261022-frontend';
 
 function page_language(): string
 {
-    if (isset($GLOBALS['page_locale'])) return $GLOBALS['page_locale'];
+    if (isset($GLOBALS['page_locale'])) {
+        return $GLOBALS['page_locale'];
+    }
     $language = $_GET['lang'] ?? null;
-    if (in_array($language, ['es', 'es-UY', 'en'], true)) return $language === 'en' ? 'en' : 'es-UY';
+    if (in_array($language, ['es', 'es-UY', 'en'], true)) {
+        return $language === 'en' ? 'en' : 'es-UY';
+    }
     return Hospital\I18n::locale();
 }
 
@@ -25,6 +29,7 @@ function page_escape(string $value): string
 }
 
 /** HTML-safe asset URL; update this version when publishing changed browser assets. */
+
 function asset_url(string $path): string
 {
     $separator = strpos($path, '?') === false ? '?' : '&';
@@ -32,6 +37,7 @@ function asset_url(string $path): string
 }
 
 /** Shared staff head and navigation; each view keeps its content and dialogs. */
+
 function staff_page_head(array $page): void
 {
     page_security_headers();
@@ -98,11 +104,22 @@ function staff_page_open(array $page): void
 <?php endif; ?>
   <main class="<?= page_escape($page['main_class'] ?? 'app-shell') ?>">
 <?php
-    staff_sidebar($page['described_nav'], $module === 'management', $page['nav_section'] ?? 'management', $assets, $page['management_nav'] ?? true);
+    staff_sidebar(
+        $page['described_nav'],
+        $module === 'management',
+        $page['nav_section'] ?? 'management',
+        $assets,
+        $page['management_nav'] ?? true
+    );
 }
 
-function staff_sidebar(bool $described, bool $hub, string $section = 'management', string $assets = '../../../assets/', bool $management = true): void
-{
+function staff_sidebar(
+    bool $described,
+    bool $hub,
+    string $section = 'management',
+    string $assets = '../../../assets/',
+    bool $management = true
+): void {
     $document = in_array($section, ['documents', 'document-form', 'document-viewer'], true);
     $transfer = in_array($section, ['transfers', 'transfer-form', 'transfer-view'], true);
     $survey = $section === 'surveys';
@@ -110,25 +127,53 @@ function staff_sidebar(bool $described, bool $hub, string $section = 'management
     $root = in_array($section, ['home', 'settings'], true);
     $prefix = $root ? '' : '../';
     $active = 4;
-    if ($section === 'home') $active = 0;
-    elseif ($section === 'settings') $active = 5;
-    elseif ($document) $active = 1;
-    elseif ($transfer) $active = 2;
-    elseif ($survey) $active = 3;
+    if ($section === 'home') {
+        $active = 0;
+    } elseif ($section === 'settings') {
+        $active = 5;
+    } elseif ($document) {
+        $active = 1;
+    } elseif ($transfer) {
+        $active = 2;
+    } elseif ($survey) {
+        $active = 3;
+    }
     $documentsUrl = $prefix . 'documents/documents.php';
-    if ($document) $documentsUrl = $section === 'documents' ? '#' : 'documents.php';
+    if ($document) {
+        $documentsUrl = $section === 'documents' ? '#' : 'documents.php';
+    }
     $transfersUrl = $prefix . 'traces/trace.php';
-    if ($transfer) $transfersUrl = $section === 'transfers' ? '#' : 'trace.php';
+    if ($transfer) {
+        $transfersUrl = $section === 'transfers' ? '#' : 'trace.php';
+    }
     $managementPrefix = '';
-    if ($root) $managementPrefix = 'management/';
-    elseif ($nested) $managementPrefix = '../management/';
+    if ($root) {
+        $managementPrefix = 'management/';
+    } elseif ($nested) {
+        $managementPrefix = '../management/';
+    }
     $links = [
         [$section === 'home' ? '#' : $prefix . 'main-menu.php', 'house-icon.svg', 'main_menu.inicio', 'Inicio'],
         [$documentsUrl, 'folder-icon.svg', 'main_menu.documentos', 'Documentos'],
         [$transfersUrl, 'location-icon.svg', 'main_menu.ambulancias', 'Ambulancias'],
-        [$survey ? 'survey.php' : $prefix . 'surveys/survey.php', 'survey-icon.svg', 'main_menu.encuestas', 'Encuestas'],
-        [$hub ? '#' : $managementPrefix . 'management.php', 'database-cog.svg', $root || $document || $transfer ? 'main_menu.gestion' : 'trace_map.gestion', $root || $document || $transfer ? 'Gestion' : 'Gestión'],
-        [$section === 'settings' ? '#' : $prefix . 'settings.php', 'settings-icon.svg', 'main_menu.configuracion', 'Configuración'],
+        [
+            $survey ? 'survey.php' : $prefix . 'surveys/survey.php',
+            'survey-icon.svg',
+            'main_menu.encuestas',
+            'Encuestas'
+        ],
+        [
+            $hub ? '#' : $managementPrefix . 'management.php',
+            'database-cog.svg',
+            $root || $document || $transfer ? 'main_menu.gestion' : 'trace_map.gestion',
+            $root || $document || $transfer ? 'Gestion' : 'Gestión'
+        ],
+        [
+            $section === 'settings' ? '#' : $prefix . 'settings.php',
+            'settings-icon.svg',
+            'main_menu.configuracion',
+            'Configuración'
+        ],
     ];
     ?>
     <aside class="sidebar">
@@ -136,7 +181,9 @@ function staff_sidebar(bool $described, bool $hub, string $section = 'management
       <nav class="sidebar-nav"<?= $described ? '' : ' aria-label="Navegación principal" data-i18n-aria-label="trace_map.navegacion_principal"' ?>>
         <div class="nav-indicator"></div>
 <?php foreach ($links as $index => [$url, $icon, $key, $label]): ?>
-<?php if ($index === 4 && !$management) continue; ?>
+<?php if ($index === 4 && !$management) {
+    continue;
+} ?>
 <?php if ($index === 5): ?>
         <div class="nav-spacer"></div>
 <?php endif; ?>
@@ -148,6 +195,7 @@ function staff_sidebar(bool $described, bool $hub, string $section = 'management
 }
 
 /** Preserve full quick-search markup and the simpler existing catalog/header variants. */
+
 function staff_header(string $variant, string $assets = '../../../assets/'): void
 {
     $quick = $variant === 'quick';

@@ -6,8 +6,9 @@ final class Request
 {
     public static function version($value): int
     {
-        if ((!is_int($value) && !is_string($value)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $value))
+        if ((!is_int($value) && !is_string($value)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $value)) {
             throw new ApiException(422, 'VERSION_REQUIRED', \Hospital\I18n::t('errors.se_requiere_la_revision_actual'));
+        }
         return (int) $value;
     }
 
@@ -27,15 +28,17 @@ final class Request
         $type = strtolower(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]);
         if ($type === 'application/json') {
             $raw = file_get_contents('php://input', false, null, 0, $limit + 1);
-            if (strlen($raw) > $limit)
+            if (strlen($raw) > $limit) {
                 throw new ApiException(413, 'REQUEST_TOO_LARGE', \Hospital\I18n::t("errors.la_solicitud_es_demasiado_grande"));
+            }
             try {
                 $body = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $e) {
+            } catch (\JsonException $caughtError) {
                 throw new ApiException(400, 'INVALID_JSON', \Hospital\I18n::t("errors.el_json_no_es_valido"));
             }
-            if (!is_array($body) || !str_starts_with(ltrim($raw), '{'))
+            if (!is_array($body) || !str_starts_with(ltrim($raw), '{')) {
                 throw new ApiException(400, 'INVALID_JSON', \Hospital\I18n::t("errors.se_esperaba_un_objeto_json"));
+            }
         } elseif (in_array($type, ['application/x-www-form-urlencoded', 'multipart/form-data'], true)) {
             $body = $_POST;
         } else {
@@ -45,8 +48,9 @@ final class Request
             throw new ApiException(422, 'UNEXPECTED_FIELDS', \Hospital\I18n::t("errors.la_solicitud_contiene_campos_no_permitidos"));
         }
         foreach ($body as $key => $value) {
-            if (in_array($key, $arrayFields, true) && is_array($value))
-            continue;
+            if (in_array($key, $arrayFields, true) && is_array($value)) {
+                continue;
+            }
             if (!is_string($value) && !is_int($value) && !is_bool($value) && $value !== null) {
                 throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.los_campos_deben_contener_valores_simples"));
             }

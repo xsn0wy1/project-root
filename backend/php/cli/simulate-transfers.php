@@ -11,47 +11,54 @@ try {
     $command = $argv[1] ?? 'status';
     if ($command === 'worker') {
         $name = transfer_lock_name($config, 'worker');
-        $s = $db->prepare('SELECT GET_LOCK(?,0)');
-        $s->execute([$name]);
-        if ((int)$s->fetchColumn() !== 1)
+        $preparedStatement = $db->prepare('SELECT GET_LOCK(?,0)');
+        $preparedStatement->execute([$name]);
+        if ((int)$preparedStatement->fetchColumn() !== 1) {
             throw new RuntimeException('Another simulation worker already owns this database.');
+        }
         $duration = $argv[2] ?? '0';
-        if (!preg_match('/^[0-9]{1,6}$/', $duration))
+        if (!preg_match('/^[0-9]{1,6}$/', $duration)) {
             throw new RuntimeException('Invalid worker duration.');
+        }
         $stop = (int)$duration ? time() + (int)$duration : PHP_INT_MAX;
         $ticks = 0;
         try {
             do {
                 try {
                     tracking_tick($db, $config);
-                    if (++$ticks % 20 === 0)
+                    if (++$ticks % 20 === 0) {
                         tracking_prune($db);
-                } catch (Hospital\Http\ApiException $e) {
-                    if ($e->errorCode !== 'RESOURCE_BUSY')
-                        throw $e;
+                    }
+                } catch (Hospital\Http\ApiException $caughtError) {
+                    if ($caughtError->errorCode !== 'RESOURCE_BUSY') {
+                        throw $caughtError;
+                    }
                     fwrite(STDERR, "Simulation tick deferred: resources busy.\n");
-                }if (time() >= $stop)
-                break;
+                }
+                if (time() >= $stop) {
+                    break;
+                }
                 sleep(3);
             } while (time() < $stop);
         } finally {
-            $s = $db->prepare('SELECT RELEASE_LOCK(?)');
-            $s->execute([$name]);
+            $preparedStatement = $db->prepare('SELECT RELEASE_LOCK(?)');
+            $preparedStatement->execute([$name]);
         }
         echo "Simulation worker stopped.\n";
-    } elseif ($command === 'status')
+    } elseif ($command === 'status') {
         echo json_encode(tracking_status($db), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
-    else {
+    } else {
         $speed = $argv[2] ?? '1';
-        if (!is_numeric($speed))
+        if (!is_numeric($speed)) {
             throw new RuntimeException('Invalid speed.');
+        }
         $result = tracking_control($db, $config, $command, tracking_status($db)['version'], (float)$speed);
         echo json_encode($result, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
     }
-} catch (Throwable $e) {
+} catch (Throwable $caughtError) {
     fwrite(
         STDERR,
-        "Simulation operation failed: " . ($e instanceof PDOException ? 'Check the database connection.' : $e->getMessage()) . "\n"
+        "Simulation operation failed: " . ($caughtError instanceof PDOException ? 'Check the database connection.' : $caughtError->getMessage()) . "\n"
     );
     exit(1);
 }

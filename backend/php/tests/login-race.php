@@ -7,8 +7,9 @@ if (PHP_SAPI !== 'cli') {
 }
 require dirname(__DIR__) . '/autoload.php';
 $config = Hospital\Config::load();
-if (!str_ends_with($config['db']['name'], '_test'))
+if (!str_ends_with($config['db']['name'], '_test')) {
     throw new RuntimeException('Use a disposable *_test database.');
+}
 
 final class LoginBarrierPDO extends PDO
 {
@@ -20,19 +21,20 @@ final class LoginBarrierPDO extends PDO
         ) {
             // auth_login has verified the supplied password and is about to lock.
             fwrite(STDOUT, "verified\n");
-            if (trim((string) fgets(STDIN)) !== 'continue')
+            if (trim((string) fgets(STDIN)) !== 'continue') {
                 throw new RuntimeException('Missing test release.');
+            }
         }
         return parent::prepare($query, $options);
     }
 }
 
-$d = $config['db'];
-$dsn = $d['socket'] !== '' ? 'mysql:unix_socket=' . $d['socket'] : 'mysql:host=' . $d['host'] . ';port=' . $d['port'];
+$databaseConfig = $config['db'];
+$dsn = $databaseConfig['socket'] !== '' ? 'mysql:unix_socket=' . $databaseConfig['socket'] : 'mysql:host=' . $databaseConfig['host'] . ';port=' . $databaseConfig['port'];
 $db = new LoginBarrierPDO(
-    $dsn . ';dbname=' . $d['name'] . ';charset=utf8mb4',
-    $d['user'],
-    $d['password'],
+    $dsn . ';dbname=' . $databaseConfig['name'] . ';charset=utf8mb4',
+    $databaseConfig['user'],
+    $databaseConfig['password'],
     [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

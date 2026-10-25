@@ -1,0 +1,137 @@
+{
+  "backend/php/Config.php": {
+    "after_sha256": "33ceef74a1a2cab47c20acfde48407c2fccacb5132f3cc514f276c98b05f406b",
+    "before_sha256": "f1307cbea6c7c4f2047c9c9b137b6652de5a20aa9acc89f2297fa36c9fa8e701",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Database.php": {
+    "after_sha256": "ae1b0e079d4bc308a122239716835583f50d89e22219a10e2108049235d17770",
+    "before_sha256": "16d53382f05abec9e2887465c90c545abe8d7d62e3d4284df498964dbeb2b893",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Http/FileResponse.php": {
+    "after_sha256": "0dca1bc469ff74307d56febc7d6669c97cbf7d7680f6b153d3c9e075a3925b52",
+    "before_sha256": "5179def5880881f80fdd88062156e427a1b81eac01de341e100978e94e230bc5",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Http/Request.php": {
+    "after_sha256": "312e15ae4eb77b59b2564c795587d5b386e4458e839de2f3f00da95a552a5bd5",
+    "before_sha256": "25d6c2b0040e29f46fd09b4edf56e55ef2c813f1d135ed84cab4a7ae8684c506",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Http/Response.php": {
+    "after_sha256": "4b6c137523ed9722124f3498aafe1f3f05b166883115f29dc87c4ea6040a3f31",
+    "before_sha256": "8e630735b9a9fbd2dd08f00cdb6a907b8e7f2c0b9d395a4e330d1733d42655ab",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/I18n.php": {
+    "after_sha256": "06b159ef137ba15a94ef462a07bab4782f7fd83dda73073295abd3aca1920c90",
+    "before_sha256": "21e9202a6f278ea50bf45a86d70a743072b1df34fed0eb49b01fd69b957f08c5",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Migrations.php": {
+    "after_sha256": "6f4ea44df4c96649f4fb1d3694dbb9fa0e27ceec9d20bb92ef752de0d157fd73",
+    "before_sha256": "5fbaf43b6ab41d219e24d9d18698859e0712184b98defca086f7ad01e431c85d",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Security/Csrf.php": {
+    "after_sha256": "c3e67bf223ff002716586af0c4a4eba85c33c2c6330101d7293afb946da5fdec",
+    "before_sha256": "af739c3fb1d3bc6e69faf4084a1c3ed401173080126f1c33636435d8548aae2f",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Security/DatabaseSessionHandler.php": {
+    "after_sha256": "21acd9cab94588be67badf3c999852558e6b4575d618b93de01d896c7ffdd942",
+    "before_sha256": "47cb22f03e8d93b24922d5c8829dd5d3a79f779ac2ba45fd8b72d477d276eadc",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Security/RateLimiter.php": {
+    "after_sha256": "02d5306fc7c1019c343e19aff0b9c5bf95b4dbab5baea408af96429e66ba6519",
+    "before_sha256": "866ce22d1f7423c344c27ec3ee9f54b7e9e35a473d193e4475877e93ba1fe906",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Storage/PrivateStorage.php": {
+    "after_sha256": "0b808643b02652d2ced87667e1e88e2a322862033ab30246f6c45ca5be761f1a",
+    "before_sha256": "cd2ab6d0cc7dc0cf0b4d3ce40413961c18d65f1c3c65ca495ab4ac1dc461ef97",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/Storage/StorageMaintenance.php": {
+    "after_sha256": "de67e268d58f03eb9b7593ed18fed87cf0a462125f6f5e0f38b837c3f2acb982",
+    "before_sha256": "14bcab13a00ec02913a406d8def203a8807eae40644d42c1ace1ef1514b3f0e1",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/bootstrap.php": {
+    "after_sha256": "8aa3d66bf8440aa7d3b9a5c9e84ed92017a760421c704fc9cef9c3cce28ac20e",
+    "before_sha256": "2a6bd89576954d70ca09efefb367ae59f6f6d56090e06e7d794dd676483eb778",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/catalogs.php": {
+    "after_sha256": "b687cf30d60ad2454095735e1f2027f8ba15bf2d3be1e39fddf65085379df5a3",
+    "before_sha256": "2f13fa6a32b7e2708fb2c50a9e20d48bb2431083a6cc994d8e866f31d1bb5bf0",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/patients.php": {
+    "after_sha256": "05a5a962183d2f7b450b53d1b6ad182d63dd60e3386451c6caba14595660f277",
+    "before_sha256": "ad1c6e3dd5e1172f939f2f761b0afa8b700f938b2e25dfab09ea599f74cccfd1",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/preflight.php": {
+    "after_sha256": "02ed27e2c8d87931cdd90724524bdb2c792a1ff1b370b2396db0b703af1f6611",
+    "before_sha256": "d03a1842a734f73038acbe3ff6b8ee40ca8ac34e0f541ca52110a19e467238e0",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/send-reset-mail.php": {
+    "after_sha256": "4eb6b45cdef5eaceb490652410385bddce24080992645630a85aa4e84993658b",
+    "before_sha256": "5e1ae549f4ece2d49ab8ac73f5c8f301f6f87a33bd3dd314ae7e06662afff5d8",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/setup.php": {
+    "after_sha256": "006fb543ba30e61f125c28e53a94dbb52694d7d3949b6155cd531e52a6617ccf",
+    "before_sha256": "e5eddb8c16f4e8810e0ce6adb468262e589c38f8198347296b442563418eeebd",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/simulate-transfers.php": {
+    "after_sha256": "9156b4ad3081d86a8fc4fe24313fc48c2be5170a559f07d56efbd9a6c9982fa0",
+    "before_sha256": "5d56617cd5805989ab8ef415feb0c39b79b6b5d138e2c5fa0c72c680ad1a53c1",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/storage-gc.php": {
+    "after_sha256": "de17cedd4ae254a23dac1e85c8f5bd231a50fed71bc12da6b915d9a134ca47ca",
+    "before_sha256": "3071f8abe8dd0c1a3861d7dbd6cd46832d6d52d77f482d8707ec732d4691a9a0",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/transfers.php": {
+    "after_sha256": "9240bed5f7c4243294433d783167ecc24feb3ac9984e73ab218a3cd2f8a1687b",
+    "before_sha256": "6ed18761034efbbd6b5bf0d67c89f225657ebfaf99617c32613056d3e1293a57",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/cli/users.php": {
+    "after_sha256": "8d6af2e6bc2fce581f2322a0231966a86cc8f11219fa20f63a70e6e0101c6029",
+    "before_sha256": "767c4e75415c6e3902a62b5fb750de8ba96a3e4ac0839eecae5a36d7e804f5ef",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/components/shell.php": {
+    "after_sha256": "c64b777762f8c20f7310897acd5605963a4377d1f39ec81ce543666ed26f707a",
+    "before_sha256": "fce53ab353255877d9b95ae94ae5dbfc83b227225a72451d41b8804ecea8c534",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/core/page.php": {
+    "after_sha256": "d08b368b28ac497a00f503bfbf10c94f82e36cf64d786c32f2eddb7effb5d8bf",
+    "before_sha256": "80143713e64cffb0a038a500eeb18422d0d023e87aa71c2e52d47c38d410fc3b",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/dev-router.php": {
+    "after_sha256": "715a3dab8db26772a34d78ed950a629e61a97a5d9ff3cf5188be5863605abc48",
+    "before_sha256": "f0bca3023fa1ea1886f6bd0202ae45011c2ef88c1fed77f9bfa9100b3756a971",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/tests/login-race.php": {
+    "after_sha256": "22364c76349b709f153b709514de80e0b173cd2d07a87b5ce000e548671786ad",
+    "before_sha256": "49add1ffed97ba49748f63c8446e478d5152053f87c571cd0261466b225e6f99",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  },
+  "backend/php/tests/password-recovery.php": {
+    "after_sha256": "6047d3fe2cea6c82075c2e734d67e11c2ef958fe1d98596695f9b9aa477f5c0e",
+    "before_sha256": "81033472d0943da3f108a93e339444fe2e186bf2b8624806a8ec5408e7dc7756",
+    "reason": "PHP readability only: explicit control-structure braces, one statement per line, conventional indentation/argument layout, descriptive caught-error/prepared-statement/database-config names (including local race/recovery fixtures). Added tokens are braces and reviewed variable names only; formatting preserves significant tokens and every SQL/string/interpolated-text/inline-HTML byte. Autoload remains byte-identical."
+  }
+}

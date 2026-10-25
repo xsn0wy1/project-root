@@ -16,8 +16,12 @@ try {
     header('X-Content-Type-Options: nosniff');
     $mount = rtrim(getenv('HOSPITAL_BASE_PATH') ?: '', '/');
     $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
-    if (!preg_match('#/api/v1(?:/|$)#', $path) &&
-        ($path === $mount || str_ends_with($path, '/') || preg_match('#/(?:index|src/views/(?:[a-z0-9-]+/)*[a-z0-9-]+)\.php$#', $path))) {
+    if (
+        !preg_match('#/api/v1(?:/|$)#', $path)
+        && ($path === $mount
+        || str_ends_with($path, '/')
+        || preg_match('#/(?:index|src/views/(?:[a-z0-9-]+/)*[a-z0-9-]+)\.php$#', $path))
+    ) {
         require_once dirname(__DIR__, 2) . '/public/src/views/error.php';
         render_error_page(503);
         return;
@@ -40,11 +44,13 @@ if ($mount !== '' && !str_starts_with($path, $mount . '/') && $path !== $mount) 
     exit;
 }
 $path = substr($path, strlen($mount));
-if ($path === '' || $path === '/')
+if ($path === '' || $path === '/') {
     $path = '/index.php';
+}
 if (str_starts_with($path, '/api/v1/')) {
-    if ($path !== '/api/v1/translations.php')
+    if ($path !== '/api/v1/translations.php') {
         require_once __DIR__ . '/autoload.php';
+    }
     $relative = substr($path, strlen('/api/v1/'));
     $root = realpath(dirname(__DIR__) . '/api/v1');
     $file = realpath($root . '/' . $relative);
@@ -97,8 +103,9 @@ if (
 ) {
     require_once __DIR__ . '/autoload.php';
     require $file;
-    if ($path === '/src/views/error.php')
+    if ($path === '/src/views/error.php') {
         render_error_page((int) ($_GET['status'] ?? 404));
+    }
     return;
 }
 if (!isset($types[$ext])) {
@@ -107,7 +114,9 @@ if (!isset($types[$ext])) {
 }
 header('Content-Type: ' . $types[$ext]);
 header('X-Content-Type-Options: nosniff');
-if (in_array($ext, ['js', 'mjs', 'css', 'json'], true))
+if (in_array($ext, ['js', 'mjs', 'css', 'json'], true)) {
     header('Cache-Control: no-cache');
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'HEAD')
+}
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'HEAD') {
     readfile($file);
+}

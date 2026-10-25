@@ -14,19 +14,21 @@ final class Response
         header('Content-Length: ' . strlen($body));
         header('Connection: close');
         echo $body;
-        if (function_exists('fastcgi_finish_request'))
+        if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
-        else {
-            while (ob_get_level() > 0)
+        } else {
+            while (ob_get_level() > 0) {
                 ob_end_flush();
+            }
             flush();
         }
     }
 
     public static function json($data, int $status = 200, array $meta = []): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE)
+        if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
+        }
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
         header('Content-Language: ' . \Hospital\I18n::locale());
@@ -42,8 +44,9 @@ final class Response
         header('Content-Type: application/json; charset=utf-8');
         header('Content-Language: ' . \Hospital\I18n::locale());
         $payload = ['code' => $error->errorCode, 'message' => $error->getMessage()];
-        if ($error->fields)
+        if ($error->fields) {
             $payload['fields'] = $error->fields;
+        }
         echo json_encode(
             ['success' => false, 'error' => $payload, 'meta' => ['request_id' => $GLOBALS['request_id']]],
             JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR

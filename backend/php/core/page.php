@@ -9,8 +9,9 @@ function require_staff_page(string $view): void
     try {
         $user = auth_require_user($db, $config, false);
     } catch (Hospital\Http\ApiException $error) {
-        if ($error->status !== 401)
+        if ($error->status !== 401) {
             throw $error;
+        }
         header('Location: ' . $config['base_path'] . '/index.php?reason=session_expired', true, 303);
         exit;
     }
@@ -39,15 +40,20 @@ function require_staff_page(string $view): void
     $settings->execute([(string)$user['id']]);
     $saved = $settings->fetch();
     $GLOBALS['page_preferences'] = $saved ?: [
-        'locale' => 'es-UY', 'theme' => 'dark', 'photo_visible_to_staff' => false,
-        'optional_diagnostics' => false, 'security_notifications' => true, 'automatic_logout' => true,
+        'locale' => 'es-UY',
+        'theme' => 'dark',
+        'photo_visible_to_staff' => false,
+        'optional_diagnostics' => false,
+        'security_notifications' => true,
+        'automatic_logout' => true,
     ];
     $GLOBALS['page_user'] = $user;
     $GLOBALS['page_has_settings'] = (bool) $saved;
     $GLOBALS['page_locale'] = $GLOBALS['page_preferences']['locale'] === 'en' ? 'en' : 'es-UY';
     $GLOBALS['page_theme'] = $GLOBALS['page_preferences']['theme'] === 'light' ? 'light' : 'dark';
     session_write_close();
-    if (in_array($page, ['traces/trace-view', 'traces/trace-map'], true))
+    if (in_array($page, ['traces/trace-view', 'traces/trace-map'], true)) {
         header('Referrer-Policy: strict-origin');
+    }
     header('Content-Type: text/html; charset=utf-8');
 }

@@ -23,8 +23,9 @@ final class RateLimiter
     /** Reserve before credential verification; no database lock survives this call. */
     public function reserve(array $budgets): void
     {
-        if ($this->charges)
+        if ($this->charges) {
             throw new \LogicException('A rate-limit reservation is already active.');
+        }
         $this->charges = $this->take($budgets);
     }
 
@@ -34,13 +35,16 @@ final class RateLimiter
      */
     public function refund(?string $reset = null): void
     {
-        if (!$this->charges)
-        return;
+        if (!$this->charges) {
+            return;
+        }
         $own = !$this->db->inTransaction();
-        if (!$own && $this->refundPrepared)
-        return;
-        if ($own)
+        if (!$own && $this->refundPrepared) {
+            return;
+        }
+        if ($own) {
             $this->db->beginTransaction();
+        }
         try {
             foreach ($this->charges as $bucket => $charge) {
                 $sql = $charge['name'] === $reset
@@ -56,8 +60,9 @@ final class RateLimiter
                 $this->refundPrepared = true;
             }
         } catch (\Throwable $error) {
-            if ($own && $this->db->inTransaction())
+            if ($own && $this->db->inTransaction()) {
                 $this->db->rollBack();
+            }
             throw $error;
         }
     }
@@ -74,8 +79,9 @@ final class RateLimiter
         $ordered = [];
         foreach ($budgets as [$name, $limit, $seconds]) {
             $bucket = hash_hmac('sha256', $name, $this->key);
-            if (isset($ordered[$bucket]) || $limit < 1 || $seconds < 1)
+            if (isset($ordered[$bucket]) || $limit < 1 || $seconds < 1) {
                 throw new \LogicException('Invalid rate-limit budget.');
+            }
             $ordered[$bucket] = [$name, $limit, $seconds];
         }
         ksort($ordered);
@@ -102,10 +108,11 @@ final class RateLimiter
             }
             $this->db->commit();
             return $charges;
-        } catch (\Throwable $e) {
-            if ($this->db->inTransaction())
+        } catch (\Throwable $caughtError) {
+            if ($this->db->inTransaction()) {
                 $this->db->rollBack();
-            throw $e;
+            }
+            throw $caughtError;
         }
     }
 }

@@ -22,12 +22,14 @@ final class FileResponse
             }
             if ($parts[1] === '') {
                 $start = max(0, $file['size'] - (int) $parts[2]);
-                if ((int) $parts[2] === 0)
+                if ((int) $parts[2] === 0) {
                     $start = $file['size'];
+                }
             } else {
                 $start = (int) $parts[1];
-                if ($parts[2] !== '')
+                if ($parts[2] !== '') {
                     $end = min($end, (int) $parts[2]);
+                }
             }
             if ($start > $end || $start >= $file['size']) {
                 header('Content-Range: bytes */' . $file['size']);
@@ -36,10 +38,12 @@ final class FileResponse
             $partial = true;
         }
         $handle = fopen($file['path'], 'rb');
-        if (!$handle)
+        if (!$handle) {
             throw new ApiException(404, 'DOCUMENT_NOT_FOUND', \Hospital\I18n::t("errors.no_se_encontro_el_archivo"));
-        if (session_status() === PHP_SESSION_ACTIVE)
+        }
+        if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
+        }
         ini_set('zlib.output_compression', '0');
         header('Accept-Ranges: bytes');
         header('Content-Type: ' . $file['mime']);
@@ -58,8 +62,9 @@ final class FileResponse
                 $remaining = $end - $start + 1;
                 while ($remaining > 0 && !feof($handle) && !connection_aborted()) {
                     $bytes = fread($handle, min(65536, $remaining));
-                    if ($bytes === false || $bytes === '')
-                    break;
+                    if ($bytes === false || $bytes === '') {
+                        break;
+                    }
                     echo $bytes;
                     $remaining -= strlen($bytes);
                 }

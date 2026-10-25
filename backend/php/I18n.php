@@ -9,7 +9,9 @@ final class I18n
 
     public static function locale(): string
     {
-        if (isset($GLOBALS['page_locale'])) return $GLOBALS['page_locale'];
+        if (isset($GLOBALS['page_locale'])) {
+            return $GLOBALS['page_locale'];
+        }
         return ($_SERVER['HTTP_X_HOSPITAL_LOCALE'] ?? '') === 'en' ? 'en' : 'es-UY';
     }
 
@@ -33,10 +35,12 @@ final class I18n
             $form = (float) ($params['count'] ?? 0) === 1.0 ? 'one' : 'other';
             $value = $value[$form] ?? (is_array($spanish[$key] ?? null) ? ($spanish[$key][$form] ?? '') : '');
         }
-        if (!is_string($value) && is_string($spanish[$key] ?? null))
+        if (!is_string($value) && is_string($spanish[$key] ?? null)) {
             $value = $spanish[$key];
-        if (!is_string($value))
+        }
+        if (!is_string($value)) {
             return '';
+        }
         return preg_replace_callback(
             '/\{([a-zA-Z][a-zA-Z0-9_]*)\}/',
             static fn (array $match): string => array_key_exists($match[1], $params) ? (string) $params[$match[1]] : $match[0],

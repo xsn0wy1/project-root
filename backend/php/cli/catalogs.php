@@ -24,8 +24,9 @@ try {
             $id = Hospital\Http\Request::id($argv[2] ?? null);
             $stmt = $db->prepare('SELECT id FROM facilities WHERE id = ? FOR UPDATE');
             $stmt->execute([$id]);
-            if (!$stmt->fetchColumn())
+            if (!$stmt->fetchColumn()) {
                 throw new RuntimeException('Facility not found.');
+            }
             if ($command === 'facility-rename') {
                 $name = settings_text($argv[3] ?? null, 'name', 150, false);
                 $stmt = $db->prepare('UPDATE facilities SET name = ?, version = version + 1 WHERE id = ?');
@@ -39,10 +40,13 @@ try {
         $stmt->execute([$command, $id, 'cli-' . bin2hex(random_bytes(8))]);
         $db->commit();
         echo 'Facility operation completed, ID ' . $id . ".\n";
-    } else echo "Commands: facilities | facility-add NAME | facility-rename ID NAME | facility-archive ID | facility-restore ID\n";
+    } else {
+        echo "Commands: facilities | facility-add NAME | facility-rename ID NAME | facility-archive ID | facility-restore ID\n";
+    }
 } catch (Throwable $error) {
-    if (isset($db) && $db->inTransaction())
+    if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
+    }
     fwrite(
         STDERR,
         $error instanceof PDOException ? "Catalog operation failed. Check duplicate names and database setup.\n" : $error->getMessage() . "\n"

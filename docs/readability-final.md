@@ -64,3 +64,11 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Kept public live session/locale/theme getters, Promise retry chains, null-safe access and concise predicates/value fallbacks; CSRF, diagnostics, locale readiness and timeout behavior are unchanged.
 - PASS: 71 i18n checks (including CPU ×6 first paint), 61 theme/session, 136 dropdown, 93 workflow and 98 boundary checks; all-page UI reached 1,584 passing checks before a stale-CSRF test setup failure. Its strict 401 password assertion passes in the focused 62-check rerun after joining page startup/shared CSRF. No application fix or weakened status assertion.
 - Source equivalence: 91 PHP / 35 JS / five exact files. The full UI suite is repeated in the final regression; PHP application work has not started at this checkpoint.
+
+## Batch 9 — PHP core, shell, storage and CLI
+
+- Files: 27 changed PHP files across configuration/bootstrap/router/I18n, HTTP/security/storage, core/components, CLI and local race/recovery fixtures (32 reviewed; five already unchanged).
+- Added explicit control-structure braces, conventional indentation, one statement per line and argument wrapping; renamed caught exceptions, prepared statements and fixture database configuration. Autoload remains byte-identical.
+- Development proofs permit only identifier changes/additional braces, then require equal formatting token streams and every SQL/string/interpolated-text/inline-HTML byte. Native null coalescing, straightforward nullable values and long SQL literals remain where clearer or frozen.
+- PASS: auth/settings/migrations/i18n/theme SQL/API suites — 172 checks; full all-page desktop/phone UI suite including strict password rejection; source equivalence: 91 PHP / 35 JS / 27 exact files.
+- This full UI pass also verifies batch 8 after its test-startup correction; no application behavior fix was required.
