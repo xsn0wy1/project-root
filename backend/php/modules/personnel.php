@@ -32,31 +32,33 @@ function personnel_transaction(PDO $db, array $config, string $actor, callable $
 
 function personnel_fields(array $input): array
 {
-    $f = [
+    $fieldValues = [
         'full_name' => settings_text($input['full_name'] ?? null, 'full_name', 100, false),
         'national_id' => patient_input_identity($input['national_id'] ?? null),
         'phone' => patient_input_phone($input['phone'] ?? null, 'phone'),
         'responsibility' => transfer_input_choice($input['responsibility'] ?? null, ['driver', 'copilot']),
         'availability' => transfer_input_choice($input['availability'] ?? null, ['active', 'inactive'])
     ];
-    if (strlen(preg_replace('/\D/', '', $f['phone'])) < 8)
+    if (strlen(preg_replace('/\D/', '', $fieldValues['phone'])) < 8) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.ingresa_un_telefono_valido"));
+    }
     $license = strtoupper(preg_replace(
         '/[\s.-]/u',
         '',
         settings_text($input['driving_license'] ?? null, 'driving_license', 30)
     ));
     if (
-        ($f['responsibility'] === 'driver' && $license === '') ||
+        ($fieldValues['responsibility'] === 'driver' && $license === '') ||
         ($license !== '' && !preg_match('/^[A-Z0-9]{2,30}$/', $license))
-    )
+    ) {
         throw new ApiException(
             422,
             'VALIDATION_FAILED',
             \Hospital\I18n::t("errors.ingresa_una_licencia_valida_para_el_chofer")
         );
-    $f['driving_license'] = $license === '' ? null : $license;
-    return $f;
+    }
+    $fieldValues['driving_license'] = $license === '' ? null : $license;
+    return $fieldValues;
 }
 
 function personnel_query(): string
@@ -69,24 +71,24 @@ function personnel_query(): string
         WHERE (p.staff_id IS NOT NULL OR EXISTS(SELECT 1 FROM staff_roles r WHERE r.staff_id=s.id AND r.role_code IN ('driver','copilot')))";
 }
 
-function personnel_serialize(array $r): array
+function personnel_serialize(array $personnelRecord): array
 {
-    $r['id'] = (string) $r['id'];
-    $r['version'] = (int) ($r['version'] ?? 0) + (int) $r['staff_version'];
-    unset($r['staff_version']);
-    $r['phone'] = $r['phone'] ?? '';
-    $r['driving_license'] = $r['driving_license'] ?? '';
-    $r['availability'] = $r['availability'] ?? 'active';
-    $r['status'] = $r['status'] ?? 'active';
-    $r['archived_at'] = $r['archived_at'] === null ? null : users_date($r['archived_at']);
-    return $r;
+    $personnelRecord['id'] = (string) $personnelRecord['id'];
+    $personnelRecord['version'] = (int) ($personnelRecord['version'] ?? 0) + (int) $personnelRecord['staff_version'];
+    unset($personnelRecord['staff_version']);
+    $personnelRecord['phone'] = $personnelRecord['phone'] ?? '';
+    $personnelRecord['driving_license'] = $personnelRecord['driving_license'] ?? '';
+    $personnelRecord['availability'] = $personnelRecord['availability'] ?? 'active';
+    $personnelRecord['status'] = $personnelRecord['status'] ?? 'active';
+    $personnelRecord['archived_at'] = $personnelRecord['archived_at'] === null ? null : users_date($personnelRecord['archived_at']);
+    return $personnelRecord;
 }
 
 function personnel_listing(PDO $db, array $config, string $actor): array
 {
     personnel_access($db, $config, $actor);
     return array_map(
-        fn (array $r): array => personnel_serialize($r),
+        fn (array $personnelRecord): array => personnel_serialize($personnelRecord),
         $db->query(personnel_query() . ' ORDER BY s.full_name,s.id')->fetchAll()
     );
 }
@@ -94,86 +96,92 @@ function personnel_listing(PDO $db, array $config, string $actor): array
 function personnel_get(PDO $db, array $config, string $actor, string $id): array
 {
     personnel_access($db, $config, $actor);
-    $s = $db->prepare(personnel_query() . ' AND s.id=?');
-    $s->execute([$id]);
-    $r = $s->fetch();
-    if (!$r)
+    $preparedStatement = $db->prepare(personnel_query() . ' AND s.id=?');
+    $preparedStatement->execute([$id]);
+    $personnelRecord = $preparedStatement->fetch();
+    if (!$personnelRecord) {
         throw new ApiException(
             404,
             'PERSONNEL_NOT_FOUND',
             \Hospital\I18n::t("errors.no_se_encontro_el_registro_de_personal")
         );
-    return personnel_serialize($r);
+    }
+    return personnel_serialize($personnelRecord);
 }
 
 function personnel_lock(PDO $db, string $id, int $version): array
 {
-    $s = $db->prepare('SELECT * FROM staff WHERE id=? FOR UPDATE');
-    $s->execute([$id]);
-    $staff = $s->fetch();
-    if (!$staff)
+    $preparedStatement = $db->prepare('SELECT * FROM staff WHERE id=? FOR UPDATE');
+    $preparedStatement->execute([$id]);
+    $staff = $preparedStatement->fetch();
+    if (!$staff) {
         throw new ApiException(
             404,
             'PERSONNEL_NOT_FOUND',
             \Hospital\I18n::t("errors.no_se_encontro_el_registro_de_personal")
         );
-    $s = $db->prepare('SELECT * FROM personnel_profiles WHERE staff_id=? FOR UPDATE');
-    $s->execute([$id]);
-    $profile = $s->fetch();
-    $s = $db->prepare(
+    }
+    $preparedStatement = $db->prepare('SELECT * FROM personnel_profiles WHERE staff_id=? FOR UPDATE');
+    $preparedStatement->execute([$id]);
+    $profile = $preparedStatement->fetch();
+    $preparedStatement = $db->prepare(
         "SELECT role_code FROM staff_roles WHERE staff_id=? AND role_code IN ('driver','copilot') ORDER BY role_code"
     );
-    $s->execute([$id]);
-    $roles = $s->fetchAll(\PDO::FETCH_COLUMN);
-    if (!$profile && !$roles)
+    $preparedStatement->execute([$id]);
+    $roles = $preparedStatement->fetchAll(\PDO::FETCH_COLUMN);
+    if (!$profile && !$roles) {
         throw new ApiException(
             404,
             'PERSONNEL_NOT_FOUND',
             \Hospital\I18n::t("errors.no_se_encontro_el_registro_de_personal")
         );
-    if ((int) ($profile['version'] ?? 0) + (int) $staff['version'] !== $version)
+    }
+    if ((int) ($profile['version'] ?? 0) + (int) $staff['version'] !== $version) {
         throw new ApiException(
             409,
             'VERSION_CONFLICT',
             \Hospital\I18n::t("errors.el_registro_cambio_volve_a_abrirlo_antes_de_guardar")
         );
+    }
     return ['staff' => $staff, 'profile' => $profile, 'roles' => $roles];
 }
 
 function personnel_check_transfers(PDO $db, string $id): void
 {
-    $s = $db->prepare(
+    $preparedStatement = $db->prepare(
         "SELECT t.id FROM transfers t JOIN transfer_crew c ON c.transfer_id=t.id WHERE c.staff_id=? AND c.responsibility IN ('driver','copilot') AND t.status NOT IN ('completed','cancelled') LIMIT 1"
     );
-    $s->execute([$id]);
-    if ($s->fetchColumn())
+    $preparedStatement->execute([$id]);
+    if ($preparedStatement->fetchColumn()) {
         throw new ApiException(
             409,
             'PERSONNEL_IN_USE',
             \Hospital\I18n::t("errors.el_personal_tiene_un_traslado_pendiente_o_en_curso")
         );
+    }
 }
 
 // Called inside personnel_transaction; these helpers never commit independently.
 
-function personnel_create_identity(PDO $db, array $f): string
+function personnel_create_identity(PDO $db, array $fieldValues): string
 {
-    $s = $db->prepare('SELECT id,status FROM staff WHERE national_id=? FOR UPDATE');
-    $s->execute([$f['national_id']]);
-    $staff = $s->fetch();
+    $preparedStatement = $db->prepare('SELECT id,status FROM staff WHERE national_id=? FOR UPDATE');
+    $preparedStatement->execute([$fieldValues['national_id']]);
+    $staff = $preparedStatement->fetch();
     if ($staff) {
         $id = (string) $staff['id'];
-        if ($staff['status'] !== 'active')
+        if ($staff['status'] !== 'active') {
             throw new ApiException(
                 409,
                 'STAFF_INACTIVE',
                 \Hospital\I18n::t("errors.la_identidad_del_personal_esta_inactiva")
             );
-        $s = $db->prepare(
+        }
+        $preparedStatement = $db->prepare(
             "SELECT id FROM staff WHERE id=? AND (EXISTS(SELECT 1 FROM personnel_profiles WHERE staff_id=staff.id) OR EXISTS(SELECT 1 FROM staff_roles WHERE staff_id=staff.id AND role_code IN ('driver','copilot')))"
         );
-        $s->execute([$id]);
-        if ($s->fetchColumn())
+        $preparedStatement->execute([$id]);
+        if ($preparedStatement->fetchColumn()) {
             throw new ApiException(
                 409,
                 'PERSONNEL_CONFLICT',
@@ -181,30 +189,36 @@ function personnel_create_identity(PDO $db, array $f): string
                     "errors.el_personal_ya_esta_registrado_abrilo_desde_el_listado_para_editarlo"
                 )
             );
+        }
     } else {
-        $s = $db->prepare('INSERT INTO staff (full_name,national_id) VALUES (?,?)');
-        $s->execute([$f['full_name'], $f['national_id']]);
+        $preparedStatement = $db->prepare('INSERT INTO staff (full_name,national_id) VALUES (?,?)');
+        $preparedStatement->execute([$fieldValues['full_name'], $fieldValues['national_id']]);
         $id = $db->lastInsertId();
     }
     return $id;
 }
 
-function personnel_check_identity_update(PDO $db, array $f, string $id, int $version): bool
+function personnel_check_identity_update(PDO $db, array $fieldValues, string $id, int $version): bool
 {
     $old = personnel_lock($db, $id, $version);
     $profileExists = (bool) $old['profile'];
-    if (($old['profile']['status'] ?? 'active') !== 'active')
+    if (($old['profile']['status'] ?? 'active') !== 'active') {
         throw new ApiException(
             409,
             'PERSONNEL_ARCHIVED',
             \Hospital\I18n::t("errors.restaura_el_registro_antes_de_editarlo")
         );
-    if ($f['availability'] === 'inactive' || array_diff($old['roles'], [$f['responsibility']]))
+    }
+    if (
+        $fieldValues['availability'] === 'inactive'
+        || array_diff($old['roles'], [$fieldValues['responsibility']])
+    ) {
         personnel_check_transfers($db, $id);
-    $s = $db->prepare('SELECT registration_national_id FROM users WHERE staff_id=?');
-    $s->execute([$id]);
-    $ci = $s->fetchColumn();
-    if ($ci !== false && $ci !== $f['national_id'])
+    }
+    $preparedStatement = $db->prepare('SELECT registration_national_id FROM users WHERE staff_id=?');
+    $preparedStatement->execute([$id]);
+    $ci = $preparedStatement->fetchColumn();
+    if ($ci !== false && $ci !== $fieldValues['national_id']) {
         throw new ApiException(
             409,
             'IDENTITY_LINKED',
@@ -212,47 +226,48 @@ function personnel_check_identity_update(PDO $db, array $f, string $id, int $ver
                 "errors.el_documento_esta_vinculado_a_una_cuenta_y_no_puede_cambiarse_desde_este_directorio"
             )
         );
+    }
     return $profileExists;
 }
 
-function personnel_store_profile(PDO $db, array $f, string $id, bool $profileExists): void
+function personnel_store_profile(PDO $db, array $fieldValues, string $id, bool $profileExists): void
 {
     if ($profileExists) {
-        $s = $db->prepare(
+        $preparedStatement = $db->prepare(
             'UPDATE personnel_profiles SET responsibility=?,driving_license=?,availability=?,version=version+1 WHERE staff_id=?'
         );
-        $s->execute([$f['responsibility'], $f['driving_license'], $f['availability'], $id]);
+        $preparedStatement->execute([$fieldValues['responsibility'], $fieldValues['driving_license'], $fieldValues['availability'], $id]);
     } else {
-        $s = $db->prepare(
+        $preparedStatement = $db->prepare(
             'INSERT INTO personnel_profiles (staff_id,responsibility,driving_license,availability) VALUES (?,?,?,?)'
         );
-        $s->execute([$id, $f['responsibility'], $f['driving_license'], $f['availability']]);
+        $preparedStatement->execute([$id, $fieldValues['responsibility'], $fieldValues['driving_license'], $fieldValues['availability']]);
     }
     // The form owns crew responsibilities only; preserve doctor/account roles.
-    $s = $db->prepare("DELETE FROM staff_roles WHERE staff_id=? AND role_code IN ('driver','copilot')");
-    $s->execute([$id]);
-    $s = $db->prepare('INSERT INTO staff_roles (staff_id,role_code) VALUES (?,?)');
-    $s->execute([$id, $f['responsibility']]);
+    $preparedStatement = $db->prepare("DELETE FROM staff_roles WHERE staff_id=? AND role_code IN ('driver','copilot')");
+    $preparedStatement->execute([$id]);
+    $preparedStatement = $db->prepare('INSERT INTO staff_roles (staff_id,role_code) VALUES (?,?)');
+    $preparedStatement->execute([$id, $fieldValues['responsibility']]);
 }
 
 function personnel_save(PDO $db, array $config, string $actor, array $input, ?string $id = null): array
 {
-    $f = personnel_fields($input);
+    $fieldValues = personnel_fields($input);
     $version = $id === null ? null : \Hospital\Http\Request::version($input['version'] ?? null);
     $id = personnel_transaction(
         $db,
         $config,
         $actor,
-        function () use ($actor, $f, $id, $version, $db) {
+        function () use ($actor, $fieldValues, $id, $version, $db) {
             if ($id === null) {
                 $profileExists = false;
-                $id = personnel_create_identity($db, $f);
+                $id = personnel_create_identity($db, $fieldValues);
             } else {
-                $profileExists = personnel_check_identity_update($db, $f, $id, $version);
+                $profileExists = personnel_check_identity_update($db, $fieldValues, $id, $version);
             }
-            $s = $db->prepare('UPDATE staff SET full_name=?,national_id=?,phone=?,version=version+1 WHERE id=?');
-            $s->execute([$f['full_name'], $f['national_id'], $f['phone'], $id]);
-            personnel_store_profile($db, $f, $id, $profileExists);
+            $preparedStatement = $db->prepare('UPDATE staff SET full_name=?,national_id=?,phone=?,version=version+1 WHERE id=?');
+            $preparedStatement->execute([$fieldValues['full_name'], $fieldValues['national_id'], $fieldValues['phone'], $id]);
+            personnel_store_profile($db, $fieldValues, $id, $profileExists);
             transfer_audit(
                 $db,
                 $actor,
@@ -288,21 +303,23 @@ function personnel_archive(
         ) {
             $old = personnel_lock($db, $id, $version);
             $state = $restore ? 'active' : 'archived';
-            if (($old['profile']['status'] ?? 'active') === $state)
+            if (($old['profile']['status'] ?? 'active') === $state) {
                 throw new ApiException(
                     409,
                     'VERSION_CONFLICT',
                     \Hospital\I18n::t("errors.el_estado_del_registro_cambio")
                 );
-            if (!$restore)
+            }
+            if (!$restore) {
                 personnel_check_transfers($db, $id);
+            }
             if (!$old['profile']) {
                 $role = in_array('driver', $old['roles'], true) ? 'driver' : 'copilot';
-                $s = $db->prepare('INSERT INTO personnel_profiles (staff_id,responsibility) VALUES (?,?)');
-                $s->execute([$id, $role]);
+                $preparedStatement = $db->prepare('INSERT INTO personnel_profiles (staff_id,responsibility) VALUES (?,?)');
+                $preparedStatement->execute([$id, $role]);
             }
-            $s = $db->prepare('UPDATE personnel_profiles SET status=?,archived_at=?,version=version+1 WHERE staff_id=?');
-            $s->execute([$state, $restore ? null : gmdate('Y-m-d H:i:s'), $id]);
+            $preparedStatement = $db->prepare('UPDATE personnel_profiles SET status=?,archived_at=?,version=version+1 WHERE staff_id=?');
+            $preparedStatement->execute([$state, $restore ? null : gmdate('Y-m-d H:i:s'), $id]);
             transfer_audit(
                 $db,
                 $actor,

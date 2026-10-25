@@ -36,7 +36,10 @@ def run():
     call=lambda action,data=None:dispatcher.call('/api/v1/routes.php?action=' + action.replace('.php', '').replace('?', '&'),'POST' if data is not None else 'GET',data)
     catalog=lambda:dispatcher.call('/api/v1/transfers.php?action=catalogs')[1]['data']
     check(Client().call('/api/v1/routes.php?action=list')[0]==401 and admin.call('/api/v1/routes.php?action=list')[0]==403,'routes require dispatcher access')
-    check(admin.call('/src/views/management/routes.php')[0]==303,'route page is protected by the same role')
+    forbidden_status, forbidden_html, forbidden_headers = admin.call('/src/views/management/routes.php')
+    check(forbidden_status == 403 and 'Location' not in forbidden_headers and
+          'text/html' in forbidden_headers['Content-Type'] and '<html' in forbidden_html,
+          'route page retains its role check and the accepted 403 error page')
     check(call('list.php')[1]['data']==[],'route catalog starts empty without browser samples')
     record=dict(name='Ruta de prueba',category='consultation',direction='round_trip',availability='active',origin_name='Clínica ficticia',origin_address='Av. Italia 2870, Montevideo',destination_name='Centro ficticio',destination_address='25 de Mayo 174, Montevideo',stops=[dict(name='Parada ficticia',address='Bv. Artigas 1850, Montevideo')],distance_meters=5600,duration_seconds=900,notes='Entrada lateral.\nAvisar antes de salir.')
     places=[dict(name=record['origin_name'],address=record['origin_address']),*record['stops'],dict(name=record['destination_name'],address=record['destination_address'])]

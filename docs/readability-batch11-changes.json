@@ -1,0 +1,32 @@
+{
+  "backend/php/modules/ambulances.php": {
+    "after_sha256": "8373b59fd767a6edc2503ffa7ace0c3ee3a22d396b8061101cb75728e7f12b6a",
+    "before_sha256": "b945aab1eebc6fa9e25c6b0bf82640a39eae077e7648e64b7c301486dada8ad0",
+    "reason": "PHP readability only: explicit guards/loops, descriptive fields/actor/patient/doctor/personnel/destination/route/statement names and conventional layout. The nested estimated-age date choice is now equivalent lazy if/elseif/else. Every SQL/string/HTML literal is unchanged; validation/permissions, transactions/version checks and serializers retain their values/order."
+  },
+  "backend/php/modules/destinations.php": {
+    "after_sha256": "7b3f83b91a1a689a82b333388b36bc39e49b512a6e9f23e4d66bd9297cf66505",
+    "before_sha256": "9ef8e3d0687a83d96ec72854102eae06940390becdcd481d5cd402017b1c19a6",
+    "reason": "PHP readability only: explicit guards/loops, descriptive fields/actor/patient/doctor/personnel/destination/route/statement names and conventional layout. The nested estimated-age date choice is now equivalent lazy if/elseif/else. Every SQL/string/HTML literal is unchanged; validation/permissions, transactions/version checks and serializers retain their values/order."
+  },
+  "backend/php/modules/doctors.php": {
+    "after_sha256": "38d9604d03a57bb2a767600c5cc948e32eac6d4a57720d592c729266f69cc51e",
+    "before_sha256": "85b2d6bf05d3dec3ed237ca263c62c63bdac7a528ff715a303429fd72973f197",
+    "reason": "PHP readability only: explicit guards/loops, descriptive fields/actor/patient/doctor/personnel/destination/route/statement names and conventional layout. The nested estimated-age date choice is now equivalent lazy if/elseif/else. Every SQL/string/HTML literal is unchanged; validation/permissions, transactions/version checks and serializers retain their values/order."
+  },
+  "backend/php/modules/patients.php": {
+    "after_sha256": "563fe2d54446e13a198bf9b089a8bb2bc2a149296035e1dadf32de9f34e420e4",
+    "before_sha256": "2d20ee0da179667c4ec6c86402ad0d9399952ffd0e4eb801e9848bcbf3475447",
+    "reason": "PHP readability only: explicit guards/loops, descriptive fields/actor/patient/doctor/personnel/destination/route/statement names and conventional layout. The nested estimated-age date choice is now equivalent lazy if/elseif/else. Every SQL/string/HTML literal is unchanged; validation/permissions, transactions/version checks and serializers retain their values/order."
+  },
+  "backend/php/modules/personnel.php": {
+    "after_sha256": "306d26855f201ab65bd7ca11a5ae8276b578176a732fa6094c1c26c9ecb5e3ad",
+    "before_sha256": "0c1eba2bcf8a5f8a6b5783f367c9b90fa33402eed1899730b88de36236580949",
+    "reason": "PHP readability only: explicit guards/loops, descriptive fields/actor/patient/doctor/personnel/destination/route/statement names and conventional layout. The nested estimated-age date choice is now equivalent lazy if/elseif/else. Every SQL/string/HTML literal is unchanged; validation/permissions, transactions/version checks and serializers retain their values/order."
+  },
+  "backend/php/modules/routes.php": {
+    "after_sha256": "3fea9e9cef6b09167cf7b5c9f6da86341c8f2a5d8cf9d120b53651b45f3eaea0",
+    "before_sha256": "01c2de34393cbb68732525513c3aa781489e4354e28a5e15693f645bad1eae4e",
+    "reason": "PHP readability only: explicit guards/loops, descriptive fields/actor/patient/doctor/personnel/destination/route/statement names and conventional layout. The nested estimated-age date choice is now equivalent lazy if/elseif/else. Every SQL/string/HTML literal is unchanged; validation/permissions, transactions/version checks and serializers retain their values/order."
+  }
+}

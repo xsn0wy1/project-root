@@ -79,3 +79,11 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Added explicit control-structure bodies and conventional statement layout; named caught exceptions and prepared statements. SQL, strings, transaction/lock/refund order, mail-worker behavior and response fields retain the original token/data order.
 - Kept short nullable field choices, environment fallbacks and native password/hash/serialization operations where clearer or safer. No helpers or algorithms were added.
 - PASS: 161 isolated auth/settings/release-fix SQL/API checks (including concurrent budgets/refunds), 61 theme/session, 71 bilingual/first-paint and 197 Settings/account UI checks / 16 cases; source equivalence: 91 PHP / 35 JS / three exact files.
+
+## Batch 11 — PHP catalog modules
+
+- Files: ambulances.php, patients.php, doctors.php, personnel.php, destinations.php and routes.php under backend/php/modules; existing Patients/Routes integration assertions updated.
+- Added explicit control bodies and conventional layout; named fields, actors, records, statements and geometry indices. Replaced the nested estimated-age reference-date choice with lazy if/elseif/else; every SQL/string/HTML literal stays identical.
+- Kept straightforward nullable serializer values, native callbacks and raw SQL where clearer or frozen. No validation, permission, transaction, version or archive rule changed.
+- PASS: 408 SQL/API checks across six isolated modules, 43 fleet browser, 924 catalog UI / 24 desktop-phone/theme cases and 71 bilingual checks; source equivalence: 91 PHP / 35 JS / six exact files.
+- Two stale tests expected the superseded role-denial redirect. They now require the accepted HTML 403 page with no Location header; the complete Patients/Routes reruns pass.
