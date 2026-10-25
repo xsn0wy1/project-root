@@ -49,3 +49,10 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Expanded guards, choices, declarations and callback defaults; named date parts, facilities, controls, request revisions, stops, points and haversine terms. Converted translation maps and every consumer to lazy function calls; private STATUS entries are ordinary data with label functions.
 - The STATUS objects have no identity comparisons, writes or exported consumers. Kept the public live name/snapshot getters and MediaQuery-style width getter because their property contracts are clearer and safer; kept x/y coordinates and short attribute choices.
 - PASS: 93 root/mounted transfer/survey workflow checks, transfer/map UI journeys, 71 runtime bilingual checks, 98 boundary checks; source equivalence: 91 PHP / 35 JS / five exact files. Template text/evaluation order, API keys, stale-request guards and simulation behavior are preserved.
+
+## Batch 7 — survey pages and participant flow
+
+- Files: survey-api.js, survey.js, survey-new.js, survey-view.js, survey-templates.js and survey-user.js. Added purpose/API/DOM headers.
+- Expanded guards/declarations, named question/invitation/rating/comparator values and pipeline stages; made coupled state writes explicit with the original setter order. Private type/category data uses lazy label functions; the template function still returns fresh translated objects, with every caller updated.
+- Kept the single translated section-symbol getter to maintain a uniform string symbol field without dispatch logic. Other live/read-only interfaces, short attribute choices, optional-call failure boundaries and exact template text/order remain.
+- PASS: 93 workflow, 103 survey UI / 16 desktop-phone/theme cases, 71 bilingual and 98 boundary checks; source equivalence: 91 PHP / 35 JS / six exact files. The formatting guard rejected a removed optional-call boundary; the private formatter now restores required parentheses and checks exact AST equality before writing.

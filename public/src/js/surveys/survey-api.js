@@ -1,3 +1,7 @@
+/* Shares survey loading, transitions and participant invitation dialogs.
+ * API: surveys list/get/transition/links/link-update through HospitalApi.
+ * DOM: survey-links-title, survey-invitations, survey-public-url and survey-public-qr.
+ */
 (() => {
   'use strict';
   function invitationStatus(link) {
@@ -21,52 +25,87 @@
         `surveys.php?action=list&page=${page}&page_size=100&archived=${archived ? 1 : 0}`
       );
       records.push(...result.data);
-      if (records.length >= result.meta.total || !result.data.length) return records;
+      if (records.length >= result.meta.total || !result.data.length) {
+        return records;
+      }
     }
   }
   const publicUrl = token => {
     const url = new URL(api.page('src/views/surveys/user-view/survey-user.php'));
-    if (window.HospitalI18n.locale === 'en') url.searchParams.set('lang', 'en');
+    if (window.HospitalI18n.locale === 'en') {
+      url.searchParams.set('lang', 'en');
+    }
     url.hash = new URLSearchParams({ token }).toString();
     return url.href;
   };
   let dialog;
   function accessDialog() {
-    if (dialog) return dialog;
+    if (dialog) {
+      return dialog;
+    }
     dialog = document.createElement('dialog');
     dialog.className = `survey-dialog survey-links-dialog`;
     dialog.setAttribute('aria-labelledby', 'survey-links-title');
     window.HospitalI18n.setHTML(
       dialog,
-      `<div class="dialog-heading"><h2 id="survey-links-title">${window.HospitalI18n.mark("survey_view.acceso_para_participantes")}</h2><button type="button" class="icon-button" data-close-links aria-label="${window.HospitalI18n.html("survey_api.cerrar_acceso")}" data-i18n-aria-label="survey_api.cerrar_acceso">${window.HospitalI18n.mark("destinations.text")}</button></div><div class="survey-links-body"><p id="survey-links-caption"></p><div class="share-controls"><button class="survey-button primary" id="survey-new-invitation" type="button">${window.HospitalI18n.mark("survey_api.crear_invitacion")}</button></div><div id="survey-invitations"></div><label for="survey-public-url">${window.HospitalI18n.mark("survey_api.enlace_seleccionado")}</label><input id="survey-public-url" type="text" readonly><div id="survey-public-qr" aria-label="${window.HospitalI18n.html("survey_api.codigo_qr_del_enlace")}" data-i18n-aria-label="survey_api.codigo_qr_del_enlace"></div><div class="share-controls"><button type="button" class="survey-button secondary" id="survey-copy-link">${window.HospitalI18n.mark("survey_view.copiar_enlace")}</button><button type="button" class="survey-button secondary" id="survey-revoke-link">${window.HospitalI18n.mark("survey_api.revocar_enlace")}</button></div></div>`
+      `<div class="dialog-heading">` +
+        `<h2 id="survey-links-title">${window.HospitalI18n.mark("survey_view.acceso_para_participantes")}` +
+        `</h2>` +
+        `<button type="button" class="icon-button" data-close-links aria-label="${window.HospitalI18n.html("survey_api.cerrar_acceso")}"` +
+        ` data-i18n-aria-label="survey_api.cerrar_acceso">${window.HospitalI18n.mark("destinations.text")}` +
+        `</button>` +
+        `</div>` +
+        `<div class="survey-links-body">` +
+        `<p id="survey-links-caption">` +
+        `</p>` +
+        `<div class="share-controls">` +
+        `<button class="survey-button primary" id="survey-new-invitation" type="button">${window.HospitalI18n.mark("survey_api.crear_invitacion")}` +
+        `</button>` +
+        `</div>` +
+        `<div id="survey-invitations">` +
+        `</div>` +
+        `<label for="survey-public-url">${window.HospitalI18n.mark("survey_api.enlace_seleccionado")}` +
+        `</label>` +
+        `<input id="survey-public-url" type="text" readonly>` +
+        `<div id="survey-public-qr" aria-label="${window.HospitalI18n.html("survey_api.codigo_qr_del_enlace")}" data-i18n-aria-label="survey_api.codigo_qr_del_enlace">` +
+        `</div>` +
+        `<div class="share-controls">` +
+        `<button type="button" class="survey-button secondary" id="survey-copy-link">${window.HospitalI18n.mark("survey_view.copiar_enlace")}` +
+        `</button>` +
+        `<button type="button" class="survey-button secondary" id="survey-revoke-link">${window.HospitalI18n.mark("survey_api.revocar_enlace")}` +
+        `</button>` +
+        `</div>` +
+        `</div>`
     );
     document.body.append(dialog);
     dialog.querySelector('[data-close-links]').addEventListener('click', () => dialog.close());
     return dialog;
   }
   async function share(survey, onChange = () => {}) {
-    const modal = accessDialog(),
-      list = modal.querySelector('#survey-invitations'),
-      url = modal.querySelector('#survey-public-url'),
-      qr = modal.querySelector('#survey-public-qr');
-    let links = await api.get(`surveys.php?action=links&id=${survey.id}`),
-      chosen = null,
-      busy = false;
-    const create = modal.querySelector('#survey-new-invitation'),
-      copy = modal.querySelector('#survey-copy-link'),
-      revoke = modal.querySelector('#survey-revoke-link');
-    window.HospitalI18n.bindText(modal.querySelector('#survey-links-caption'), () =>
-      survey.config.access === 'individual_link'
-        ? window.HospitalI18n.t(
-            "survey_api.cada_invitacion_acepta_una_sola_respuesta_entrega_cada_enlace_a_una_persona"
-          )
-        : window.HospitalI18n.t(
-            "survey_api.este_enlace_compartido_acepta_respuestas_mientras_la_encuesta_este_abierta_no_identifica_n"
-          )
-    );
+    const modal = accessDialog();
+    const list = modal.querySelector('#survey-invitations');
+    const url = modal.querySelector('#survey-public-url');
+    const qr = modal.querySelector('#survey-public-qr');
+    let links = await api.get(`surveys.php?action=links&id=${survey.id}`);
+    let chosen = null;
+    let busy = false;
+    const create = modal.querySelector('#survey-new-invitation');
+    const copy = modal.querySelector('#survey-copy-link');
+    const revoke = modal.querySelector('#survey-revoke-link');
+    window.HospitalI18n.bindText(modal.querySelector('#survey-links-caption'), () => {
+      if (survey.config.access === 'individual_link') {
+        return window.HospitalI18n.t(
+          "survey_api.cada_invitacion_acepta_una_sola_respuesta_entrega_cada_enlace_a_una_persona"
+        );
+      } else {
+        return window.HospitalI18n.t(
+          "survey_api.este_enlace_compartido_acepta_respuestas_mientras_la_encuesta_este_abierta_no_identifica_n"
+        );
+      }
+    });
     create.hidden = survey.config.access !== 'individual_link';
     function select(id) {
-      chosen = links.find(l => l.id === id) || null;
+      chosen = links.find(invitation => invitation.id === id) || null;
       url.value = chosen?.token ? publicUrl(chosen.token) : '';
       window.HospitalI18n.setHTML(qr, '');
       copy.disabled = !url.value;
@@ -94,12 +133,15 @@
         button.onclick = () => select(link.id);
         list.append(button);
       });
-      select(links.find(l => !l.revoked_at && !l.used_at)?.id);
+      select(links.find(invitation => !invitation.revoked_at && !invitation.used_at)?.id);
     }
     async function change(linkId) {
-      if (busy) return;
+      if (busy) {
+        return;
+      }
       busy = true;
-      create.disabled = revoke.disabled = true;
+      revoke.disabled = true;
+      create.disabled = true;
       try {
         const result = await api.post('surveys.php?action=link-update', {
           id: survey.id,
@@ -120,7 +162,9 @@
     }
     create.onclick = () => change(null);
     revoke.onclick = () => {
-      if (chosen) change(chosen.id);
+      if (chosen) {
+        change(chosen.id);
+      }
     };
     copy.onclick = async () => {
       try {

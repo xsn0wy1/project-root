@@ -1,3 +1,8 @@
+/* Displays survey summaries, question results, responses and form previews.
+ * API: surveys get/results/entries/transition/links/link-update.
+ * DOM: detail-edit-survey, survey-transition and the survey result panels.
+ * $ finds an element by ID; label functions translate at render time.
+ */
 (() => {
   'use strict';
   function untitledQuestion(item) {
@@ -146,129 +151,111 @@
   // Authorized SQL records and aggregates supply this screen.
   // No hospital records, responses or browser draft storage are seeded here.
   let survey = null;
-  const api = window.HospitalApi,
-    surveysApi = window.HospitalSurveys;
-  let loading = false,
-    entryRevision = 0,
-    entryPage = 1,
-    answerTimer;
+  const api = window.HospitalApi;
+  const surveysApi = window.HospitalSurveys;
+  let loading = false;
+  let entryRevision = 0;
+  let entryPage = 1;
+  let answerTimer;
   const requestedId = new URLSearchParams(location.search).get('id');
   const categories = {
-    get patient_care() {
+    patient_care: function () {
       return window.HospitalI18n.t("survey.atencion_al_paciente");
     },
-    get transfers() {
+    transfers: function () {
       return window.HospitalI18n.t("survey.traslados");
     },
-    get emergency() {
+    emergency: function () {
       return window.HospitalI18n.t("survey.emergencias");
     },
-    get staff() {
+    staff: function () {
       return window.HospitalI18n.t("trace_view.personal");
     },
-    get other() {
+    other: function () {
       return window.HospitalI18n.t("survey.otras");
     }
   };
   const audiences = {
-    get patients() {
+    patients: function () {
       return window.HospitalI18n.t("management.pacientes");
     },
-    get staff() {
+    staff: function () {
       return window.HospitalI18n.t("trace_view.personal");
     },
-    get everyone() {
+    everyone: function () {
       return window.HospitalI18n.t("survey_new.pacientes_y_personal");
     }
   };
   const statuses = {
-    get draft() {
+    draft: function () {
       return window.HospitalI18n.t("shared.borrador");
     },
-    get published() {
+    published: function () {
       return window.HospitalI18n.t("shared.activa");
     },
-    get closed() {
+    closed: function () {
       return window.HospitalI18n.t("shared.finalizada");
     },
-    get archived() {
+    archived: function () {
       return window.HospitalI18n.t("shared.archivada");
     }
   };
   const types = {
-    get short_text() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.respuesta_corta");
-        },
-        icon: 'document-icon.svg'
-      };
+    short_text: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.respuesta_corta");
+      },
+      icon: 'document-icon.svg'
     },
-    get long_text() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.respuesta_larga");
-        },
-        icon: 'document-icon.svg'
-      };
+    long_text: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.respuesta_larga");
+      },
+      icon: 'document-icon.svg'
     },
-    get single_choice() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.opcion_multiple");
-        },
-        icon: 'multiple-choice.svg'
-      };
+    single_choice: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.opcion_multiple");
+      },
+      icon: 'multiple-choice.svg'
     },
-    get multiple_choice() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.casillas");
-        },
-        icon: 'cages-icon.svg'
-      };
+    multiple_choice: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.casillas");
+      },
+      icon: 'cages-icon.svg'
     },
-    get rating() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.calificacion");
-        },
-        icon: 'star-icon.svg'
-      };
+    rating: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.calificacion");
+      },
+      icon: 'star-icon.svg'
     },
-    get linear_scale() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.escala");
-        },
-        icon: 'analytics-icon.svg'
-      };
+    linear_scale: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.escala");
+      },
+      icon: 'analytics-icon.svg'
     },
-    get date() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("documents.fecha");
-        },
-        icon: 'calendar-icon.svg'
-      };
+    date: {
+      label: function () {
+        return window.HospitalI18n.t("documents.fecha");
+      },
+      icon: 'calendar-icon.svg'
     },
-    get section() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.titulo_y_texto");
-        },
-        icon: 'document-icon.svg',
-        element: true
-      };
+    section: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.titulo_y_texto");
+      },
+      icon: 'document-icon.svg',
+      element: true
     },
-    get divider() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.separador");
-        },
-        icon: 'layers-icon.svg',
-        element: true
-      };
+    divider: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.separador");
+      },
+      icon: 'layers-icon.svg',
+      element: true
     }
   };
   const state = {
@@ -282,11 +269,11 @@
   };
   const $ = id => document.getElementById(id);
   const escape = window.HospitalUI.escapeHtml;
-  const normalize = value =>
-    String(value ?? '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
+  const normalize = value => {
+    const normalizedText = String(value ?? '').normalize('NFD');
+    const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+    return replacedText.toLowerCase();
+  };
   const icon = name => `<img src="../../../assets/Icons/${name}" alt="">`;
   const numberFormat = {
     format: (...args) =>
@@ -312,24 +299,34 @@
       }
     }
   };
-  const displayCount = value => (count(value) === null ? '—' : numberFormat.format(Number(value)));
+  const displayCount = value => {
+    if (count(value) === null) {
+      return '—';
+    } else {
+      return numberFormat.format(Number(value));
+    }
+  };
   const config = () => survey?.config || {};
-  let items = [],
-    renderedOverviewSize = null,
-    renderedNavigationSize = null,
-    renderedResultSize = null;
+  let items = [];
+  let renderedOverviewSize = null;
+  let renderedNavigationSize = null;
+  let renderedResultSize = null;
 
   function dateText(value) {
-    if (!value) return window.HospitalI18n.t("survey_view.sin_definir");
+    if (!value) {
+      return window.HospitalI18n.t("survey_view.sin_definir");
+    }
     if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/.test(value)) {
-      const [date, time] = value.split('T'),
-        [year, month, day] = date.split('-');
+      const [date, time] = value.split('T');
+      const [year, month, day] = date.split('-');
       return `${window.HospitalI18n.date(date + 'T12:00:00Z', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })}${time ? ` · ${time}` : ''}`;
     }
     const date = new Date(value);
-    return Number.isNaN(date.getTime())
-      ? window.HospitalI18n.t("survey_view.sin_definir")
-      : dateFormat.format(date);
+    if (Number.isNaN(date.getTime())) {
+      return window.HospitalI18n.t("survey_view.sin_definir");
+    } else {
+      return dateFormat.format(date);
+    }
   }
   function prepareItems() {
     items = (survey?.questions || survey?.items || []).map((question, index) => {
@@ -355,20 +352,41 @@
   const selected = () => items.find(item => item.id === state.selectedId);
 
   const questionTitle = item => item.title || untitledQuestion(item);
-  const questionNumber = item =>
-    types[item.type].element ? '—' : questions().findIndex(question => question.id === item.id) + 1;
-  const availableItems = () => (state.tab === 'form' ? items : questions());
+  const questionNumber = item => {
+    if (types[item.type].element) {
+      return '—';
+    } else {
+      return questions().findIndex(question => question.id === item.id) + 1;
+    }
+  };
+  const availableItems = () => {
+    if (state.tab === 'form') {
+      return items;
+    } else {
+      return questions();
+    }
+  };
   function resultFor(item) {
-    const result = Array.isArray(survey?.results)
-      ? survey.results.find(row => String(row.question_id) === item.id)
-      : survey?.results?.[item.id];
-    if (result) return result;
-    return survey && count(survey.response_count) === 0
-      ? { answer_count: 0, skipped_count: 0, distribution: [], entries: [] }
-      : null;
+    let resultValue;
+    if (Array.isArray(survey?.results)) {
+      resultValue = survey.results.find(row => String(row.question_id) === item.id);
+    } else {
+      resultValue = survey?.results?.[item.id];
+    }
+    const result = resultValue;
+    if (result) {
+      return result;
+    }
+    if (survey && count(survey.response_count) === 0) {
+      return { answer_count: 0, skipped_count: 0, distribution: [], entries: [] };
+    } else {
+      return null;
+    }
   }
   function binCount(result, value) {
-    if (!result) return null;
+    if (!result) {
+      return null;
+    }
     const row = (result.distribution || []).find(bin => String(bin.value) === String(value));
     if (row) {
       return count(row.count);
@@ -381,23 +399,48 @@
     }
   }
   function average(item, result) {
-    if (!['rating', 'linear_scale'].includes(item.type) || !(count(result?.answer_count) > 0)) return null;
-    const bins = result.distribution || [],
-      total = bins.reduce((sum, bin) => sum + (count(bin.count) || 0), 0);
-    if (!total || bins.some(bin => !Number.isFinite(Number(bin.value)) || count(bin.count) === null))
+    if (!['rating', 'linear_scale'].includes(item.type) || !(count(result?.answer_count) > 0)) {
       return null;
+    }
+    const bins = result.distribution || [];
+    const total = bins.reduce((sum, bin) => sum + (count(bin.count) || 0), 0);
+    if (!total || bins.some(bin => !Number.isFinite(Number(bin.value)) || count(bin.count) === null)) {
+      return null;
+    }
     return bins.reduce((sum, bin) => sum + Number(bin.value) * Number(bin.count), 0) / total;
   }
   function empty(title, description, image = 'survey-icon.svg', back = false) {
-    return `<div class="insight-empty"><span class="survey-icon violet">${icon(image)}</span><h3>${escape(title)}</h3><p>${escape(description)}</p>${back ? `<a href="survey.php">${window.HospitalI18n.mark("survey_view.volver_a_encuestas_2")}</a>` : ''}</div>`;
+    return (
+      `<div class="insight-empty">` +
+      `<span class="survey-icon violet">${icon(image)}` +
+      `</span>` +
+      `<h3>${escape(title)}` +
+      `</h3>` +
+      `<p>${escape(description)}` +
+      `</p>${back ? `<a href="survey.php">${window.HospitalI18n.mark("survey_view.volver_a_encuestas_2")}</a>` : ''}` +
+      `</div>`
+    );
   }
   function paging(current, pages, attribute) {
-    return pages <= 1
-      ? ''
-      : `<button type="button" ${attribute}="${current - 1}" aria-label="${window.HospitalI18n.html("trace.pagina_anterior")}" data-i18n-aria-label="trace.pagina_anterior" ${current <= 1 ? 'disabled' : ''}>‹</button><span>${current} / ${pages}</span><button type="button" ${attribute}="${current + 1}" aria-label="${window.HospitalI18n.html("trace.pagina_siguiente")}" data-i18n-aria-label="trace.pagina_siguiente" ${current >= pages ? 'disabled' : ''}>›</button>`;
+    if (pages <= 1) {
+      return '';
+    } else {
+      return (
+        `<button type="button" ${attribute}="${current - 1}" aria-label="${window.HospitalI18n.html("trace.pagina_anterior")}"` +
+        ` data-i18n-aria-label="trace.pagina_anterior" ${current <= 1 ? 'disabled' : ''}>‹` +
+        `</button>` +
+        `<span>${current} / ${pages}` +
+        `</span>` +
+        `<button type="button" ${attribute}="${current + 1}" aria-label="${window.HospitalI18n.html("trace.pagina_siguiente")}"` +
+        ` data-i18n-aria-label="trace.pagina_siguiente" ${current >= pages ? 'disabled' : ''}>›` +
+        `</button>`
+      );
+    }
   }
   function overviewPageSize() {
-    if (innerWidth <= 900) return 4;
+    if (innerWidth <= 900) {
+      return 4;
+    }
     const panel = document.querySelector('.question-overview');
     const available =
       panel.clientHeight -
@@ -408,13 +451,21 @@
     return Math.max(1, Math.min(5, Math.floor(available / 46)));
   }
   function navigationPageSize() {
-    if (innerWidth <= 900) return 6;
+    if (innerWidth <= 900) {
+      return 6;
+    }
     const panel = document.querySelector('.question-navigation');
     const available =
       panel.clientHeight - panel.querySelector('.insight-panel-heading').offsetHeight - 54 - 40 - 16;
     return Math.max(1, Math.min(8, Math.floor(available / 62)));
   }
-  const resultPageSize = () => (innerWidth > 770 && innerHeight <= 850 ? 3 : 4);
+  const resultPageSize = () => {
+    if (innerWidth > 770 && innerHeight <= 850) {
+      return 3;
+    } else {
+      return 4;
+    }
+  };
   const textPageSize = () => {
     if (innerWidth > 770 && innerHeight <= 760) {
       return 1;
@@ -433,19 +484,25 @@
       () => survey?.title || window.HospitalI18n.t("survey_view.detalle_de_encuesta")
     );
     window.HospitalI18n.bindAttr($('survey-view-title'), "title", () => survey?.title || '');
-    window.HospitalI18n.bindText($('view-category'), () =>
-      survey
-        ? categories[survey.category] || window.HospitalI18n.t("survey_view.sin_categoria")
-        : window.HospitalI18n.t("survey_view.contenido_y_respuestas")
-    );
-    $('view-status').hidden = !statuses[survey?.status];
-    if (statuses[survey?.status]) {
+    window.HospitalI18n.bindText($('view-category'), () => {
+      if (survey) {
+        return categories[survey.category]?.() || window.HospitalI18n.t("survey_view.sin_categoria");
+      } else {
+        return window.HospitalI18n.t("survey_view.contenido_y_respuestas");
+      }
+    });
+    $('view-status').hidden = !statuses[survey?.status]?.();
+    if (statuses[survey?.status]?.()) {
       $('view-status').className = `survey-status ${survey.status}`;
-      window.HospitalI18n.bindText($('view-status'), () => statuses[survey.status]);
+      window.HospitalI18n.bindText($('view-status'), () => statuses[survey.status]?.());
     }
-    window.HospitalI18n.bindText($('survey-reference'), () =>
-      survey?.id ? window.HospitalI18n.t("survey_view.id_value", { value0: survey.id }) : ''
-    );
+    window.HospitalI18n.bindText($('survey-reference'), () => {
+      if (survey?.id) {
+        return window.HospitalI18n.t("survey_view.id_value", { value0: survey.id });
+      } else {
+        return '';
+      }
+    });
     const edit = $('detail-edit-survey');
     if (survey?.id) {
       edit.href = `survey-new.php?id=${encodeURIComponent(survey.id)}`;
@@ -478,22 +535,34 @@
       });
     }
     window.HospitalI18n.bindText($('view-response-count'), () => displayCount(survey?.response_count));
-    window.HospitalI18n.bindText($('view-response-caption'), () =>
-      survey?.updated_at
-        ? window.HospitalI18n.t("survey_view.ultima_actividad_value", { value0: dateText(survey.updated_at) })
-        : window.HospitalI18n.t("survey_view.de_esta_encuesta")
-    );
-    window.HospitalI18n.bindText($('view-question-count'), () => (survey ? questions().length : '—'));
-    window.HospitalI18n.bindText($('view-required-count'), () =>
-      survey
-        ? window.HospitalI18n.t("survey_view.value_obligatorias_value_elementos", {
-            value0: questions().filter(item => item.required).length,
-            value1: items.length - questions().length
-          })
-        : window.HospitalI18n.t("survey_view.contenido_del_formulario")
-    );
-    const rating = survey?.average_rating,
-      scale = Number(survey?.rating_scale);
+    window.HospitalI18n.bindText($('view-response-caption'), () => {
+      if (survey?.updated_at) {
+        return window.HospitalI18n.t("survey_view.ultima_actividad_value", {
+          value0: dateText(survey.updated_at)
+        });
+      } else {
+        return window.HospitalI18n.t("survey_view.de_esta_encuesta");
+      }
+    });
+    window.HospitalI18n.bindText($('view-question-count'), () => {
+      if (survey) {
+        return questions().length;
+      } else {
+        return '—';
+      }
+    });
+    window.HospitalI18n.bindText($('view-required-count'), () => {
+      if (survey) {
+        return window.HospitalI18n.t("survey_view.value_obligatorias_value_elementos", {
+          value0: questions().filter(item => item.required).length,
+          value1: items.length - questions().length
+        });
+      } else {
+        return window.HospitalI18n.t("survey_view.contenido_del_formulario");
+      }
+    });
+    const rating = survey?.average_rating;
+    const scale = Number(survey?.rating_scale);
     const hasRating =
       count(survey?.response_count) > 0 &&
       rating !== undefined &&
@@ -502,19 +571,35 @@
       scale > 0 &&
       Number(rating) >= 0 &&
       Number(rating) <= scale;
-    window.HospitalI18n.bindText($('view-rating'), () =>
-      hasRating ? numberFormat.format(Number(rating)) : '—'
-    );
-    window.HospitalI18n.bindText($('view-rating-caption'), () =>
-      hasRating
-        ? window.HospitalI18n.t("survey_view.sobre_value_puntos", { value0: scale })
-        : window.HospitalI18n.t("survey_view.sin_valoraciones_disponibles")
-    );
-    const maximum = config().limit_enabled ? count(config().response_limit) : null,
-      responses = count(survey?.response_count);
-    window.HospitalI18n.bindText($('view-capacity'), () =>
-      maximum > 0 && responses !== null ? `${numberFormat.format((responses / maximum) * 100)}%` : '—'
-    );
+    window.HospitalI18n.bindText($('view-rating'), () => {
+      if (hasRating) {
+        return numberFormat.format(Number(rating));
+      } else {
+        return '—';
+      }
+    });
+    window.HospitalI18n.bindText($('view-rating-caption'), () => {
+      if (hasRating) {
+        return window.HospitalI18n.t("survey_view.sobre_value_puntos", { value0: scale });
+      } else {
+        return window.HospitalI18n.t("survey_view.sin_valoraciones_disponibles");
+      }
+    });
+    let maximumValue;
+    if (config().limit_enabled) {
+      maximumValue = count(config().response_limit);
+    } else {
+      maximumValue = null;
+    }
+    const maximum = maximumValue;
+    const responses = count(survey?.response_count);
+    window.HospitalI18n.bindText($('view-capacity'), () => {
+      if (maximum > 0 && responses !== null) {
+        return `${numberFormat.format((responses / maximum) * 100)}%`;
+      } else {
+        return '—';
+      }
+    });
     window.HospitalI18n.bindText($('view-capacity-caption'), () => {
       if (maximum > 0) {
         return window.HospitalI18n.t("survey_view.value_de_value_respuestas", {
@@ -539,11 +624,12 @@
     return [
       [
         window.HospitalI18n.t("survey.categoria"),
-        categories[survey?.category] || window.HospitalI18n.t("survey_view.sin_definir")
+        categories[survey?.category]?.() || window.HospitalI18n.t("survey_view.sin_definir")
       ],
       [
         window.HospitalI18n.t("survey_new.dirigida_a"),
-        audiences[config().audience || survey?.audience] || window.HospitalI18n.t("survey_view.sin_definir")
+        audiences[config().audience || survey?.audience]?.() ||
+          window.HospitalI18n.t("survey_view.sin_definir")
       ],
       [window.HospitalI18n.t("survey.creada"), dateText(survey?.created_at)],
       [
@@ -562,16 +648,22 @@
       `${survey?.description ? `<p class="information-description">${escape(survey.description)}</p>` : ''}${definitionList(informationRows())}`
     );
 
-    window.HospitalI18n.bindText($('access-caption'), () =>
-      survey
-        ? `${accessLabel()} · ${identityLabel()}`
-        : window.HospitalI18n.t("survey_view.enlace_y_codigo_de_acceso_de_la_encuesta")
-    );
+    window.HospitalI18n.bindText($('access-caption'), () => {
+      if (survey) {
+        return `${accessLabel()} · ${identityLabel()}`;
+      } else {
+        return window.HospitalI18n.t("survey_view.enlace_y_codigo_de_acceso_de_la_encuesta");
+      }
+    });
   }
   function renderActivity() {
-    const activity = Array.isArray(survey?.activity)
-      ? survey.activity.filter(day => day.date && count(day.count) !== null).slice(-7)
-      : [];
+    let activityValue;
+    if (Array.isArray(survey?.activity)) {
+      activityValue = survey.activity.filter(day => day.date && count(day.count) !== null).slice(-7);
+    } else {
+      activityValue = [];
+    }
+    const activity = activityValue;
     if (!activity.length) {
       window.HospitalI18n.setHTML($('survey-activity'), activityPlaceholder());
       window.HospitalI18n.bindText($('activity-caption'), () =>
@@ -585,7 +677,23 @@
     );
     window.HospitalI18n.setHTML(
       $('survey-activity'),
-      `<div class="activity-bars" style="--activity-columns:${activity.length}" role="img" aria-label="${window.HospitalI18n.html("survey_view.respuestas_por_fecha_value", { value0: activity.map(day => `${dateText(day.date)}: ${day.count}`).join('; ') })}" data-i18n-aria-label="survey_view.respuestas_por_fecha_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: activity.map(day => `${dateText(day.date)}: ${day.count}`).join('; ') }))}">${activity.map(day => `<div class="activity-day"><strong>${displayCount(day.count)}</strong><div class="activity-track"><span class="activity-fill" style="--bar-height:${(Number(day.count) / maximum) * 100}%;opacity:${Number(day.count) > 0 ? 1 : 0}"></span></div><span title="${escape(dateText(day.date))}">${escape(dateText(day.date).slice(0, 5))}</span></div>`).join('')}</div>`
+      `<div class="activity-bars" style="--activity-columns:${activity.length}" role="img" aria-label="${window.HospitalI18n.html("survey_view.respuestas_por_fecha_value", { value0: activity.map(day => `${dateText(day.date)}: ${day.count}`).join('; ') })}"` +
+        ` data-i18n-aria-label="survey_view.respuestas_por_fecha_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: activity.map(day => `${dateText(day.date)}: ${day.count}`).join('; ') }))}">${activity
+          .map(
+            day =>
+              `<div class="activity-day">` +
+              `<strong>${displayCount(day.count)}` +
+              `</strong>` +
+              `<div class="activity-track">` +
+              `<span class="activity-fill" style="--bar-height:${(Number(day.count) / maximum) * 100}%;opacity:${Number(day.count) > 0 ? 1 : 0}">` +
+              `</span>` +
+              `</div>` +
+              `<span title="${escape(dateText(day.date))}">${escape(dateText(day.date).slice(0, 5))}` +
+              `</span>` +
+              `</div>`
+          )
+          .join('')}` +
+        `</div>`
     );
   }
   function renderOverview() {
@@ -594,7 +702,13 @@
     const pages = Math.max(1, Math.ceil(list.length / renderedOverviewSize));
     state.overviewPage = Math.max(1, Math.min(state.overviewPage, pages));
     const start = (state.overviewPage - 1) * renderedOverviewSize;
-    window.HospitalI18n.bindText($('overview-question-count'), () => (survey ? list.length : ''));
+    window.HospitalI18n.bindText($('overview-question-count'), () => {
+      if (survey) {
+        return list.length;
+      } else {
+        return '';
+      }
+    });
     $('overview-question-count').hidden = !survey;
     $('question-overview-list').style.setProperty('--overview-rows', renderedOverviewSize);
     window.HospitalI18n.setHTML(
@@ -603,9 +717,26 @@
         ? list
             .slice(start, start + renderedOverviewSize)
             .map(item => {
-              const result = resultFor(item),
-                mean = average(item, result);
-              return `<button type="button" class="overview-question" data-open-question="${escape(item.id)}"><span class="overview-question-copy"><span class="question-index-number">${questionNumber(item)}</span><span><strong title="${escape(questionTitle(item))}">${escape(questionTitle(item))}</strong><small>${types[item.type].label} · ${item.required ? window.HospitalI18n.t("survey_view.obligatoria") : window.HospitalI18n.t("routes.opcional")}</small></span></span><span>${displayCount(result?.answer_count)}</span><span>${mean === null ? '—' : numberFormat.format(mean)}</span></button>`;
+              const result = resultFor(item);
+              const mean = average(item, result);
+              return (
+                `<button type="button" class="overview-question" data-open-question="${escape(item.id)}">` +
+                `<span class="overview-question-copy">` +
+                `<span class="question-index-number">${questionNumber(item)}` +
+                `</span>` +
+                `<span>` +
+                `<strong title="${escape(questionTitle(item))}">${escape(questionTitle(item))}` +
+                `</strong>` +
+                `<small>${types[item.type].label()} · ${item.required ? window.HospitalI18n.t("survey_view.obligatoria") : window.HospitalI18n.t("routes.opcional")}` +
+                `</small>` +
+                `</span>` +
+                `</span>` +
+                `<span>${displayCount(result?.answer_count)}` +
+                `</span>` +
+                `<span>${mean === null ? '—' : numberFormat.format(mean)}` +
+                `</span>` +
+                `</button>`
+              );
             })
             .join('')
         : empty(
@@ -614,15 +745,17 @@
             'list-icon.svg'
           )
     );
-    window.HospitalI18n.bindText($('overview-range'), () =>
-      list.length
-        ? window.HospitalI18n.t("survey_view.value_value_de_value_preguntas", {
-            value0: start + 1,
-            value1: Math.min(list.length, start + renderedOverviewSize),
-            value2: list.length
-          })
-        : window.HospitalI18n.t("survey_view.sin_preguntas_disponibles")
-    );
+    window.HospitalI18n.bindText($('overview-range'), () => {
+      if (list.length) {
+        return window.HospitalI18n.t("survey_view.value_value_de_value_preguntas", {
+          value0: start + 1,
+          value1: Math.min(list.length, start + renderedOverviewSize),
+          value2: list.length
+        });
+      } else {
+        return window.HospitalI18n.t("survey_view.sin_preguntas_disponibles");
+      }
+    });
     window.HospitalI18n.setHTML(
       $('overview-pagination'),
       paging(state.overviewPage, pages, 'data-overview-page')
@@ -633,7 +766,9 @@
   }
   function showSelectedPage() {
     const index = navigationItems().findIndex(item => item.id === state.selectedId);
-    if (index >= 0) state.navPage = Math.floor(index / navigationPageSize()) + 1;
+    if (index >= 0) {
+      state.navPage = Math.floor(index / navigationPageSize()) + 1;
+    }
   }
   function renderNavigation() {
     const list = navigationItems();
@@ -641,11 +776,13 @@
     const pages = Math.max(1, Math.ceil(list.length / renderedNavigationSize));
     state.navPage = Math.max(1, Math.min(state.navPage, pages));
     const start = (state.navPage - 1) * renderedNavigationSize;
-    window.HospitalI18n.bindText($('question-nav-title'), () =>
-      state.tab === 'form'
-        ? window.HospitalI18n.t("shared.contenido")
-        : window.HospitalI18n.t("survey_view.preguntas")
-    );
+    window.HospitalI18n.bindText($('question-nav-title'), () => {
+      if (state.tab === 'form') {
+        return window.HospitalI18n.t("shared.contenido");
+      } else {
+        return window.HospitalI18n.t("survey_view.preguntas");
+      }
+    });
     window.HospitalI18n.bindText($('question-nav-count'), () => availableItems().length);
     $('question-navigation-list').style.setProperty('--navigation-rows', renderedNavigationSize);
     window.HospitalI18n.setHTML(
@@ -655,7 +792,16 @@
             .slice(start, start + renderedNavigationSize)
             .map(
               item =>
-                `<button type="button" class="question-nav-button" data-select-question="${escape(item.id)}" aria-pressed="${item.id === state.selectedId}"><span class="question-index-number">${questionNumber(item)}</span><span><strong title="${escape(questionTitle(item))}">${escape(questionTitle(item))}</strong><small>${types[item.type].label}</small></span></button>`
+                `<button type="button" class="question-nav-button" data-select-question="${escape(item.id)}" aria-pressed="${item.id === state.selectedId}">` +
+                `<span class="question-index-number">${questionNumber(item)}` +
+                `</span>` +
+                `<span>` +
+                `<strong title="${escape(questionTitle(item))}">${escape(questionTitle(item))}` +
+                `</strong>` +
+                `<small>${types[item.type].label()}` +
+                `</small>` +
+                `</span>` +
+                `</button>`
             )
             .join('')
         : empty(
@@ -668,15 +814,17 @@
             'list-icon.svg'
           )
     );
-    window.HospitalI18n.bindText($('question-nav-range'), () =>
-      list.length
-        ? window.HospitalI18n.t("survey_view.value_value_de_value", {
-            value0: start + 1,
-            value1: Math.min(list.length, start + renderedNavigationSize),
-            value2: list.length
-          })
-        : window.HospitalI18n.t("survey_new.0_preguntas")
-    );
+    window.HospitalI18n.bindText($('question-nav-range'), () => {
+      if (list.length) {
+        return window.HospitalI18n.t("survey_view.value_value_de_value", {
+          value0: start + 1,
+          value1: Math.min(list.length, start + renderedNavigationSize),
+          value2: list.length
+        });
+      } else {
+        return window.HospitalI18n.t("survey_new.0_preguntas");
+      }
+    });
     window.HospitalI18n.setHTML($('question-nav-pagination'), paging(state.navPage, pages, 'data-nav-page'));
     window.HospitalI18n.setHTML(
       $('mobile-question'),
@@ -692,8 +840,8 @@
     $('mobile-question').disabled = !availableItems().length;
   }
   function renderQuestionFooter() {
-    const list = availableItems(),
-      index = list.findIndex(item => item.id === state.selectedId);
+    const list = availableItems();
+    const index = list.findIndex(item => item.id === state.selectedId);
     document.querySelectorAll('[data-previous-question]').forEach(button => {
       button.disabled = index <= 0;
     });
@@ -701,46 +849,102 @@
       button.disabled = index < 0 || index >= list.length - 1;
     });
     document.querySelectorAll('.selected-question-position').forEach(label => {
-      window.HospitalI18n.bindText(label, () =>
-        index < 0
-          ? window.HospitalI18n.t("survey_view.sin_preguntas")
-          : window.HospitalI18n.t("survey_view.value_de_value", { value0: index + 1, value1: list.length })
-      );
+      window.HospitalI18n.bindText(label, () => {
+        if (index < 0) {
+          return window.HospitalI18n.t("survey_view.sin_preguntas");
+        } else {
+          return window.HospitalI18n.t("survey_view.value_de_value", {
+            value0: index + 1,
+            value1: list.length
+          });
+        }
+      });
     });
   }
   function renderChoiceResult(item, result) {
-    const values = [...item.options, ...(item.other ? [window.HospitalI18n.t("trace_new.otro")] : [])],
-      size = resultPageSize();
+    const values = [...item.options, ...(item.other ? [window.HospitalI18n.t("trace_new.otro")] : [])];
+    const size = resultPageSize();
     renderedResultSize = size;
     const pages = Math.max(1, Math.ceil(values.length / size));
     state.resultPage = Math.max(1, Math.min(state.resultPage, pages));
-    const start = (state.resultPage - 1) * size,
-      answered = count(result?.answer_count);
+    const start = (state.resultPage - 1) * size;
+    const answered = count(result?.answer_count);
 
     window.HospitalI18n.setHTML(
       $('question-results-content'),
       `<div class="result-bar-list">${values
         .slice(start, start + size)
         .map(option => {
-          const total = binCount(result, option),
-            percent = answerPercentage(total, answered);
-          return `<div class="result-bar"><div class="result-bar-label"><span>${escape(option)}</span><span>${displayCount(total)} · ${percent === null ? '—' : `${numberFormat.format(percent)}%`}</span></div><div class="result-bar-track"><div class="result-bar-fill" style="--bar-width:${Math.max(0, Math.min(100, percent || 0))}%"></div></div></div>`;
+          const total = binCount(result, option);
+          const percent = answerPercentage(total, answered);
+          return (
+            `<div class="result-bar">` +
+            `<div class="result-bar-label">` +
+            `<span>${escape(option)}` +
+            `</span>` +
+            `<span>${displayCount(total)} · ${percent === null ? '—' : `${numberFormat.format(percent)}%`}` +
+            `</span>` +
+            `</div>` +
+            `<div class="result-bar-track">` +
+            `<div class="result-bar-fill" style="--bar-width:${Math.max(0, Math.min(100, percent || 0))}%">` +
+            `</div>` +
+            `</div>` +
+            `</div>`
+          );
         })
-        .join(
-          ''
-        )}</div><p class="result-note">${choiceResultNote(item, answered, result)}</p><div class="result-data-footer"><span>${window.HospitalI18n.mark("survey_view.value_opciones", { value0: values.length })}</span><nav class="survey-pagination" aria-label="${window.HospitalI18n.html("survey_view.paginas_de_opciones")}" data-i18n-aria-label="survey_view.paginas_de_opciones">${paging(state.resultPage, pages, 'data-result-page')}</nav></div>`
+        .join('')}` +
+        `</div>` +
+        `<p class="result-note">${choiceResultNote(item, answered, result)}` +
+        `</p>` +
+        `<div class="result-data-footer">` +
+        `<span>${window.HospitalI18n.mark("survey_view.value_opciones", { value0: values.length })}` +
+        `</span>` +
+        `<nav class="survey-pagination" aria-label="${window.HospitalI18n.html("survey_view.paginas_de_opciones")}"` +
+        ` data-i18n-aria-label="survey_view.paginas_de_opciones">${paging(state.resultPage, pages, 'data-result-page')}` +
+        `</nav>` +
+        `</div>`
     );
   }
   function renderScaleResult(item, result) {
-    const first = item.type === 'rating' ? 1 : item.scale_min,
-      last = item.type === 'rating' ? item.rating_max : item.scale_max;
-    const values = Array.from({ length: last - first + 1 }, (_, index) => first + index),
-      bins = values.map(value => binCount(result, value)),
-      maximum = Math.max(...bins.map(value => value || 0), 1);
+    let firstValue;
+    if (item.type === 'rating') {
+      firstValue = 1;
+    } else {
+      firstValue = item.scale_min;
+    }
+    const first = firstValue;
+    let lastValue;
+    if (item.type === 'rating') {
+      lastValue = item.rating_max;
+    } else {
+      lastValue = item.scale_max;
+    }
+    const last = lastValue;
+    const values = Array.from({ length: last - first + 1 }, (_, index) => first + index);
+    const bins = values.map(value => binCount(result, value));
+    const maximum = Math.max(...bins.map(value => value || 0), 1);
 
     window.HospitalI18n.setHTML(
       $('question-results-content'),
-      `<div class="result-histogram" style="--distribution-columns:${values.length}" role="img" aria-label="${window.HospitalI18n.html("survey_view.distribucion_value", { value0: values.map((value, index) => `${value}: ${displayCount(bins[index])}`).join('; ') })}" data-i18n-aria-label="survey_view.distribucion_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: values.map((value, index) => `${value}: ${displayCount(bins[index])}`).join('; ') }))}">${values.map((value, index) => `<div class="histogram-column"><strong>${displayCount(bins[index])}</strong><div class="histogram-track"><span class="histogram-fill" style="--bar-height:${((bins[index] || 0) / maximum) * 100}%;opacity:${bins[index] > 0 ? 1 : 0}"></span></div><span>${item.type === 'rating' ? '☆ ' : ''}${value}</span></div>`).join('')}</div>${item.type === 'linear_scale' ? `<div class="scale-result-ends"><span>${escape(item.scale_start || '')}</span><span>${escape(item.scale_end || '')}</span></div>` : ''}<p class="result-note">${scaleResultNote(result, first, last)}</p>`
+      `<div class="result-histogram" style="--distribution-columns:${values.length}" role="img" aria-label="${window.HospitalI18n.html("survey_view.distribucion_value", { value0: values.map((value, index) => `${value}: ${displayCount(bins[index])}`).join('; ') })}"` +
+        ` data-i18n-aria-label="survey_view.distribucion_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: values.map((value, index) => `${value}: ${displayCount(bins[index])}`).join('; ') }))}">${values
+          .map(
+            (value, index) =>
+              `<div class="histogram-column">` +
+              `<strong>${displayCount(bins[index])}` +
+              `</strong>` +
+              `<div class="histogram-track">` +
+              `<span class="histogram-fill" style="--bar-height:${((bins[index] || 0) / maximum) * 100}%;opacity:${bins[index] > 0 ? 1 : 0}">` +
+              `</span>` +
+              `</div>` +
+              `<span>${item.type === 'rating' ? '☆ ' : ''}${value}` +
+              `</span>` +
+              `</div>`
+          )
+          .join('')}` +
+        `</div>${item.type === 'linear_scale' ? `<div class="scale-result-ends"><span>${escape(item.scale_start || '')}</span><span>${escape(item.scale_end || '')}</span></div>` : ''}` +
+        `<p class="result-note">${scaleResultNote(result, first, last)}` +
+        `</p>`
     );
   }
   function entriesFor(item, result) {
@@ -753,17 +957,21 @@
       .filter(entry => normalize(entry.value).includes(normalize(state.answerQuery)));
   }
   async function renderAnswerEntries(item) {
-    if (!survey || !item) return;
-    const revision = ++entryRevision,
-      size = textPageSize();
+    if (!survey || !item) {
+      return;
+    }
+    const revision = ++entryRevision;
+    const size = textPageSize();
     renderedResultSize = size;
     try {
       const result = await api.getPage(
         `surveys.php?action=answers&id=${survey.id}&question_id=${encodeURIComponent(item.id)}&q=${encodeURIComponent(state.answerQuery)}&page=${entryPage}&page_size=${size}`
       );
-      if (revision !== entryRevision || item.id !== selected()?.id || !$('written-answer-list')) return;
-      const total = result.meta.total,
-        pages = Math.max(1, Math.ceil(total / size));
+      if (revision !== entryRevision || item.id !== selected()?.id || !$('written-answer-list')) {
+        return;
+      }
+      const total = result.meta.total;
+      const pages = Math.max(1, Math.ceil(total / size));
       if (entryPage > pages) {
         entryPage = pages;
         return renderAnswerEntries(item);
@@ -774,7 +982,12 @@
           ? result.data
               .map(
                 (entry, index) =>
-                  `<article class="written-answer"><span>${window.HospitalI18n.mark("survey_view.respuesta_valuevaluevalue", { value0: (entryPage - 1) * size + index + 1, value1: entry.submitted_at ? ' · ' + escape(dateText(entry.submitted_at)) : '', value2: entry.participant_name ? ' · ' + escape(entry.participant_name) : '' })}</span><p>${escape(item.type === 'date' ? dateText(entry.value) : entry.value)}</p></article>`
+                  `<article class="written-answer">` +
+                  `<span>${window.HospitalI18n.mark("survey_view.respuesta_valuevaluevalue", { value0: (entryPage - 1) * size + index + 1, value1: entry.submitted_at ? ' · ' + escape(dateText(entry.submitted_at)) : '', value2: entry.participant_name ? ' · ' + escape(entry.participant_name) : '' })}` +
+                  `</span>` +
+                  `<p>${escape(item.type === 'date' ? dateText(entry.value) : entry.value)}` +
+                  `</p>` +
+                  `</article>`
               )
               .join('')
           : empty(
@@ -786,15 +999,17 @@
                 : window.HospitalI18n.t("survey_view.las_respuestas_se_mostraran_aca")
             )
       );
-      window.HospitalI18n.bindText($('written-answer-range'), () =>
-        total
-          ? window.HospitalI18n.t("survey_view.value_value_de_value", {
-              value0: (entryPage - 1) * size + 1,
-              value1: Math.min(total, entryPage * size),
-              value2: total
-            })
-          : window.HospitalI18n.t("survey_view.0_respuestas")
-      );
+      window.HospitalI18n.bindText($('written-answer-range'), () => {
+        if (total) {
+          return window.HospitalI18n.t("survey_view.value_value_de_value", {
+            value0: (entryPage - 1) * size + 1,
+            value1: Math.min(total, entryPage * size),
+            value2: total
+          });
+        } else {
+          return window.HospitalI18n.t("survey_view.0_respuestas");
+        }
+      });
       window.HospitalI18n.setHTML(
         $('written-answer-pagination'),
         paging(entryPage, pages, 'data-entry-page')
@@ -804,7 +1019,22 @@
     }
   }
   function writtenContainer(item) {
-    return `<label class="survey-search answer-search">${icon('search-icon.svg')}<input type="search" id="answer-search" placeholder="${window.HospitalI18n.html("survey_view.buscar_en_las_respuestas")}" data-i18n-placeholder="survey_view.buscar_en_las_respuestas" aria-label="${window.HospitalI18n.html("survey_view.buscar_en_las_respuestas_2")}" data-i18n-aria-label="survey_view.buscar_en_las_respuestas_2" maxlength="150" value="${escape(state.answerQuery)}"></label><div class="written-answer-list" id="written-answer-list"></div><div class="result-data-footer"><span id="written-answer-range"></span><nav class="survey-pagination" id="written-answer-pagination" aria-label="${window.HospitalI18n.html("survey_view.paginas_de_respuestas")}" data-i18n-aria-label="survey_view.paginas_de_respuestas"></nav></div>`;
+    return (
+      `<label class="survey-search answer-search">${icon('search-icon.svg')}` +
+      `<input type="search" id="answer-search" placeholder="${window.HospitalI18n.html("survey_view.buscar_en_las_respuestas")}"` +
+      ` data-i18n-placeholder="survey_view.buscar_en_las_respuestas" aria-label="${window.HospitalI18n.html("survey_view.buscar_en_las_respuestas_2")}"` +
+      ` data-i18n-aria-label="survey_view.buscar_en_las_respuestas_2" maxlength="150" value="${escape(state.answerQuery)}">` +
+      `</label>` +
+      `<div class="written-answer-list" id="written-answer-list">` +
+      `</div>` +
+      `<div class="result-data-footer">` +
+      `<span id="written-answer-range">` +
+      `</span>` +
+      `<nav class="survey-pagination" id="written-answer-pagination" aria-label="${window.HospitalI18n.html("survey_view.paginas_de_respuestas")}"` +
+      ` data-i18n-aria-label="survey_view.paginas_de_respuestas">` +
+      `</nav>` +
+      `</div>`
+    );
   }
   function renderQuestionResults() {
     const item = selected();
@@ -827,16 +1057,51 @@
       renderQuestionFooter();
       return;
     }
-    const result = resultFor(item),
-      mean = average(item, result),
-      scale = item.type === 'rating' ? item.rating_max : item.scale_max;
+    const result = resultFor(item);
+    const mean = average(item, result);
+    let scaleValue;
+    if (item.type === 'rating') {
+      scaleValue = item.rating_max;
+    } else {
+      scaleValue = item.scale_max;
+    }
+    const scale = scaleValue;
     window.HospitalI18n.setHTML(
       $('selected-question-heading'),
-      `<div class="question-kind">${icon(types[item.type].icon)}<span>${types[item.type].label}</span><span>${item.required ? window.HospitalI18n.t("survey_view.obligatoria") : window.HospitalI18n.t("routes.opcional")}</span></div><h2>${questionNumber(item)}. ${escape(questionTitle(item))}</h2>`
+      `<div class="question-kind">${icon(types[item.type].icon)}` +
+        `<span>${types[item.type].label()}` +
+        `</span>` +
+        `<span>${item.required ? window.HospitalI18n.t("survey_view.obligatoria") : window.HospitalI18n.t("routes.opcional")}` +
+        `</span>` +
+        `</div>` +
+        `<h2>${questionNumber(item)}. ${escape(questionTitle(item))}` +
+        `</h2>`
     );
     window.HospitalI18n.setHTML(
       $('question-result-metrics'),
-      `<div><span>${window.HospitalI18n.mark("survey_view.respuestas")}</span><strong>${displayCount(result?.answer_count)}</strong></div><div><span>${window.HospitalI18n.mark("survey_view.sin_responder")}</span><strong>${displayCount(result?.skipped_count)}</strong></div>${['rating', 'linear_scale'].includes(item.type) ? `<div><span>${window.HospitalI18n.mark("survey_view.promedio")}</span><strong>${mean === null ? '—' : numberFormat.format(mean)}<small>/ ${scale}</small></strong></div>` : ''}`
+      `<div>` +
+        `<span>${window.HospitalI18n.mark("survey_view.respuestas")}` +
+        `</span>` +
+        `<strong>${displayCount(result?.answer_count)}` +
+        `</strong>` +
+        `</div>` +
+        `<div>` +
+        `<span>${window.HospitalI18n.mark("survey_view.sin_responder")}` +
+        `</span>` +
+        `<strong>${displayCount(result?.skipped_count)}` +
+        `</strong>` +
+        `</div>${
+          ['rating', 'linear_scale'].includes(item.type)
+            ? `<div>` +
+              `<span>${window.HospitalI18n.mark("survey_view.promedio")}` +
+              `</span>` +
+              `<strong>${mean === null ? '—' : numberFormat.format(mean)}` +
+              `<small>/ ${scale}` +
+              `</small>` +
+              `</strong>` +
+              `</div>`
+            : ''
+        }`
     );
     if (['single_choice', 'multiple_choice'].includes(item.type)) {
       renderChoiceResult(item, result);
@@ -849,8 +1114,9 @@
         );
         renderAnswerEntries(item);
       }
-    } else if (['rating', 'linear_scale'].includes(item.type)) renderScaleResult(item, result);
-    else {
+    } else if (['rating', 'linear_scale'].includes(item.type)) {
+      renderScaleResult(item, result);
+    } else {
       window.HospitalI18n.setHTML($('question-results-content'), writtenContainer(item));
       renderAnswerEntries(item);
     }
@@ -887,49 +1153,84 @@
       return;
     }
     let content;
-    if (item.type === 'divider')
+    if (item.type === 'divider') {
       content = `<hr class="form-divider"><p class="result-note">${window.HospitalI18n.mark("survey_view.separador_entre_secciones_del_formulario")}</p>`;
-    else if (item.type === 'section')
+    } else if (item.type === 'section') {
       content = `<p class="form-section-text">${escape(item.description || '')}</p>`;
-    else if (['short_text', 'long_text', 'date'].includes(item.type))
-      content = `<div class="form-answer-placeholder ${item.type === 'long_text' ? 'long' : ''}">${escape(item.type === 'date' ? window.HospitalI18n.t("survey_view.dia_mes_ano") : item.placeholder || window.HospitalI18n.t("survey_view.escribi_tu_respuesta"))}</div>`;
-    else if (['single_choice', 'multiple_choice'].includes(item.type))
-      content = `<div class="form-choice-options">${[...item.options, ...(item.other ? [window.HospitalI18n.t("trace_new.otro")] : [])].map(option => `<div class="form-choice-option ${item.type === 'multiple_choice' ? 'multiple' : ''}"><i aria-hidden="true"></i><span>${escape(option)}</span></div>`).join('')}</div>`;
-    else {
-      const start = item.type === 'rating' ? 1 : item.scale_min,
-        end = item.type === 'rating' ? item.rating_max : item.scale_max;
-      content = `<div class="form-rating-options">${Array.from({ length: end - start + 1 }, (_, index) => `<span>${item.type === 'rating' ? icon('star-icon.svg') : ''}${start + index}</span>`).join('')}</div>${item.type === 'linear_scale' ? `<p class="scale-result-ends"><span>${escape(item.scale_start || '')}</span><span>${escape(item.scale_end || '')}</span></p>` : ''}`;
+    } else if (['short_text', 'long_text', 'date'].includes(item.type)) {
+      content =
+        `<div class="form-answer-placeholder ${item.type === 'long_text' ? 'long' : ''}">${escape(item.type === 'date' ? window.HospitalI18n.t("survey_view.dia_mes_ano") : item.placeholder || window.HospitalI18n.t("survey_view.escribi_tu_respuesta"))}` +
+        `</div>`;
+    } else if (['single_choice', 'multiple_choice'].includes(item.type)) {
+      content =
+        `<div class="form-choice-options">${[...item.options, ...(item.other ? [window.HospitalI18n.t("trace_new.otro")] : [])].map(option => `<div class="form-choice-option ${item.type === 'multiple_choice' ? 'multiple' : ''}"><i aria-hidden="true"></i><span>${escape(option)}</span></div>`).join('')}` +
+        `</div>`;
+    } else {
+      let startValue;
+      if (item.type === 'rating') {
+        startValue = 1;
+      } else {
+        startValue = item.scale_min;
+      }
+      const start = startValue;
+      let endValue;
+      if (item.type === 'rating') {
+        endValue = item.rating_max;
+      } else {
+        endValue = item.scale_max;
+      }
+      const end = endValue;
+      content =
+        `<div class="form-rating-options">${Array.from({ length: end - start + 1 }, (_, index) => `<span>${item.type === 'rating' ? icon('star-icon.svg') : ''}${start + index}</span>`).join('')}` +
+        `</div>${item.type === 'linear_scale' ? `<p class="scale-result-ends"><span>${escape(item.scale_start || '')}</span><span>${escape(item.scale_end || '')}</span></p>` : ''}`;
     }
     window.HospitalI18n.setHTML(
       $('public-form-content'),
-      `<article class="form-question"><div class="question-kind">${icon(types[item.type].icon)}${types[item.type].label}</div><h3>${types[item.type].element ? '' : `${questionNumber(item)}. `}${escape(questionTitle(item))}${item.required && !types[item.type].element ? ` <em aria-label="${window.HospitalI18n.html("survey_view.obligatoria")}" data-i18n-aria-label="survey_view.obligatoria">*</em>` : ''}</h3>${content}</article>`
+      `<article class="form-question">` +
+        `<div class="question-kind">${icon(types[item.type].icon)}${types[item.type].label()}` +
+        `</div>` +
+        `<h3>${types[item.type].element ? '' : `${questionNumber(item)}. `}${escape(questionTitle(item))}${item.required && !types[item.type].element ? ` <em aria-label="${window.HospitalI18n.html("survey_view.obligatoria")}" data-i18n-aria-label="survey_view.obligatoria">*</em>` : ''}` +
+        `</h3>${content}` +
+        `</article>`
     );
     renderQuestionFooter();
   }
   function setTab(tab, focus = false) {
-    if (!['summary', 'questions', 'form'].includes(tab)) return;
+    if (!['summary', 'questions', 'form'].includes(tab)) {
+      return;
+    }
     state.tab = tab;
     document.querySelectorAll('[data-insight-tab]').forEach(button => {
       const active = button.dataset.insightTab === tab;
       button.setAttribute('aria-selected', String(active));
       button.tabIndex = active ? 0 : -1;
-      if (active && focus) button.focus();
+      if (active && focus) {
+        button.focus();
+      }
     });
     $('summary-panel').hidden = tab !== 'summary';
     $('question-workspace').hidden = tab === 'summary';
     $('question-results-panel').hidden = tab !== 'questions';
     $('survey-form-panel').hidden = tab !== 'form';
-    if (!availableItems().some(item => item.id === state.selectedId))
+    if (!availableItems().some(item => item.id === state.selectedId)) {
       state.selectedId = availableItems()[0]?.id || null;
-    if (tab === 'summary') renderOverview();
-    else {
+    }
+    if (tab === 'summary') {
+      renderOverview();
+    } else {
       showSelectedPage();
       renderNavigation();
-      tab === 'form' ? renderForm() : renderQuestionResults();
+      if (tab === 'form') {
+        renderForm();
+      } else {
+        renderQuestionResults();
+      }
     }
   }
   function selectQuestion(id) {
-    if (!availableItems().some(item => item.id === id)) return;
+    if (!availableItems().some(item => item.id === id)) {
+      return;
+    }
     state.selectedId = id;
     state.resultPage = 1;
     entryPage = 1;
@@ -937,10 +1238,16 @@
     entryRevision++;
     showSelectedPage();
     renderNavigation();
-    state.tab === 'form' ? renderForm() : renderQuestionResults();
+    if (state.tab === 'form') {
+      renderForm();
+    } else {
+      renderQuestionResults();
+    }
   }
   function openInformation() {
-    if (!survey) return;
+    if (!survey) {
+      return;
+    }
     window.HospitalI18n.bindText(
       $('full-info-title'),
       () => survey.title || window.HospitalI18n.t("survey_view.informacion_de_la_encuesta")
@@ -948,7 +1255,14 @@
 
     window.HospitalI18n.setHTML(
       $('full-survey-info'),
-      `<h3>${window.HospitalI18n.mark("survey_new.descripcion_interna")}</h3><p>${escape(survey.description || window.HospitalI18n.t("survey_view.sin_descripcion"))}</p><h3>${window.HospitalI18n.mark("survey_new.notas_para_el_equipo")}</h3><p>${escape(survey.notes || survey.info?.notes || window.HospitalI18n.t("survey_view.sin_notas"))}</p>${definitionList([...informationRows(), [window.HospitalI18n.t("survey_new.servicio_o_area"), survey.area || survey.info?.area || window.HospitalI18n.t("survey_view.sin_definir")], [window.HospitalI18n.t("survey_view.cupo_maximo"), responseLimitLabel()], [window.HospitalI18n.t("survey_new.mensaje_al_finalizar"), config().completion_message || window.HospitalI18n.t("survey_view.sin_definir")]])}`
+      `<h3>${window.HospitalI18n.mark("survey_new.descripcion_interna")}` +
+        `</h3>` +
+        `<p>${escape(survey.description || window.HospitalI18n.t("survey_view.sin_descripcion"))}` +
+        `</p>` +
+        `<h3>${window.HospitalI18n.mark("survey_new.notas_para_el_equipo")}` +
+        `</h3>` +
+        `<p>${escape(survey.notes || survey.info?.notes || window.HospitalI18n.t("survey_view.sin_notas"))}` +
+        `</p>${definitionList([...informationRows(), [window.HospitalI18n.t("survey_new.servicio_o_area"), survey.area || survey.info?.area || window.HospitalI18n.t("survey_view.sin_definir")], [window.HospitalI18n.t("survey_view.cupo_maximo"), responseLimitLabel()], [window.HospitalI18n.t("survey_new.mensaje_al_finalizar"), config().completion_message || window.HospitalI18n.t("survey_view.sin_definir")]])}`
     );
     $('survey-info-dialog').showModal();
   }
@@ -963,23 +1277,29 @@
       setTab(state.tab);
     });
 
-    if (requestedId && !/^[1-9]\d{0,18}$/.test(requestedId))
+    if (requestedId && !/^[1-9]\d{0,18}$/.test(requestedId)) {
       console.error(window.HospitalI18n.t("shared.encuestas_identificador_de_encuesta_invalido"));
+    }
     async function reload() {
       if (
         loading ||
         document.querySelector('dialog[open]') ||
         document.activeElement?.matches('input,textarea,select')
-      )
+      ) {
         return;
+      }
       loading = true;
       try {
-        if (!requestedId) return;
+        if (!requestedId) {
+          return;
+        }
         const previous = state.selectedId;
         const initial = survey === null;
         survey = await surveysApi.get(requestedId);
         prepareItems();
-        if (items.some(item => item.id === previous)) state.selectedId = previous;
+        if (items.some(item => item.id === previous)) {
+          state.selectedId = previous;
+        }
         renderHeader();
         renderInformation();
         renderActivity();
@@ -999,7 +1319,9 @@
       }
     }
     try {
-      if (await window.HospitalAuth.ready) await reload();
+      if (await window.HospitalAuth.ready) {
+        await reload();
+      }
     } catch (error) {
       api.report(error, 'surveys');
     }
@@ -1010,7 +1332,7 @@
     setTab(new URLSearchParams(location.search).get('tab') === 'form' ? 'form' : 'summary');
     document.querySelectorAll('[data-share-survey]').forEach(button =>
       button.addEventListener('click', async () => {
-        if (survey)
+        if (survey) {
           try {
             await surveysApi.share(survey, record => {
               survey = record;
@@ -1019,10 +1341,13 @@
           } catch (error) {
             api.report(error, 'surveys');
           }
+        }
       })
     );
     $('survey-transition').addEventListener('click', async () => {
-      if (!survey || loading) return;
+      if (!survey || loading) {
+        return;
+      }
       loading = true;
       try {
         survey = await surveysApi.transition(survey, $('survey-transition').dataset.action);
@@ -1035,18 +1360,24 @@
       }
     });
     setInterval(() => {
-      if (!document.hidden) reload();
+      if (!document.hidden) {
+        reload();
+      }
     }, 15000);
     window.addEventListener('focus', reload);
     document.querySelector('.insight-tabs').addEventListener('click', event => {
       const button = event.target.closest('[data-insight-tab]');
-      if (button) setTab(button.dataset.insightTab);
+      if (button) {
+        setTab(button.dataset.insightTab);
+      }
     });
     document.querySelector('.insight-tabs').addEventListener('keydown', event => {
-      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+        return;
+      }
       event.preventDefault();
-      const tabs = ['summary', 'questions', 'form'],
-        index = tabs.indexOf(state.tab);
+      const tabs = ['summary', 'questions', 'form'];
+      const index = tabs.indexOf(state.tab);
 
       setTab(nextResultTab(event, index, tabs), true);
     });
@@ -1062,7 +1393,9 @@
     });
     document.querySelector('.survey-insights').addEventListener('click', event => {
       const go = event.target.closest('[data-go-tab]');
-      if (go) setTab(go.dataset.goTab, true);
+      if (go) {
+        setTab(go.dataset.goTab, true);
+      }
       const open = event.target.closest('[data-open-question]');
       if (open) {
         state.selectedId = open.dataset.openQuestion;
@@ -1099,8 +1432,8 @@
       }
       const movement = event.target.closest('[data-previous-question],[data-next-question]');
       if (movement && !movement.disabled) {
-        const list = availableItems(),
-          index = list.findIndex(item => item.id === state.selectedId);
+        const list = availableItems();
+        const index = list.findIndex(item => item.id === state.selectedId);
         selectQuestion(list[index + (movement.hasAttribute('data-next-question') ? 1 : -1)].id);
       }
     });
@@ -1125,11 +1458,17 @@
     $('mobile-question').addEventListener('change', event => {
       const pointer = pointerSelect;
       selectQuestion(event.target.value);
-      if (pointer) event.target.blur();
+      if (pointer) {
+        event.target.blur();
+      }
     });
     new ResizeObserver(() => {
-      if (innerWidth <= 900) return;
-      if (state.tab === 'summary' && overviewPageSize() !== renderedOverviewSize) renderOverview();
+      if (innerWidth <= 900) {
+        return;
+      }
+      if (state.tab === 'summary' && overviewPageSize() !== renderedOverviewSize) {
+        renderOverview();
+      }
       if (state.tab !== 'summary') {
         if (navigationPageSize() !== renderedNavigationSize) {
           showSelectedPage();
@@ -1142,8 +1481,9 @@
           ['single_choice', 'multiple_choice', 'short_text', 'long_text', 'date'].includes(item.type) &&
           (['single_choice', 'multiple_choice'].includes(item.type) ? resultPageSize() : textPageSize()) !==
             renderedResultSize
-        )
+        ) {
           renderQuestionResults();
+        }
       }
     }).observe(document.querySelector('.insight-body'));
   });

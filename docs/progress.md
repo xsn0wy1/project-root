@@ -395,3 +395,5 @@ Batch 4 remaining management scripts are verified: 742 UI checks, live language 
 Batch 5 document scripts are verified: 184 UI, 182 document browser, 46 document-link API and 98 boundary checks pass, as does source equivalence. Continue transfer/map scripts and survey scripts.
 
 Batch 6 transfer/map scripts are verified: 93 workflow checks, transfer/map UI journeys, 71 runtime language checks, 98 boundary checks and source equivalence pass. Public live map accessors remain intentionally. Continue survey scripts and participant page, then shared API infrastructure and PHP.
+
+Batch 7 survey/participant scripts are verified: 93 workflow, 103 UI, 71 language, 98 boundary and source-equivalence checks pass. Continue the five shared API-infrastructure scripts, then PHP. Translation coverage needs the complete authenticated rendered-page capture from the final matrix.

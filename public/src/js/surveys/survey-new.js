@@ -1,3 +1,8 @@
+/* Designs survey questions, configuration, previews and saved drafts.
+ * API: surveys get/create/update/transition via HospitalApi/HospitalSurveys.
+ * DOM: question-types, inspector-fields, save-survey and summary-questions.
+ * $ finds an element by ID; label functions translate at render time.
+ */
 (() => {
   'use strict';
   function untitledItem(item) {
@@ -32,131 +37,113 @@
 
   // SQL owns saved records; local designer state preserves unsaved input on failures.
   const types = {
-    get short_text() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.respuesta_corta");
-        },
-        symbol: 'T',
-        class: 'text-symbol'
-      };
+    short_text: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.respuesta_corta");
+      },
+      symbol: 'T',
+      class: 'text-symbol'
     },
-    get long_text() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.respuesta_larga");
-        },
-        symbol: '¶',
-        class: 'text-symbol'
-      };
+    long_text: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.respuesta_larga");
+      },
+      symbol: '¶',
+      class: 'text-symbol'
     },
-    get single_choice() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.opcion_multiple");
-        },
-        icon: 'multiple-choice.svg'
-      };
+    single_choice: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.opcion_multiple");
+      },
+      icon: 'multiple-choice.svg'
     },
-    get multiple_choice() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.casillas");
-        },
-        icon: 'cages-icon.svg'
-      };
+    multiple_choice: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.casillas");
+      },
+      icon: 'cages-icon.svg'
     },
-    get linear_scale() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.escala");
-        },
-        icon: 'analytics-icon.svg'
-      };
+    linear_scale: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.escala");
+      },
+      icon: 'analytics-icon.svg'
     },
-    get rating() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.calificacion");
-        },
-        icon: 'star-icon.svg'
-      };
+    rating: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.calificacion");
+      },
+      icon: 'star-icon.svg'
     },
-    get date() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("documents.fecha");
-        },
-        icon: 'calendar-icon.svg'
-      };
+    date: {
+      label: function () {
+        return window.HospitalI18n.t("documents.fecha");
+      },
+      icon: 'calendar-icon.svg'
     },
-    get section() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.titulo_y_texto");
-        },
-        get symbol() {
-          return window.HospitalI18n.t("routes.a");
-        },
-        class: 'text-symbol',
-        element: true
-      };
+    section: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.titulo_y_texto");
+      },
+      get symbol() {
+        return window.HospitalI18n.t("routes.a");
+      },
+      class: 'text-symbol',
+      element: true
     },
-    get divider() {
-      return {
-        get label() {
-          return window.HospitalI18n.t("survey_view.separador");
-        },
-        symbol: '―',
-        element: true
-      };
+    divider: {
+      label: function () {
+        return window.HospitalI18n.t("survey_view.separador");
+      },
+      symbol: '―',
+      element: true
     }
   };
   const categoryLabels = {
-    get patient_care() {
+    patient_care: function () {
       return window.HospitalI18n.t("survey.atencion_al_paciente");
     },
-    get transfers() {
+    transfers: function () {
       return window.HospitalI18n.t("survey.traslados");
     },
-    get emergency() {
+    emergency: function () {
       return window.HospitalI18n.t("survey.emergencias");
     },
-    get staff() {
+    staff: function () {
       return window.HospitalI18n.t("trace_view.personal");
     },
-    get other() {
+    other: function () {
       return window.HospitalI18n.t("survey.otras");
     }
   };
   const audienceLabels = {
-    get patients() {
+    patients: function () {
       return window.HospitalI18n.t("management.pacientes");
     },
-    get staff() {
+    staff: function () {
       return window.HospitalI18n.t("trace_view.personal");
     },
-    get everyone() {
+    everyone: function () {
       return window.HospitalI18n.t("survey_new.pacientes_y_personal");
     }
   };
   const colors = {
-    get blue() {
+    blue: function () {
       return [window.HospitalI18n.t("survey_new.azul"), '#5962c4'];
     },
-    get green() {
+    green: function () {
       return [window.HospitalI18n.t("survey_new.verde"), '#368267'];
     },
-    get cyan() {
+    cyan: function () {
       return [window.HospitalI18n.t("survey_new.celeste"), '#378c9f'];
     },
-    get amber() {
+    amber: function () {
       return [window.HospitalI18n.t("survey_new.ambar"), '#ac7d34'];
     },
-    get rose() {
+    rose: function () {
       return [window.HospitalI18n.t("survey_new.rosa"), '#a2536e'];
     },
-    get slate() {
+    slate: function () {
       return [window.HospitalI18n.t("survey_new.gris"), '#52637f'];
     }
   };
@@ -189,46 +176,52 @@
   const $ = id => document.getElementById(id);
   const escape = window.HospitalUI.escapeHtml;
   const icon = name => `<img src="../../../assets/Icons/${name}" alt="">`;
-  const normalize = value =>
-    value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
+  const normalize = value => {
+    const normalizedText = value.normalize('NFD');
+    const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+    return replacedText.toLowerCase();
+  };
   const symbol = type =>
     `<span class="type-symbol ${types[type].class || ''}" aria-hidden="true">${types[type].icon ? icon(types[type].icon) : types[type].symbol || ''}</span>`;
   const selected = () => state.items.find(item => item.id === state.selectedId);
   const questions = () => state.items.filter(item => !types[item.type].element);
   const choiceType = type => ['single_choice', 'multiple_choice'].includes(type);
-  let renderedPageSize = null,
-    saved = null,
-    loaded = false,
-    busy = false;
-  const api = window.HospitalApi,
-    surveysApi = window.HospitalSurveys;
+  let renderedPageSize = null;
+  let saved = null;
+  let loaded = false;
+  let busy = false;
+  const api = window.HospitalApi;
+  const surveysApi = window.HospitalSurveys;
   function applyLock() {
     const locked = Boolean(saved?.published_at);
     document
       .querySelectorAll(
         '[data-screen="2"] input, [data-screen="2"] textarea, [data-screen="2"] select, [data-add-type], [data-item-action], [data-move-item], [data-remove-option], [data-color], #add-option, #add-default-question'
       )
-      .forEach(el => {
-        if (locked) el.disabled = true;
+      .forEach(controlElement => {
+        if (locked) {
+          controlElement.disabled = true;
+        }
       });
     ['answer-audience', 'answer-access', 'answer-identity'].forEach(id => {
       $(id).disabled = locked;
     });
     $('save-survey').disabled = !loaded || busy || Boolean(saved?.archived_at);
-    window.HospitalI18n.bindText($('save-survey').lastChild, () =>
-      locked
-        ? window.HospitalI18n.t("trace_view.guardar_cambios")
-        : window.HospitalI18n.t("survey_new.guardar_borrador")
-    );
+    window.HospitalI18n.bindText($('save-survey').lastChild, () => {
+      if (locked) {
+        return window.HospitalI18n.t("trace_view.guardar_cambios");
+      } else {
+        return window.HospitalI18n.t("survey_new.guardar_borrador");
+      }
+    });
     $('publish-survey').disabled = !loaded || busy || locked;
-    window.HospitalI18n.bindAttr($('publish-survey'), "title", () =>
-      locked
-        ? window.HospitalI18n.t("survey_new.duplica_la_encuesta_para_cambiar_sus_preguntas_publicadas")
-        : ''
-    );
+    window.HospitalI18n.bindAttr($('publish-survey'), "title", () => {
+      if (locked) {
+        return window.HospitalI18n.t("survey_new.duplica_la_encuesta_para_cambiar_sus_preguntas_publicadas");
+      } else {
+        return '';
+      }
+    });
     window.HospitalI18n.bindText(document.querySelector('.draft-tag'), () => {
       if (saved?.archived_at) {
         return window.HospitalI18n.t("ambulances.archivada");
@@ -255,24 +248,30 @@
       area: record.area,
       notes: record.notes
     };
-    if (copy)
+    if (copy) {
       state.info.title = window.HospitalI18n.t("survey_new.value_copia", {
         value0: record.title.slice(0, 112)
       });
+    }
     state.form = { title: record.form_title, introduction: record.form_description };
     state.config = { ...record.config };
     state.color = record.color;
     state.items = record.questions.map(item => ({ ...item, options: [...item.options] }));
     state.nextId = 1;
-    while (state.items.some(item => item.id === `question-${state.nextId}`)) state.nextId++;
+    while (state.items.some(item => item.id === `question-${state.nextId}`)) {
+      state.nextId++;
+    }
     state.selectedId = state.items[0]?.id || null;
     state.designed = true;
   }
   function syncFields() {
     document.querySelectorAll('[data-info]').forEach(field => (field.value = state.info[field.dataset.info]));
     document.querySelectorAll('[data-config]').forEach(field => {
-      if (field.type === 'checkbox') field.checked = state.config[field.dataset.config];
-      else field.value = state.config[field.dataset.config];
+      if (field.type === 'checkbox') {
+        field.checked = state.config[field.dataset.config];
+      } else {
+        field.value = state.config[field.dataset.config];
+      }
     });
     $('response-limit').disabled = !state.config.limit_enabled;
     $('opens-at').disabled = !state.config.opens_enabled;
@@ -283,7 +282,9 @@
       .forEach(button => button.setAttribute('aria-pressed', String(button.dataset.color === state.color)));
   }
   async function save(publish = false) {
-    if (!loaded || busy) return;
+    if (!loaded || busy) {
+      return;
+    }
     busy = true;
     document.querySelector('.survey-builder').inert = true;
     applyLock();
@@ -322,7 +323,9 @@
   }
 
   function makeItem(type) {
-    while (state.items.some(item => item.id === `question-${state.nextId}`)) state.nextId++;
+    while (state.items.some(item => item.id === `question-${state.nextId}`)) {
+      state.nextId++;
+    }
     return {
       id: `question-${state.nextId++}`,
       type,
@@ -340,21 +343,35 @@
     };
   }
   function questionPageSize() {
-    if (!window.matchMedia('(min-width: 901px)').matches) return 3;
+    if (!window.matchMedia('(min-width: 901px)').matches) {
+      return 3;
+    }
     const panel = document.querySelector('.questions-panel');
     const available =
       panel.clientHeight -
       document.querySelector('.questions-heading').offsetHeight -
       Math.max(44, document.querySelector('.questions-footer').offsetHeight) -
       16;
-    const target = innerHeight <= 850 ? 90 : 104;
+    let targetValue;
+    if (innerHeight <= 850) {
+      targetValue = 90;
+    } else {
+      targetValue = 104;
+    }
+    const target = targetValue;
     return Math.max(1, Math.min(5, Math.floor((available + 6) / (target + 6))));
   }
   function optionPageSize() {
-    return innerHeight <= 950 ? 2 : 3;
+    if (innerHeight <= 950) {
+      return 2;
+    } else {
+      return 3;
+    }
   }
   function questionNumber(item) {
-    if (types[item.type].element) return '—';
+    if (types[item.type].element) {
+      return '—';
+    }
     return questions().findIndex(question => question.id === item.id) + 1;
   }
   function itemTitle(item) {
@@ -362,14 +379,20 @@
   }
   function renderPalette() {
     const search = normalize($('type-search').value.trim());
-    const markup = element =>
-      Object.entries(types)
-        .filter(([key, type]) => Boolean(type.element) === element && normalize(type.label).includes(search))
-        .map(
-          ([key, type]) =>
-            `<button type="button" class="question-type-button" data-add-type="${key}" ${state.items.length >= 20 ? 'disabled' : ''}>${symbol(key)}<span>${type.label}</span>${icon('plus-icon.svg')}</button>`
-        )
-        .join('');
+    const markup = element => {
+      const processedValues = Object.entries(types);
+      const filteredValues = processedValues.filter(
+        ([key, type]) => Boolean(type.element) === element && normalize(type.label()).includes(search)
+      );
+      const mappedValues = filteredValues.map(
+        ([key, type]) =>
+          `<button type="button" class="question-type-button" data-add-type="${key}" ${state.items.length >= 20 ? 'disabled' : ''}>${symbol(key)}` +
+          `<span>${type.label()}` +
+          `</span>${icon('plus-icon.svg')}` +
+          `</button>`
+      );
+      return mappedValues.join('');
+    };
     window.HospitalI18n.setHTML($('question-types'), markup(false));
     window.HospitalI18n.setHTML($('form-elements'), markup(true));
     $('palette-no-match').hidden = Boolean(
@@ -378,16 +401,23 @@
     document.querySelector('.palette-section-heading').hidden = !$('form-elements').children.length;
   }
   function responseShape(item) {
-    if (item.type === 'rating')
+    if (item.type === 'rating') {
       return `<span class="rating-stars ${item.rating_max === 10 ? 'rating-stars-ten' : ''}">${'☆'.repeat(item.rating_max)}</span>`;
-    if (choiceType(item.type))
+    }
+    if (choiceType(item.type)) {
       return `<div class="response-options">${item.options
         .slice(0, 3)
         .map(
           option =>
-            `<span class="response-option ${item.type === 'multiple_choice' ? 'multiple' : ''}"><i></i><span>${escape(option || window.HospitalI18n.t("survey_new.opcion"))}</span></span>`
+            `<span class="response-option ${item.type === 'multiple_choice' ? 'multiple' : ''}">` +
+            `<i>` +
+            `</i>` +
+            `<span>${escape(option || window.HospitalI18n.t("survey_new.opcion"))}` +
+            `</span>` +
+            `</span>`
         )
         .join('')}${item.options.length > 3 ? `<span>+${item.options.length - 3}</span>` : ''}</div>`;
+    }
     if (item.type === 'linear_scale') {
       const range = Array.from(
         { length: item.scale_max - item.scale_min + 1 },
@@ -395,9 +425,12 @@
       );
       return `<div class="scale-stub">${range.map(number => `<span>${number}</span>`).join('')}</div>`;
     }
-    if (item.type === 'divider') return '<span class="element-divider"></span>';
-    if (item.type === 'section')
+    if (item.type === 'divider') {
+      return '<span class="element-divider"></span>';
+    }
+    if (item.type === 'section') {
       return `<span class="section-stub">${escape(item.description || window.HospitalI18n.t("survey_new.descripcion_de_la_seccion"))}</span>`;
+    }
 
     return `<span class="response-stub ${item.type === 'long_text' ? 'long' : ''}">${escape(item.placeholder || defaultPlaceholder(item))}</span>`;
   }
@@ -408,11 +441,20 @@
     }
     window.HospitalI18n.setHTML(
       $('question-pagination'),
-      `<button type="button" data-question-page="${state.questionPage - 1}" aria-label="${window.HospitalI18n.html("survey_new.preguntas_anteriores")}" data-i18n-aria-label="survey_new.preguntas_anteriores" ${state.questionPage === 1 ? 'disabled' : ''}>‹</button><span>${state.questionPage} / ${pages}</span><button type="button" data-question-page="${state.questionPage + 1}" aria-label="${window.HospitalI18n.html("survey_new.preguntas_siguientes")}" data-i18n-aria-label="survey_new.preguntas_siguientes" ${state.questionPage === pages ? 'disabled' : ''}>›</button>`
+      `<button type="button" data-question-page="${state.questionPage - 1}" aria-label="${window.HospitalI18n.html("survey_new.preguntas_anteriores")}"` +
+        ` data-i18n-aria-label="survey_new.preguntas_anteriores" ${state.questionPage === 1 ? 'disabled' : ''}>‹` +
+        `</button>` +
+        `<span>${state.questionPage} / ${pages}` +
+        `</span>` +
+        `<button type="button" data-question-page="${state.questionPage + 1}" aria-label="${window.HospitalI18n.html("survey_new.preguntas_siguientes")}"` +
+        ` data-i18n-aria-label="survey_new.preguntas_siguientes" ${state.questionPage === pages ? 'disabled' : ''}>›` +
+        `</button>`
     );
   }
   function renderCanvas() {
-    if (state.step !== 2) return;
+    if (state.step !== 2) {
+      return;
+    }
     renderedPageSize = questionPageSize();
     const pages = Math.ceil(state.items.length / renderedPageSize) || 1;
     state.questionPage = Math.max(1, Math.min(state.questionPage, pages));
@@ -426,9 +468,35 @@
       state.items
         .slice(start, start + renderedPageSize)
         .map(
-          item => `<article class="question-card ${item.id === state.selectedId ? 'is-selected' : ''}" data-question-id="${item.id}">
-            <div class="question-card-heading"><span class="question-number">${questionNumber(item)}.</span><button type="button" class="select-question" data-select-question="${item.id}" aria-pressed="${item.id === state.selectedId}" title="${escape(itemTitle(item))}">${escape(itemTitle(item))}</button><div class="question-card-tools"><button type="button" class="icon-button" data-item-action="duplicate" aria-label="${window.HospitalI18n.html("survey_new.duplicar_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}" data-i18n-aria-label="survey_new.duplicar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}" ${state.items.length >= 20 ? 'disabled' : ''}>${icon('layers-icon.svg')}</button><button type="button" class="icon-button" data-item-action="delete" aria-label="${window.HospitalI18n.html("survey_new.eliminar_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}" data-i18n-aria-label="survey_new.eliminar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}">${icon('trash-icon.svg')}</button></div></div>
-            <div class="question-response" aria-hidden="true">${responseShape(item)}</div><div class="question-card-footer"><span class="card-type">${symbol(item.type)}${types[item.type].label}</span><span class="card-required">${requirementLabel(item)}</span></div></article>`
+          item =>
+            `<article class="question-card ${item.id === state.selectedId ? 'is-selected' : ''}" data-question-id="${item.id}">
+            ` +
+            `<div class="question-card-heading">` +
+            `<span class="question-number">${questionNumber(item)}.` +
+            `</span>` +
+            `<button type="button" class="select-question" data-select-question="${item.id}" aria-pressed="${item.id === state.selectedId}"` +
+            ` title="${escape(itemTitle(item))}">${escape(itemTitle(item))}` +
+            `</button>` +
+            `<div class="question-card-tools">` +
+            `<button type="button" class="icon-button" data-item-action="duplicate" aria-label="${window.HospitalI18n.html("survey_new.duplicar_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}"` +
+            ` data-i18n-aria-label="survey_new.duplicar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}"` +
+            ` ${state.items.length >= 20 ? 'disabled' : ''}>${icon('layers-icon.svg')}` +
+            `</button>` +
+            `<button type="button" class="icon-button" data-item-action="delete" aria-label="${window.HospitalI18n.html("survey_new.eliminar_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}"` +
+            ` data-i18n-aria-label="survey_new.eliminar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}">${icon('trash-icon.svg')}` +
+            `</button>` +
+            `</div>` +
+            `</div>
+            ` +
+            `<div class="question-response" aria-hidden="true">${responseShape(item)}` +
+            `</div>` +
+            `<div class="question-card-footer">` +
+            `<span class="card-type">${symbol(item.type)}${types[item.type].label()}` +
+            `</span>` +
+            `<span class="card-required">${requirementLabel(item)}` +
+            `</span>` +
+            `</div>` +
+            `</article>`
         )
         .join('')
     );
@@ -438,18 +506,22 @@
         `${questions().length} ${questions().length === 1 ? window.HospitalI18n.t("survey.pregunta") : window.HospitalI18n.t("survey_new.preguntas")}`
     );
     const elements = state.items.length - questions().length;
-    window.HospitalI18n.bindText($('canvas-element-count'), () =>
-      elements
-        ? `${elements} ${elements === 1 ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey_new.elementos_2")}`
-        : ''
-    );
+    window.HospitalI18n.bindText($('canvas-element-count'), () => {
+      if (elements) {
+        return `${elements} ${elements === 1 ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey_new.elementos_2")}`;
+      } else {
+        return '';
+      }
+    });
     $('add-default-question').disabled = state.items.length >= 20;
     renderQuestionPagination(pages);
     applyLock();
   }
   function showSelectedPage() {
     const index = state.items.findIndex(item => item.id === state.selectedId);
-    if (index >= 0) state.questionPage = Math.floor(index / questionPageSize()) + 1;
+    if (index >= 0) {
+      state.questionPage = Math.floor(index / questionPageSize()) + 1;
+    }
   }
   function renderInspector(focusField = null) {
     const item = selected();
@@ -457,56 +529,186 @@
     if (!item) {
       window.HospitalI18n.setHTML(
         $('inspector-fields'),
-        `<div class="inspector-placeholder"><span class="survey-icon violet">${icon('pencil-icon.svg')}</span><span>${window.HospitalI18n.mark("survey_new.selecciona_una_pregunta_para_editar_su_contenido_y_opciones")}</span></div>`
+        `<div class="inspector-placeholder">` +
+          `<span class="survey-icon violet">${icon('pencil-icon.svg')}` +
+          `</span>` +
+          `<span>${window.HospitalI18n.mark("survey_new.selecciona_una_pregunta_para_editar_su_contenido_y_opciones")}` +
+          `</span>` +
+          `</div>`
       );
       return;
     }
     const index = state.items.indexOf(item);
     window.HospitalI18n.setHTML(
       $('inspector-position'),
-      `<span>${index + 1} / ${state.items.length}</span><button type="button" class="icon-button" data-move-item="-1" aria-label="${window.HospitalI18n.html("survey_new.subir_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}" data-i18n-aria-label="survey_new.subir_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" class="icon-button" data-move-item="1" aria-label="${window.HospitalI18n.html("survey_new.bajar_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}" data-i18n-aria-label="survey_new.bajar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}" ${index === state.items.length - 1 ? 'disabled' : ''}>↓</button>`
+      `<span>${index + 1} / ${state.items.length}` +
+        `</span>` +
+        `<button type="button" class="icon-button" data-move-item="-1" aria-label="${window.HospitalI18n.html("survey_new.subir_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}"` +
+        ` data-i18n-aria-label="survey_new.subir_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}"` +
+        ` ${index === 0 ? 'disabled' : ''}>↑` +
+        `</button>` +
+        `<button type="button" class="icon-button" data-move-item="1" aria-label="${window.HospitalI18n.html("survey_new.bajar_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") })}"` +
+        ` data-i18n-aria-label="survey_new.bajar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey.pregunta") }))}"` +
+        ` ${index === state.items.length - 1 ? 'disabled' : ''}>↓` +
+        `</button>`
     );
-    const typeControl = `<div class="builder-field"><label for="question-type">${window.HospitalI18n.mark("survey_new.tipo_de_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey_new.respuesta") })}</label><div class="builder-select"><select id="question-type" data-question-field="type">${Object.entries(
-      types
-    )
-      .map(
-        ([key, type]) =>
-          `<option value="${key}" ${item.type === key ? 'selected' : ''}>${type.label}</option>`
-      )
-      .join('')}</select></div></div>`;
-    let fields =
-      item.type === 'divider'
-        ? ''
-        : `<div class="builder-field"><label for="question-title">${item.type === 'section' ? window.HospitalI18n.t("survey_new.titulo_de_la_seccion") : window.HospitalI18n.t("survey_view.pregunta")}</label><input id="question-title" type="text" data-question-field="title" maxlength="250" placeholder="${item.type === 'section' ? window.HospitalI18n.t("survey_new.titulo_de_la_seccion") : window.HospitalI18n.t("survey_new.escribi_tu_pregunta")}" value="${escape(item.title)}"></div>`;
+    const typeControl =
+      `<div class="builder-field">` +
+      `<label for="question-type">${window.HospitalI18n.mark("survey_new.tipo_de_value", { value0: types[item.type].element ? window.HospitalI18n.t("shared.elemento") : window.HospitalI18n.t("survey_new.respuesta") })}` +
+      `</label>` +
+      `<div class="builder-select">` +
+      `<select id="question-type" data-question-field="type">${Object.entries(types)
+        .map(
+          ([key, type]) =>
+            `<option value="${key}" ${item.type === key ? 'selected' : ''}>${type.label()}</option>`
+        )
+        .join('')}` +
+      `</select>` +
+      `</div>` +
+      `</div>`;
+    let fieldsValue;
+    if (item.type === 'divider') {
+      fieldsValue = '';
+    } else {
+      fieldsValue =
+        `<div class="builder-field">` +
+        `<label for="question-title">${item.type === 'section' ? window.HospitalI18n.t("survey_new.titulo_de_la_seccion") : window.HospitalI18n.t("survey_view.pregunta")}` +
+        `</label>` +
+        `<input id="question-title" type="text" data-question-field="title" maxlength="250" placeholder="${item.type === 'section' ? window.HospitalI18n.t("survey_new.titulo_de_la_seccion") : window.HospitalI18n.t("survey_new.escribi_tu_pregunta")}"` +
+        ` value="${escape(item.title)}">` +
+        `</div>`;
+    }
+    let fields = fieldsValue;
     fields += typeControl;
     if (choiceType(item.type)) {
       const pageSize = optionPageSize();
       const pages = Math.ceil(item.options.length / pageSize);
       state.optionPage = Math.max(1, Math.min(state.optionPage, pages));
       const start = (state.optionPage - 1) * pageSize;
-      fields += `<div class="options-editor"><div class="options-editor-heading">${window.HospitalI18n.mark("survey_new.opciones")} <span>${item.options.length} / 10</span></div>${item.options
-        .slice(start, start + pageSize)
-        .map(
-          (option, offset) =>
-            `<div class="option-row"><span>${start + offset + 1}.</span><input type="text" maxlength="120" data-option="${start + offset}" value="${escape(option)}" aria-label="${window.HospitalI18n.html("survey_new.opcion_value", { value0: start + offset + 1 })}" data-i18n-aria-label="survey_new.opcion_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: start + offset + 1 }))}"><button type="button" class="icon-button" data-remove-option="${start + offset}" aria-label="${window.HospitalI18n.html("survey_new.eliminar_opcion_value", { value0: start + offset + 1 })}" data-i18n-aria-label="survey_new.eliminar_opcion_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: start + offset + 1 }))}" ${item.options.length <= 2 ? 'disabled' : ''}>${icon('trash-icon.svg')}</button></div>`
-        )
-        .join(
-          ''
-        )}<div class="options-editor-footer"><button type="button" class="text-button" id="add-option" ${item.options.length >= 10 ? 'disabled' : ''}>${icon('plus-icon.svg')}${window.HospitalI18n.mark("survey_new.agregar_opcion")}</button><div class="option-paging"><button type="button" data-option-page="${state.optionPage - 1}" aria-label="${window.HospitalI18n.html("survey_new.opciones_anteriores")}" data-i18n-aria-label="survey_new.opciones_anteriores" ${state.optionPage === 1 ? 'disabled' : ''}>‹</button><span>${state.optionPage} / ${pages}</span><button type="button" data-option-page="${state.optionPage + 1}" aria-label="${window.HospitalI18n.html("survey_new.opciones_siguientes")}" data-i18n-aria-label="survey_new.opciones_siguientes" ${state.optionPage === pages ? 'disabled' : ''}>›</button></div></div></div>`;
+      fields +=
+        `<div class="options-editor">` +
+        `<div class="options-editor-heading">${window.HospitalI18n.mark("survey_new.opciones")} ` +
+        `<span>${item.options.length} / 10` +
+        `</span>` +
+        `</div>${item.options
+          .slice(start, start + pageSize)
+          .map(
+            (option, offset) =>
+              `<div class="option-row">` +
+              `<span>${start + offset + 1}.` +
+              `</span>` +
+              `<input type="text" maxlength="120" data-option="${start + offset}" value="${escape(option)}" aria-label="${window.HospitalI18n.html("survey_new.opcion_value", { value0: start + offset + 1 })}"` +
+              ` data-i18n-aria-label="survey_new.opcion_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: start + offset + 1 }))}">` +
+              `<button type="button" class="icon-button" data-remove-option="${start + offset}" aria-label="${window.HospitalI18n.html("survey_new.eliminar_opcion_value", { value0: start + offset + 1 })}"` +
+              ` data-i18n-aria-label="survey_new.eliminar_opcion_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: start + offset + 1 }))}"` +
+              ` ${item.options.length <= 2 ? 'disabled' : ''}>${icon('trash-icon.svg')}` +
+              `</button>` +
+              `</div>`
+          )
+          .join('')}` +
+        `<div class="options-editor-footer">` +
+        `<button type="button" class="text-button" id="add-option" ${item.options.length >= 10 ? 'disabled' : ''}>${icon('plus-icon.svg')}${window.HospitalI18n.mark("survey_new.agregar_opcion")}` +
+        `</button>` +
+        `<div class="option-paging">` +
+        `<button type="button" data-option-page="${state.optionPage - 1}" aria-label="${window.HospitalI18n.html("survey_new.opciones_anteriores")}"` +
+        ` data-i18n-aria-label="survey_new.opciones_anteriores" ${state.optionPage === 1 ? 'disabled' : ''}>‹` +
+        `</button>` +
+        `<span>${state.optionPage} / ${pages}` +
+        `</span>` +
+        `<button type="button" data-option-page="${state.optionPage + 1}" aria-label="${window.HospitalI18n.html("survey_new.opciones_siguientes")}"` +
+        ` data-i18n-aria-label="survey_new.opciones_siguientes" ${state.optionPage === pages ? 'disabled' : ''}>›` +
+        `</button>` +
+        `</div>` +
+        `</div>` +
+        `</div>`;
     } else if (['short_text', 'long_text'].includes(item.type)) {
-      fields += `<div class="builder-field"><label for="question-placeholder">${window.HospitalI18n.mark("survey_new.texto_de_ayuda")}</label><input id="question-placeholder" data-question-field="placeholder" type="text" maxlength="120" placeholder="${window.HospitalI18n.html("survey_new.ej_contanos_tu_experiencia")}" data-i18n-placeholder="survey_new.ej_contanos_tu_experiencia" value="${escape(item.placeholder)}"></div>`;
+      fields +=
+        `<div class="builder-field">` +
+        `<label for="question-placeholder">${window.HospitalI18n.mark("survey_new.texto_de_ayuda")}` +
+        `</label>` +
+        `<input id="question-placeholder" data-question-field="placeholder" type="text" maxlength="120" placeholder="${window.HospitalI18n.html("survey_new.ej_contanos_tu_experiencia")}"` +
+        ` data-i18n-placeholder="survey_new.ej_contanos_tu_experiencia" value="${escape(item.placeholder)}">` +
+        `</div>`;
     } else if (item.type === 'linear_scale') {
-      fields += `<div class="builder-field-grid"><div class="builder-field"><label for="scale-min">${window.HospitalI18n.mark("doctors.desde")}</label><input id="scale-min" data-question-field="scale_min" type="number" min="0" max="1" value="${item.scale_min}"></div><div class="builder-field"><label for="scale-max">${window.HospitalI18n.mark("doctors.hasta")}</label><input id="scale-max" data-question-field="scale_max" type="number" min="2" max="10" value="${item.scale_max}"></div></div><div class="builder-field-grid"><div class="builder-field"><label for="scale-start">${window.HospitalI18n.mark("survey_new.etiqueta_inicial")}</label><input id="scale-start" data-question-field="scale_start" maxlength="40" value="${escape(item.scale_start)}"></div><div class="builder-field"><label for="scale-end">${window.HospitalI18n.mark("survey_new.etiqueta_final")}</label><input id="scale-end" data-question-field="scale_end" maxlength="40" value="${escape(item.scale_end)}"></div></div>`;
+      fields +=
+        `<div class="builder-field-grid">` +
+        `<div class="builder-field">` +
+        `<label for="scale-min">${window.HospitalI18n.mark("doctors.desde")}` +
+        `</label>` +
+        `<input id="scale-min" data-question-field="scale_min" type="number" min="0" max="1" value="${item.scale_min}">` +
+        `</div>` +
+        `<div class="builder-field">` +
+        `<label for="scale-max">${window.HospitalI18n.mark("doctors.hasta")}` +
+        `</label>` +
+        `<input id="scale-max" data-question-field="scale_max" type="number" min="2" max="10" value="${item.scale_max}">` +
+        `</div>` +
+        `</div>` +
+        `<div class="builder-field-grid">` +
+        `<div class="builder-field">` +
+        `<label for="scale-start">${window.HospitalI18n.mark("survey_new.etiqueta_inicial")}` +
+        `</label>` +
+        `<input id="scale-start" data-question-field="scale_start" maxlength="40" value="${escape(item.scale_start)}">` +
+        `</div>` +
+        `<div class="builder-field">` +
+        `<label for="scale-end">${window.HospitalI18n.mark("survey_new.etiqueta_final")}` +
+        `</label>` +
+        `<input id="scale-end" data-question-field="scale_end" maxlength="40" value="${escape(item.scale_end)}">` +
+        `</div>` +
+        `</div>`;
     } else if (item.type === 'rating') {
-      fields += `<div class="builder-field"><label for="rating-max">${window.HospitalI18n.mark("survey_new.cantidad_de_estrellas")}</label><div class="builder-select"><select id="rating-max" data-question-field="rating_max">${[3, 5, 10].map(number => `<option value="${number}" ${item.rating_max === number ? 'selected' : ''} data-i18n="survey_new.value_estrellas" data-i18n-params="${window.HospitalI18n.escape(JSON.stringify({ value0: number }))}">${window.HospitalI18n.html("survey_new.value_estrellas", { value0: number })}</option>`).join('')}</select></div></div>`;
+      fields +=
+        `<div class="builder-field">` +
+        `<label for="rating-max">${window.HospitalI18n.mark("survey_new.cantidad_de_estrellas")}` +
+        `</label>` +
+        `<div class="builder-select">` +
+        `<select id="rating-max" data-question-field="rating_max">${[3, 5, 10]
+          .map(
+            number =>
+              `<option value="${number}" ${item.rating_max === number ? 'selected' : ''} data-i18n="survey_new.value_estrellas"` +
+              ` data-i18n-params="${window.HospitalI18n.escape(JSON.stringify({ value0: number }))}">${window.HospitalI18n.html("survey_new.value_estrellas", { value0: number })}` +
+              `</option>`
+          )
+          .join('')}` +
+        `</select>` +
+        `</div>` +
+        `</div>`;
     } else if (item.type === 'section') {
-      fields += `<div class="builder-field"><label for="section-description">${window.HospitalI18n.mark("survey_new.texto_de_la_seccion")}</label><textarea id="section-description" data-question-field="description" rows="3" maxlength="500" placeholder="${window.HospitalI18n.html("survey_new.introduccion_o_indicaciones")}" data-i18n-placeholder="survey_new.introduccion_o_indicaciones">${escape(item.description)}</textarea></div>`;
+      fields +=
+        `<div class="builder-field">` +
+        `<label for="section-description">${window.HospitalI18n.mark("survey_new.texto_de_la_seccion")}` +
+        `</label>` +
+        `<textarea id="section-description" data-question-field="description" rows="3" maxlength="500" placeholder="${window.HospitalI18n.html("survey_new.introduccion_o_indicaciones")}"` +
+        ` data-i18n-placeholder="survey_new.introduccion_o_indicaciones">${escape(item.description)}` +
+        `</textarea>` +
+        `</div>`;
     }
-    if (!types[item.type].element)
-      fields += `<div class="inspector-toggles"><label class="builder-switch"><span>${window.HospitalI18n.mark("survey_view.obligatoria")}</span><input type="checkbox" role="switch" data-question-field="required" ${item.required ? 'checked' : ''}><i aria-hidden="true"></i></label>${choiceType(item.type) ? `<label class="builder-switch"><span>${window.HospitalI18n.mark("survey_new.permitir_otro")}</span><input type="checkbox" role="switch" data-question-field="other" ${item.other ? 'checked' : ''}><i aria-hidden="true"></i></label>` : ''}</div>`;
+    if (!types[item.type].element) {
+      fields +=
+        `<div class="inspector-toggles">` +
+        `<label class="builder-switch">` +
+        `<span>${window.HospitalI18n.mark("survey_view.obligatoria")}` +
+        `</span>` +
+        `<input type="checkbox" role="switch" data-question-field="required" ${item.required ? 'checked' : ''}>` +
+        `<i aria-hidden="true">` +
+        `</i>` +
+        `</label>${
+          choiceType(item.type)
+            ? `<label class="builder-switch">` +
+              `<span>${window.HospitalI18n.mark("survey_new.permitir_otro")}` +
+              `</span>` +
+              `<input type="checkbox" role="switch" data-question-field="other" ${item.other ? 'checked' : ''}>` +
+              `<i aria-hidden="true">` +
+              `</i>` +
+              `</label>`
+            : ''
+        }` +
+        `</div>`;
+    }
     window.HospitalI18n.setHTML($('inspector-fields'), fields);
     applyLock();
-    if (focusField) $('inspector-fields').querySelector(`[data-question-field="${focusField}"]`)?.focus();
+    if (focusField) {
+      $('inspector-fields').querySelector(`[data-question-field="${focusField}"]`)?.focus();
+    }
   }
   function counts() {
     window.HospitalI18n.bindText($('summary-questions'), () => questions().length);
@@ -515,7 +717,11 @@
       () => questions().filter(item => item.required).length
     );
     window.HospitalI18n.bindText($('summary-elements'), () => state.items.length - questions().length);
-    $('read-form').disabled = $('review-form').disabled = !questions().length;
+    const readButton = $('read-form');
+    const reviewButton = $('review-form');
+    const disabled = !questions().length;
+    reviewButton.disabled = disabled;
+    readButton.disabled = disabled;
   }
   function completedSteps() {
     const infoComplete = Boolean(state.info.title.trim());
@@ -544,18 +750,27 @@
       const current = number === state.step;
       button.classList.toggle('is-current', current);
       button.classList.toggle('is-complete', !current && complete[number - 1]);
-      if (current) button.setAttribute('aria-current', 'step');
-      else button.removeAttribute('aria-current');
-      window.HospitalI18n.bindText(button.querySelector('.step-number'), () =>
-        !current && complete[number - 1] ? '✓' : number
-      );
+      if (current) {
+        button.setAttribute('aria-current', 'step');
+      } else {
+        button.removeAttribute('aria-current');
+      }
+      window.HospitalI18n.bindText(button.querySelector('.step-number'), () => {
+        if (!current && complete[number - 1]) {
+          return '✓';
+        } else {
+          return number;
+        }
+      });
     });
     document
       .querySelectorAll('.step-connector')
       .forEach((line, index) => line.classList.toggle('is-complete', state.step > index + 1));
   }
   function dateLabel(value) {
-    if (!value) return window.HospitalI18n.t("survey_view.sin_definir");
+    if (!value) {
+      return window.HospitalI18n.t("survey_view.sin_definir");
+    }
     const [date, time] = value.split('T');
     const [year, month, day] = date.split('-');
     return `${window.HospitalI18n.date(date + 'T12:00:00Z', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })} · ${time.slice(0, 5)}`;
@@ -564,7 +779,7 @@
     const config = state.config;
     const data = [
       [window.HospitalI18n.t("survey_view.preguntas"), String(questions().length)],
-      [window.HospitalI18n.t("shared.participantes"), audienceLabels[config.audience]],
+      [window.HospitalI18n.t("shared.participantes"), audienceLabels[config.audience]?.()],
       [
         window.HospitalI18n.t("survey_view.respuestas"),
         config.limit_enabled
@@ -596,7 +811,12 @@
     ];
     window.HospitalI18n.setHTML(
       $('publication-summary'),
-      `<h3 class="summary-form-name">${escape(state.form.title.trim() || window.HospitalI18n.t("survey_new.encuesta_sin_titulo"))}</h3><span class="summary-category">${categoryLabels[state.info.category]}</span><dl class="summary-data">${data.map(([name, value]) => `<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}</dl>`
+      `<h3 class="summary-form-name">${escape(state.form.title.trim() || window.HospitalI18n.t("survey_new.encuesta_sin_titulo"))}` +
+        `</h3>` +
+        `<span class="summary-category">${categoryLabels[state.info.category]?.()}` +
+        `</span>` +
+        `<dl class="summary-data">${data.map(([name, value]) => `<div><dt>${name}</dt><dd>${escape(value)}</dd></div>`).join('')}` +
+        `</dl>`
     );
     const labels = [
       window.HospitalI18n.t("survey_new.informacion_interna"),
@@ -609,13 +829,18 @@
       labels
         .map(
           (label, index) =>
-            `<button type="button" data-step="${index + 1}" class="${complete[index] ? 'is-complete' : ''}"><span>${complete[index] ? '✓' : index + 1}</span>${label}</button>`
+            `<button type="button" data-step="${index + 1}" class="${complete[index] ? 'is-complete' : ''}">` +
+            `<span>${complete[index] ? '✓' : index + 1}` +
+            `</span>${label}` +
+            `</button>`
         )
         .join('')
     );
   }
   function goStep(step) {
-    if (![1, 2, 3].includes(step)) return;
+    if (![1, 2, 3].includes(step)) {
+      return;
+    }
     if (step === 2 && !state.designed) {
       state.form.title = state.info.title;
       state.designed = true;
@@ -626,19 +851,23 @@
     });
     $('form-title').value = state.form.title;
     $('form-introduction').value = state.form.introduction;
-    window.HospitalI18n.bindText($('canvas-category'), () => categoryLabels[state.info.category]);
+    window.HospitalI18n.bindText($('canvas-category'), () => categoryLabels[state.info.category]?.());
     window.HospitalI18n.bindText($('step-progress'), () =>
       window.HospitalI18n.t("survey_new.paso_value_de_3", { value0: step })
     );
     $('previous-step').hidden = step === 1;
     $('next-step').hidden = step === 3;
     $('publish-survey').hidden = step !== 3;
-    window.HospitalI18n.bindText($('next-step').querySelector('span'), () =>
-      step === 1
-        ? window.HospitalI18n.t("survey_new.continuar_a_preguntas")
-        : window.HospitalI18n.t("survey_new.continuar_a_configuracion")
-    );
-    if (step === 2 && selected()) showSelectedPage();
+    window.HospitalI18n.bindText($('next-step').querySelector('span'), () => {
+      if (step === 1) {
+        return window.HospitalI18n.t("survey_new.continuar_a_preguntas");
+      } else {
+        return window.HospitalI18n.t("survey_new.continuar_a_configuracion");
+      }
+    });
+    if (step === 2 && selected()) {
+      showSelectedPage();
+    }
     renderSteps();
     renderCanvas();
     renderInspector();
@@ -647,7 +876,9 @@
     applyLock();
   }
   function addItem(type) {
-    if (!types[type] || state.items.length >= 20) return;
+    if (!types[type] || state.items.length >= 20) {
+      return;
+    }
     const item = makeItem(type);
     state.items.push(item);
     state.selectedId = item.id;
@@ -661,27 +892,45 @@
   }
   function updateQuestion(field, value) {
     const item = selected();
-    if (!item) return;
+    if (!item) {
+      return;
+    }
     if (field === 'type') {
-      if (!types[value]) return;
+      if (!types[value]) {
+        return;
+      }
       const wasElement = types[item.type].element;
       item.type = value;
-      if (choiceType(value) && item.options.length < 2)
+      if (choiceType(value) && item.options.length < 2) {
         item.options = [
           window.HospitalI18n.t("survey_new.opcion_1"),
           window.HospitalI18n.t("survey_new.opcion_2")
         ];
-      if (types[value].element) item.required = false;
-      else if (wasElement) item.required = true;
+      }
+      if (types[value].element) {
+        item.required = false;
+      } else if (wasElement) {
+        item.required = true;
+      }
       state.optionPage = 1;
     } else if (['scale_min', 'scale_max', 'rating_max'].includes(field)) {
       const number = Number(value);
-      if (!Number.isInteger(number)) return;
-      if (field === 'scale_min' && ![0, 1].includes(number)) return;
-      if (field === 'scale_max' && (number < 2 || number > 10)) return;
-      if (field === 'rating_max' && ![3, 5, 10].includes(number)) return;
+      if (!Number.isInteger(number)) {
+        return;
+      }
+      if (field === 'scale_min' && ![0, 1].includes(number)) {
+        return;
+      }
+      if (field === 'scale_max' && (number < 2 || number > 10)) {
+        return;
+      }
+      if (field === 'rating_max' && ![3, 5, 10].includes(number)) {
+        return;
+      }
       item[field] = number;
-    } else item[field] = value;
+    } else {
+      item[field] = value;
+    }
     renderCanvas();
     counts();
     renderSteps();
@@ -698,16 +947,78 @@
       state.items
         .map(item => {
           const title = `${escape(itemTitle(item))}${item.required && !types[item.type].element ? ` <em aria-label="${window.HospitalI18n.html("survey_view.obligatoria")}" data-i18n-aria-label="survey_view.obligatoria">*</em>` : ''}`;
-          if (item.type === 'divider') return '<div class="reader-divider" aria-hidden="true"></div>';
-          if (item.type === 'section')
+          if (item.type === 'divider') {
+            return '<div class="reader-divider" aria-hidden="true"></div>';
+          }
+          if (item.type === 'section') {
             return `<section class="reader-item reader-section"><h3>${escape(itemTitle(item))}</h3><p>${escape(item.description)}</p></section>`;
-          if (['short_text', 'long_text', 'date'].includes(item.type))
-            return `<section class="reader-item"><label for="answer-${item.id}">${title}</label>${item.type === 'long_text' ? `<textarea id="answer-${item.id}" rows="3" maxlength="1000" placeholder="${escape(item.placeholder || window.HospitalI18n.t("survey_view.escribi_tu_respuesta"))}"></textarea>` : `<input id="answer-${item.id}" type="${item.type === 'date' ? 'date' : 'text'}" maxlength="250" placeholder="${escape(item.placeholder || window.HospitalI18n.t("survey_new.tu_respuesta"))}">`}</section>`;
-          if (choiceType(item.type))
-            return `<section class="reader-item"><fieldset><legend>${title}</legend>${item.options.map((option, index) => `<label class="reader-answer"><input type="${item.type === 'multiple_choice' ? 'checkbox' : 'radio'}" name="answer-${item.id}" value="${index}"><span>${escape(option || window.HospitalI18n.t("survey_new.opcion_value", { value0: index + 1 }))}</span></label>`).join('')}${item.other ? `<label class="reader-answer"><input type="${item.type === 'multiple_choice' ? 'checkbox' : 'radio'}" name="answer-${item.id}" value="other"><span>${window.HospitalI18n.mark("trace_new.otro")}</span><input type="text" maxlength="120" aria-label="${window.HospitalI18n.html("survey_new.otra_opcion_para_value", { value0: itemTitle(item) })}" data-i18n-aria-label="survey_new.otra_opcion_para_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: itemTitle(item) }))}"></label>` : ''}</fieldset></section>`;
-          const start = item.type === 'rating' ? 1 : item.scale_min;
-          const end = item.type === 'rating' ? item.rating_max : item.scale_max;
-          return `<section class="reader-item"><fieldset><legend>${title}</legend><div class="reader-rating">${Array.from({ length: end - start + 1 }, (_, index) => `<label><span>${item.type === 'rating' ? '☆ ' : ''}${start + index}</span><input type="radio" name="answer-${item.id}" value="${start + index}"></label>`).join('')}</div>${item.type === 'linear_scale' ? `<p class="rating-ends"><span>${escape(item.scale_start)}</span><span>${escape(item.scale_end)}</span></p>` : ''}</fieldset></section>`;
+          }
+          if (['short_text', 'long_text', 'date'].includes(item.type)) {
+            return (
+              `<section class="reader-item">` +
+              `<label for="answer-${item.id}">${title}` +
+              `</label>${
+                item.type === 'long_text'
+                  ? `<textarea id="answer-${item.id}" rows="3" maxlength="1000" placeholder="${escape(item.placeholder || window.HospitalI18n.t("survey_view.escribi_tu_respuesta"))}">` +
+                    `</textarea>`
+                  : `<input id="answer-${item.id}" type="${item.type === 'date' ? 'date' : 'text'}" maxlength="250" placeholder="${escape(item.placeholder || window.HospitalI18n.t("survey_new.tu_respuesta"))}">`
+              }` +
+              `</section>`
+            );
+          }
+          if (choiceType(item.type)) {
+            return (
+              `<section class="reader-item">` +
+              `<fieldset>` +
+              `<legend>${title}` +
+              `</legend>${item.options
+                .map(
+                  (option, index) =>
+                    `<label class="reader-answer">` +
+                    `<input type="${item.type === 'multiple_choice' ? 'checkbox' : 'radio'}" name="answer-${item.id}" value="${index}">` +
+                    `<span>${escape(option || window.HospitalI18n.t("survey_new.opcion_value", { value0: index + 1 }))}` +
+                    `</span>` +
+                    `</label>`
+                )
+                .join('')}${
+                item.other
+                  ? `<label class="reader-answer">` +
+                    `<input type="${item.type === 'multiple_choice' ? 'checkbox' : 'radio'}" name="answer-${item.id}" value="other">` +
+                    `<span>${window.HospitalI18n.mark("trace_new.otro")}` +
+                    `</span>` +
+                    `<input type="text" maxlength="120" aria-label="${window.HospitalI18n.html("survey_new.otra_opcion_para_value", { value0: itemTitle(item) })}"` +
+                    ` data-i18n-aria-label="survey_new.otra_opcion_para_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: itemTitle(item) }))}">` +
+                    `</label>`
+                  : ''
+              }` +
+              `</fieldset>` +
+              `</section>`
+            );
+          }
+          let startValue;
+          if (item.type === 'rating') {
+            startValue = 1;
+          } else {
+            startValue = item.scale_min;
+          }
+          const start = startValue;
+          let endValue;
+          if (item.type === 'rating') {
+            endValue = item.rating_max;
+          } else {
+            endValue = item.scale_max;
+          }
+          const end = endValue;
+          return (
+            `<section class="reader-item">` +
+            `<fieldset>` +
+            `<legend>${title}` +
+            `</legend>` +
+            `<div class="reader-rating">${Array.from({ length: end - start + 1 }, (_, index) => `<label><span>${item.type === 'rating' ? '☆ ' : ''}${start + index}</span><input type="radio" name="answer-${item.id}" value="${start + index}"></label>`).join('')}` +
+            `</div>${item.type === 'linear_scale' ? `<p class="rating-ends"><span>${escape(item.scale_start)}</span><span>${escape(item.scale_end)}</span></p>` : ''}` +
+            `</fieldset>` +
+            `</section>`
+          );
         })
         .join('')
     );
@@ -715,8 +1026,10 @@
   }
   function hydrateTemplate() {
     const key = new URLSearchParams(location.search).get('template');
-    if (!key) return;
-    const template = window.HospitalSurveyTemplates.find(candidate => candidate.category === key);
+    if (!key) {
+      return;
+    }
+    const template = window.HospitalSurveyTemplates().find(candidate => candidate.category === key);
     if (!template) {
       console.error(window.HospitalI18n.t("shared.encuestas_no_se_encontro_la_plantilla_solicitada"));
       return;
@@ -746,23 +1059,32 @@
       'survey_new.gracias_por_tu_tiempo_tu_opinion_nos_ayuda_a_mejorar'
     );
     window.addEventListener('hospital:localechange', () => {
-      if (!loaded) return;
+      if (!loaded) {
+        return;
+      }
       renderPalette();
       renderCanvas();
       renderInspector();
       renderSteps();
       renderPublication();
       applyLock();
-      if ($('builder-form-dialog').open) renderForm();
+      if ($('builder-form-dialog').open) {
+        renderForm();
+      }
     });
 
     document.querySelector('.survey-builder').inert = true;
     try {
-      if (!(await window.HospitalAuth.ready)) return;
-      const params = new URLSearchParams(location.search),
-        id = params.get('id') || params.get('copy_id');
-      if (id) hydrate(await surveysApi.get(id), Boolean(params.get('copy_id')));
-      else hydrateTemplate();
+      if (!(await window.HospitalAuth.ready)) {
+        return;
+      }
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id') || params.get('copy_id');
+      if (id) {
+        hydrate(await surveysApi.get(id), Boolean(params.get('copy_id')));
+      } else {
+        hydrateTemplate();
+      }
       loaded = true;
     } catch (error) {
       api.report(error, 'surveys');
@@ -775,12 +1097,16 @@
       field.value = state.info[field.dataset.info];
     });
     document.querySelectorAll('[data-config]').forEach(field => {
-      if (field.type === 'checkbox') field.checked = state.config[field.dataset.config];
-      else field.value = state.config[field.dataset.config];
+      if (field.type === 'checkbox') {
+        field.checked = state.config[field.dataset.config];
+      } else {
+        field.value = state.config[field.dataset.config];
+      }
     });
     window.HospitalI18n.setHTML(
       $('form-colors'),
       Object.entries(colors)
+        .map(([labelKey, makeLabel]) => [labelKey, makeLabel()])
         .map(
           ([key, [label, color]]) =>
             `<button type="button" class="form-color" data-color="${key}" style="--swatch: ${color}" aria-label="${label}" aria-pressed="${key === state.color}"></button>`
@@ -798,9 +1124,13 @@
     $('type-search').addEventListener('input', renderPalette);
     document.addEventListener('click', event => {
       const stepButton = event.target.closest('[data-step]');
-      if (stepButton) goStep(Number(stepButton.dataset.step));
+      if (stepButton) {
+        goStep(Number(stepButton.dataset.step));
+      }
       const addButton = event.target.closest('[data-add-type]');
-      if (addButton && !addButton.disabled) addItem(addButton.dataset.addType);
+      if (addButton && !addButton.disabled) {
+        addItem(addButton.dataset.addType);
+      }
     });
     $('next-step').addEventListener('click', () => {
       goStep(state.step + 1);
@@ -813,16 +1143,21 @@
     $('add-default-question').addEventListener('click', () => addItem('short_text'));
     $('question-canvas-list').addEventListener('click', event => {
       const card = event.target.closest('[data-question-id]');
-      if (!card) return;
+      if (!card) {
+        return;
+      }
       const item = state.items.find(candidate => candidate.id === card.dataset.questionId);
       const action = event.target.closest('[data-item-action]');
       if (action) {
-        if (action.disabled) return;
+        if (action.disabled) {
+          return;
+        }
         const index = state.items.indexOf(item);
         if (action.dataset.itemAction === 'delete') {
           state.items.splice(index, 1);
-          if (state.selectedId === item.id)
+          if (state.selectedId === item.id) {
             state.selectedId = state.items[Math.min(index, state.items.length - 1)]?.id || null;
+          }
         } else if (state.items.length < 20) {
           const copy = { ...item, id: makeItem(item.type).id, options: [...item.options] };
           state.items.splice(index + 1, 0, copy);
@@ -849,14 +1184,18 @@
     });
     $('question-pagination').addEventListener('click', event => {
       const button = event.target.closest('[data-question-page]');
-      if (!button || button.disabled) return;
+      if (!button || button.disabled) {
+        return;
+      }
       state.questionPage = Number(button.dataset.questionPage);
       renderCanvas();
       $('question-pagination').querySelector('button:not(:disabled)')?.focus();
     });
     document.querySelector('.inspector-panel').addEventListener('click', event => {
       const item = selected();
-      if (!item) return;
+      if (!item) {
+        return;
+      }
       const remove = event.target.closest('[data-remove-option]');
       const paging = event.target.closest('[data-option-page]');
       const move = event.target.closest('[data-move-item]');
@@ -878,8 +1217,8 @@
         state.optionPage = Number(paging.dataset.optionPage);
         renderInspector();
       } else if (move && !move.disabled) {
-        const index = state.items.indexOf(item),
-          target = index + Number(move.dataset.moveItem);
+        const index = state.items.indexOf(item);
+        const target = index + Number(move.dataset.moveItem);
         [state.items[index], state.items[target]] = [state.items[target], state.items[index]];
         showSelectedPage();
         renderCanvas();
@@ -894,9 +1233,10 @@
       const field = event.target;
       if (field.dataset.info) {
         state.info[field.dataset.info] = field.value;
-        window.HospitalI18n.bindText($('canvas-category'), () => categoryLabels[state.info.category]);
-      } else if (field.dataset.form) state.form[field.dataset.form] = field.value;
-      else if (field.dataset.config) {
+        window.HospitalI18n.bindText($('canvas-category'), () => categoryLabels[state.info.category]?.());
+      } else if (field.dataset.form) {
+        state.form[field.dataset.form] = field.value;
+      } else if (field.dataset.config) {
         state.config[field.dataset.config] = field.type === 'checkbox' ? field.checked : field.value;
         $('response-limit').disabled = !state.config.limit_enabled;
         $('opens-at').disabled = !state.config.opens_enabled;
@@ -904,20 +1244,27 @@
       } else if (field.dataset.option !== undefined && selected()) {
         selected().options[Number(field.dataset.option)] = field.value;
         renderCanvas();
-      } else if (field.dataset.questionField && field.dataset.questionField !== 'type')
+      } else if (field.dataset.questionField && field.dataset.questionField !== 'type') {
         updateQuestion(field.dataset.questionField, field.type === 'checkbox' ? field.checked : field.value);
+      }
       renderSteps();
       renderPublication();
     });
     const pointerSelects = new WeakSet();
     $('survey-builder-form').addEventListener('pointerdown', event => {
-      if (event.target.matches('select')) pointerSelects.add(event.target);
+      if (event.target.matches('select')) {
+        pointerSelects.add(event.target);
+      }
     });
     $('survey-builder-form').addEventListener('keydown', event => {
-      if (event.target.matches('select')) pointerSelects.delete(event.target);
+      if (event.target.matches('select')) {
+        pointerSelects.delete(event.target);
+      }
     });
     $('survey-builder-form').addEventListener('focusout', event => {
-      if (event.target.matches('select')) pointerSelects.delete(event.target);
+      if (event.target.matches('select')) {
+        pointerSelects.delete(event.target);
+      }
     });
     $('survey-builder-form').addEventListener('change', event => {
       const field = event.target;
@@ -925,11 +1272,15 @@
         const pointer = pointerSelects.has(field);
         updateQuestion('type', field.value);
         renderInspector(pointer ? null : 'type');
-      } else if (field.matches('select') && pointerSelects.has(field)) field.blur();
+      } else if (field.matches('select') && pointerSelects.has(field)) {
+        field.blur();
+      }
     });
     $('form-colors').addEventListener('click', event => {
       const button = event.target.closest('[data-color]');
-      if (!button) return;
+      if (!button) {
+        return;
+      }
       state.color = button.dataset.color;
       document.querySelector('.form-canvas').dataset.formColor = state.color;
       $('form-colors')
