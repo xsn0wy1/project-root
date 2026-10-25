@@ -1,3 +1,8 @@
+/* Shares document metadata, upload and download requests across document pages.
+ * API: documents list/get/create-token/create/update/replace-file/archive/restore/bulk-archive;
+ * patient-link/public-file/content; catalogs document-categories/patients.
+ * DOM: none; calls are exposed through the existing DocumentApi object.
+ */
 (() => {
   "use strict";
   const api = window.HospitalApi;
@@ -6,21 +11,22 @@
   const size = bytes => {
     if (bytes < 1024) {
       return window.HospitalI18n.t("document_api.value_b", { value0: bytes });
+    } else if (bytes < 1048576) {
+      return window.HospitalI18n.t("document_api.value_kb", { value0: (bytes / 1024).toFixed(1) });
     } else {
-      if (bytes < 1048576) {
-        return window.HospitalI18n.t("document_api.value_kb", { value0: (bytes / 1024).toFixed(1) });
-      } else {
-        return window.HospitalI18n.t("document_api.value_mb", { value0: (bytes / 1048576).toFixed(1) });
-      }
+      return window.HospitalI18n.t("document_api.value_mb", { value0: (bytes / 1048576).toFixed(1) });
     }
   };
-  const date = value =>
-    value
-      ? new Intl.DateTimeFormat(window.HospitalI18n.locale, {
-          timeZone: "America/Montevideo",
-          dateStyle: "short"
-        }).format(new Date(value.includes("T") ? value : value + "T12:00:00Z"))
-      : "";
+  const date = value => {
+    if (value) {
+      return new Intl.DateTimeFormat(window.HospitalI18n.locale, {
+        timeZone: "America/Montevideo",
+        dateStyle: "short"
+      }).format(new Date(value.includes("T") ? value : value + "T12:00:00Z"));
+    } else {
+      return "";
+    }
+  };
   const time = value =>
     new Intl.DateTimeFormat(window.HospitalI18n.locale, {
       timeZone: "America/Montevideo",
@@ -28,7 +34,9 @@
       minute: "2-digit"
     }).format(new Date(value));
   async function save(fields, file, create = false) {
-    if (!file) return api.post(path("update"), fields);
+    if (!file) {
+      return api.post(path("update"), fields);
+    }
     const body = new FormData();
     Object.entries(fields).forEach(([key, value]) => body.append(key, value ?? ""));
     body.append("file", file);
@@ -43,7 +51,7 @@
     list: query => api.getPage(`${path("list")}&${new URLSearchParams(query)}`),
     createToken: () => api.get(path("create-token")),
     categories: () => api.get("catalogs.php?action=document-categories"),
-    patients: q => api.post('catalogs.php?action=patients', { q }),
+    patients: query => api.post('catalogs.php?action=patients', { q: query }),
     archive: (id, version) => api.post(path("archive"), { id, version }),
     restore: (id, version) => api.post(path("restore"), { id, version }),
     bulkArchive: documents => api.post(path("bulk-archive"), { documents }),

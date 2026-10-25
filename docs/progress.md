@@ -391,3 +391,5 @@ Batch 2 shared-control/Settings readability work is verified: 161 UI checks, 136
 Batch 3 clinical directories are verified: 384 UI, 43 fleet browser, 99 fleet API and 98 boundary checks pass, as does source equivalence. Continue the remaining management scripts. The fleet suite requires its own fresh/admin-only fixture, supplied by verify_project.py --fleet-browser.
 
 Batch 4 remaining management scripts are verified: 742 UI checks, live language switching, 98 boundary checks and source equivalence pass. Continue document scripts, then transfers/surveys and shared API infrastructure before PHP.
+
+Batch 5 document scripts are verified: 184 UI, 182 document browser, 46 document-link API and 98 boundary checks pass, as does source equivalence. Continue transfer/map scripts and survey scripts.

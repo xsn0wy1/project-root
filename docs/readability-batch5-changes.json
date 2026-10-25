@@ -1,0 +1,22 @@
+{
+  "public/src/js/documents/document-api.js": {
+    "after_sha256": "b66d9b1bc34b8baf699226478756ff8e03856ae44598c4de9c0706638ac47b70",
+    "before_sha256": "65667cb726f09e8dc3be62cd3edb268ea85632c9748262fdf560fbb7bfc857e5",
+    "reason": "Readability only: page/API/DOM headers; explicit guards, choices, declarations and named file-extension steps; query and rotated-image dimension names preserve payload keys; QR/canvas assignments retain original write order; template concatenation preserves exact text/evaluation order."
+  },
+  "public/src/js/documents/document-form.js": {
+    "after_sha256": "f1cc0343ea739214d28a0681b0d97b412ddcbf4e365367ccd74e6286889ea026",
+    "before_sha256": "fa3ddd71ab4346cc3a848bc340f94400b1cb6a0e330a3494b2378d9f8d9e19db",
+    "reason": "Readability only: page/API/DOM headers; explicit guards, choices, declarations and named file-extension steps; query and rotated-image dimension names preserve payload keys; QR/canvas assignments retain original write order; template concatenation preserves exact text/evaluation order."
+  },
+  "public/src/js/documents/documents-viewer.js": {
+    "after_sha256": "d1c57c93a6b1bdc688ec730497ea6fd0116ffcc6b1039243894d01ca0c6fdecc",
+    "before_sha256": "4ede69fc2d8ff2717166d0e231b0f1e3a6d9f75f06e26aa8d600fb03855f6fca",
+    "reason": "Readability only: page/API/DOM headers; explicit guards, choices, declarations and named file-extension steps; query and rotated-image dimension names preserve payload keys; QR/canvas assignments retain original write order; template concatenation preserves exact text/evaluation order."
+  },
+  "public/src/js/documents/documents.js": {
+    "after_sha256": "1302ffe2baa5f24c516803fa338eb25e73ee5103a1ec8a5d64e9a4ab2407dcac",
+    "before_sha256": "b43ba354dc19379cd94b877fd58b90bf1ec5a987e509af005355ab365f9939b8",
+    "reason": "Readability only: page/API/DOM headers; explicit guards, choices, declarations and named file-extension steps; query and rotated-image dimension names preserve payload keys; QR/canvas assignments retain original write order; template concatenation preserves exact text/evaluation order."
+  }
+}

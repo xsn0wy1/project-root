@@ -1,3 +1,8 @@
+/* Displays immutable document versions, viewer tools, sharing and archive dialogs.
+ * API: documents get/content/archive/restore/patient-link/public-file via DocumentApi.
+ * DOM: document-title, page-frame, file-version, qr-dialog and archive-dialog.
+ * $ finds an element by ID; x/y are QR grid coordinates.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
   await window.HospitalI18n.ready;
@@ -8,23 +13,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   const report = error => window.HospitalApi.report(error, "document-viewer");
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
-  let data,
-    file,
-    pdf,
-    pdfjs,
-    image,
-    renderTask,
-    thumbnailObserver,
-    thumbnailBusy = false;
-  let thumbnailNext = 1,
-    thumbnailQueue = [],
-    renderRevision = 0,
-    resizeTimer,
-    toastTimer;
-  let passwordUpdate, loadingTask;
-  let patientLink = null,
-    qrBusy = false,
-    archiveBusy = false;
+  let data;
+  let file;
+  let pdf;
+  let pdfjs;
+  let image;
+  let renderTask;
+  let thumbnailObserver;
+  let thumbnailBusy = false;
+  let thumbnailNext = 1;
+  let thumbnailQueue = [];
+  let renderRevision = 0;
+  let resizeTimer;
+  let toastTimer;
+  let passwordUpdate;
+  let loadingTask;
+  let patientLink = null;
+  let qrBusy = false;
+  let archiveBusy = false;
   const state = { page: 1, pages: 0, zoom: 100, rotation: 0, thumbnails: true };
   const tools = [
     "page-input",
@@ -81,17 +87,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         response.status,
         payload?.error?.code || "DOCUMENT_READ_FAILED"
       );
-      if (response.status === 401)
+      if (response.status === 401) {
         window.dispatchEvent(new CustomEvent("hospital:unauthorized", { detail: error }));
+      }
       throw error;
     }
     return new Uint8Array(await response.arrayBuffer());
   }
   function metadata() {
     window.HospitalI18n.bindText($("document-title"), () => data.title);
-    window.HospitalI18n.bindText($("patient-name"), () =>
-      data.patient ? data.patient.full_name : window.HospitalI18n.t("documents_viewer.sin_paciente_asociado")
-    );
+    window.HospitalI18n.bindText($("patient-name"), () => {
+      if (data.patient) {
+        return data.patient.full_name;
+      } else {
+        return window.HospitalI18n.t("documents_viewer.sin_paciente_asociado");
+      }
+    });
     window.HospitalI18n.bindText($("document-id"), () => data.id);
     window.HospitalI18n.bindText($("document-kind"), () => window.HospitalI18n.category(data.category));
     window.HospitalI18n.bindText($("document-format"), () => file.extension.toUpperCase());
@@ -106,11 +117,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("document-description").hidden = !data.description;
     window.HospitalI18n.bindText($("document-date"), () => api.date(data.document_date));
     window.HospitalI18n.bindText($("qr-document-id"), () => data.id);
-    window.HospitalI18n.bindText($("delete-button").querySelector("span"), () =>
-      data.archived_at
-        ? window.HospitalI18n.t("documents_viewer.restaurar_documento")
-        : window.HospitalI18n.t("documents_viewer.eliminar_documento")
-    );
+    window.HospitalI18n.bindText($("delete-button").querySelector("span"), () => {
+      if (data.archived_at) {
+        return window.HospitalI18n.t("documents_viewer.restaurar_documento");
+      } else {
+        return window.HospitalI18n.t("documents_viewer.eliminar_documento");
+      }
+    });
     $("edit-document-menu").disabled = Boolean(data.archived_at);
     document.documentElement.dataset.documentTitle = window.HospitalI18n.t(
       "documents_viewer.value_visor_de_documentos",
@@ -127,7 +140,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         value2: state.zoom
       });
     }
-    if (data?.archived_at) return window.HospitalI18n.t("documents_viewer.documento_archivado");
+    if (data?.archived_at) {
+      return window.HospitalI18n.t("documents_viewer.documento_archivado");
+    }
     if (file?.extension === 'docx') {
       return window.HospitalI18n.t(
         "documents_viewer.archivo_docx_descarga_el_archivo_para_abrirlo_en_tu_dispositivo"
@@ -151,8 +166,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("thumbnail-list")
       .querySelectorAll("button")
       .forEach(button => {
-        if (Number(button.dataset.page) === state.page) button.setAttribute("aria-current", "page");
-        else button.removeAttribute("aria-current");
+        if (Number(button.dataset.page) === state.page) {
+          button.setAttribute("aria-current", "page");
+        } else {
+          button.removeAttribute("aria-current");
+        }
       });
   }
   async function renderPage() {
@@ -174,12 +192,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
     const viewport = $("document-viewport");
-    const width = Math.max(1, viewport.clientWidth - 24),
-      height = Math.max(1, viewport.clientHeight - 24);
+    const width = Math.max(1, viewport.clientWidth - 24);
+    const height = Math.max(1, viewport.clientHeight - 24);
     try {
       if (pdf) {
         const page = await pdf.getPage(state.page);
-        if (revision !== renderRevision) return;
+        if (revision !== renderRevision) {
+          return;
+        }
         const rotation = (page.rotate + state.rotation) % 360;
         const natural = page.getViewport({ scale: 1, rotation });
         const scale = (Math.min(width / natural.width, height / natural.height) * state.zoom) / 100;
@@ -206,9 +226,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           transform: [pixelRatio, 0, 0, pixelRatio, 0, 0]
         });
         await renderTask.promise;
-        if (revision !== renderRevision) return;
+        if (revision !== renderRevision) {
+          return;
+        }
         const text = await page.getTextContent();
-        if (revision !== renderRevision) return;
+        if (revision !== renderRevision) {
+          return;
+        }
         window.HospitalI18n.bindAttr($("document-sheet"), "aria-label", () =>
           window.HospitalI18n.t("documents_viewer.pagina_value_value", {
             value0: state.page,
@@ -220,41 +244,61 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       } else {
         const rotated = state.rotation % 180 !== 0;
-        const w = rotated ? image.naturalHeight : image.naturalWidth,
-          h = rotated ? image.naturalWidth : image.naturalHeight;
-        const scale = (Math.min(width / w, height / h) * state.zoom) / 100;
-        $("page-frame").style.width = `${w * scale}px`;
-        $("page-frame").style.height = `${h * scale}px`;
+        let rotatedWidthValue;
+        if (rotated) {
+          rotatedWidthValue = image.naturalHeight;
+        } else {
+          rotatedWidthValue = image.naturalWidth;
+        }
+        const rotatedWidth = rotatedWidthValue;
+        let rotatedHeightValue;
+        if (rotated) {
+          rotatedHeightValue = image.naturalWidth;
+        } else {
+          rotatedHeightValue = image.naturalHeight;
+        }
+        const rotatedHeight = rotatedHeightValue;
+        const scale = (Math.min(width / rotatedWidth, height / rotatedHeight) * state.zoom) / 100;
+        $("page-frame").style.width = `${rotatedWidth * scale}px`;
+        $("page-frame").style.height = `${rotatedHeight * scale}px`;
         $("document-sheet").style.width = `${image.naturalWidth}px`;
         $("document-sheet").style.height = `${image.naturalHeight}px`;
         $("document-sheet").style.transform =
           `translate(-50%, -50%) rotate(${state.rotation}deg) scale(${scale})`;
       }
     } catch (error) {
-      if (error.name !== "RenderingCancelledException") report(error);
+      if (error.name !== "RenderingCancelledException") {
+        report(error);
+      }
     }
   }
   function setPage(value) {
     const next = Number.parseInt(value, 10);
-    if (!Number.isFinite(next) || !state.pages) return;
+    if (!Number.isFinite(next) || !state.pages) {
+      return;
+    }
     state.page = Math.max(1, Math.min(state.pages, next));
-    if (state.page >= thumbnailNext) appendThumbnails(Math.max(state.page - 20, thumbnailNext));
+    if (state.page >= thumbnailNext) {
+      appendThumbnails(Math.max(state.page - 20, thumbnailNext));
+    }
     renderPage();
     $("document-viewport").scrollTop = 0;
     $("thumbnail-list").querySelector(`[data-page="${state.page}"]`)?.scrollIntoView({ block: "nearest" });
   }
   async function processThumbnails() {
-    if (thumbnailBusy) return;
+    if (thumbnailBusy) {
+      return;
+    }
     thumbnailBusy = true;
     try {
       while (thumbnailQueue.length) {
-        const button = thumbnailQueue.shift(),
-          number = Number(button.dataset.page),
-          canvas = button.querySelector("canvas");
+        const button = thumbnailQueue.shift();
+        const number = Number(button.dataset.page);
+        const canvas = button.querySelector("canvas");
         try {
           if (pdf) {
-            const page = await pdf.getPage(number),
-              base = page.getViewport({ scale: 1 });
+            const page = await pdf.getPage(number);
+            const base = page.getViewport({ scale: 1 });
             const view = page.getViewport({ scale: Math.min(82 / base.width, 110 / base.height) });
             canvas.width = Math.ceil(view.width);
             canvas.height = Math.ceil(view.height);
@@ -278,7 +322,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Large PDFs allocate thumbnail canvases only as pages enter the rail.
     const end = Math.min(state.pages, start + 99);
     for (let number = start; number <= end; number++) {
-      if ($("thumbnail-list").querySelector(`[data-page="${number}"]`)) continue;
+      if ($("thumbnail-list").querySelector(`[data-page="${number}"]`)) {
+        continue;
+      }
       const button = document.createElement("button");
       button.type = "button";
       button.className = "thumbnail-button";
@@ -323,7 +369,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function openFile() {
     patientLink = null;
     $("patient-qr-url").value = "";
-    if ($("qr-dialog").open) $("qr-dialog").close();
+    if ($("qr-dialog").open) {
+      $("qr-dialog").close();
+    }
     [...tools].forEach(name => {
       $(name).disabled = true;
     });
@@ -348,7 +396,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadingTask = null;
       await previous.destroy();
     }
-    if (image?.src) URL.revokeObjectURL(image.src);
+    if (image?.src) {
+      URL.revokeObjectURL(image.src);
+    }
     image = null;
     state.page = 1;
     state.pages = 0;
@@ -387,11 +437,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           wasmUrl: window.HospitalApi.page("assets/vendor/pdfjs/wasm/")
         });
         loadingTask.onPassword = (update, reason) => {
-          if (reason === pdfjs.PasswordResponses.INCORRECT_PASSWORD)
+          if (reason === pdfjs.PasswordResponses.INCORRECT_PASSWORD) {
             report(new Error(window.HospitalI18n.t("documents_viewer.contrasena_de_pdf_incorrecta")));
+          }
           passwordUpdate = update;
           $("pdf-password").value = "";
-          if (!$("pdf-password-dialog").open) $("pdf-password-dialog").showModal();
+          if (!$("pdf-password-dialog").open) {
+            $("pdf-password-dialog").showModal();
+          }
         };
         pdf = await loadingTask.promise;
         state.pages = pdf.numPages;
@@ -419,8 +472,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("download-button").disabled = true;
     const selected = file;
     try {
-      const content = await bytes(true),
-        url = URL.createObjectURL(new Blob([content], { type: selected.mime_type }));
+      const content = await bytes(true);
+      const url = URL.createObjectURL(new Blob([content], { type: selected.mime_type }));
       const link = document.createElement("a");
       link.href = url;
       link.download = selected.original_name;
@@ -446,8 +499,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.HospitalI18n.t("documents_viewer.imprimir_documento")
       );
       document.body.append(frame);
-      const doc = frame.contentDocument,
-        style = doc.createElement("style");
+      const doc = frame.contentDocument;
+      const style = doc.createElement("style");
       window.HospitalI18n.bindText(
         style,
         () =>
@@ -458,8 +511,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       for (let number = 1; number <= state.pages; number++) {
         const printImage = doc.createElement("img");
         if (pdf) {
-          const page = await pdf.getPage(number),
-            base = page.getViewport({ scale: 1 });
+          const page = await pdf.getPage(number);
+          const base = page.getViewport({ scale: 1 });
           const view = page.getViewport({ scale: Math.min(2, 4096 / Math.max(base.width, base.height)) });
           const canvas = document.createElement("canvas");
           canvas.width = Math.ceil(view.width);
@@ -468,7 +521,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           printImage.src = canvas.toDataURL("image/png");
           canvas.width = 0;
           canvas.height = 0;
-        } else printImage.src = image.src;
+        } else {
+          printImage.src = image.src;
+        }
         doc.body.append(printImage);
         await printImage.decode();
       }
@@ -490,7 +545,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
       report(error);
       $("share-url").value = shareUrl();
-      if (!$("share-dialog").open) $("share-dialog").showModal();
+      if (!$("share-dialog").open) {
+        $("share-dialog").showModal();
+      }
       $("share-url").select();
     }
   }
@@ -514,8 +571,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   $("thumbnail-list").addEventListener("scroll", () => {
     const rail = $("thumbnail-list");
-    if (rail.scrollTop + rail.clientHeight >= rail.scrollHeight - 250 && thumbnailNext <= state.pages)
+    if (rail.scrollTop + rail.clientHeight >= rail.scrollHeight - 250 && thumbnailNext <= state.pages) {
       appendThumbnails();
+    }
   });
   $("zoom-out").addEventListener("click", () => {
     state.zoom = Math.max(50, state.zoom - 10);
@@ -535,8 +593,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   $("fullscreen-button").addEventListener("click", async () => {
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await $("viewer-container").requestFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await $("viewer-container").requestFullscreen();
+      }
     } catch (error) {
       report(error);
     }
@@ -570,10 +631,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     qrBusy = busy;
     $("qr-button").disabled = busy || Boolean(data.archived_at);
     $("file-version").disabled = busy || Boolean(data.archived_at);
-    $("copy-qr-link").disabled = $("revoke-qr-link").disabled = busy || !patientLink;
+    const copyButton = $("copy-qr-link");
+    const revokeButton = $("revoke-qr-link");
+    const disabled = busy || !patientLink;
+    revokeButton.disabled = disabled;
+    copyButton.disabled = disabled;
   }
   $("qr-button").addEventListener("click", async () => {
-    if (qrBusy) return;
+    if (qrBusy) {
+      return;
+    }
     qrControls(true);
     try {
       patientLink = await api.patientLink(id, data.version, file.version);
@@ -581,27 +648,35 @@ document.addEventListener("DOMContentLoaded", async () => {
       const qr = window.qrcode(0, "M");
       qr.addData(url, "Byte");
       qr.make();
-      const canvas = $("qr-canvas"),
-        context = canvas.getContext("2d"),
-        count = qr.getModuleCount(),
-        cell = Math.floor(264 / (count + 8));
-      canvas.width = canvas.height = (count + 8) * cell;
+      const canvas = $("qr-canvas");
+      const context = canvas.getContext("2d");
+      const count = qr.getModuleCount();
+      const cell = Math.floor(264 / (count + 8));
+      const canvasSize = (count + 8) * cell;
+      canvas.height = canvasSize;
+      canvas.width = canvasSize;
       context.fillStyle = "#fff";
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.fillStyle = "#111827";
-      for (let y = 0; y < count; y++)
-        for (let x = 0; x < count; x++)
-          if (qr.isDark(y, x)) context.fillRect((x + 4) * cell, (y + 4) * cell, cell, cell);
+      for (let y = 0; y < count; y++) {
+        for (let x = 0; x < count; x++) {
+          if (qr.isDark(y, x)) {
+            context.fillRect((x + 4) * cell, (y + 4) * cell, cell, cell);
+          }
+        }
+      }
       $("patient-qr-url").value = url;
-      window.HospitalI18n.bindText($("qr-expiry"), () =>
-        patientLink
-          ? window.HospitalI18n.t("documents_viewer.patient_link_expires", {
-              date: api.date(patientLink.expires_at),
-              time: api.time(patientLink.expires_at),
-              version: patientLink.file_version
-            })
-          : ''
-      );
+      window.HospitalI18n.bindText($("qr-expiry"), () => {
+        if (patientLink) {
+          return window.HospitalI18n.t("documents_viewer.patient_link_expires", {
+            date: api.date(patientLink.expires_at),
+            time: api.time(patientLink.expires_at),
+            version: patientLink.file_version
+          });
+        } else {
+          return '';
+        }
+      });
       $("qr-dialog").showModal();
     } catch (error) {
       patientLink = null;
@@ -612,10 +687,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
   $("copy-qr-link").addEventListener("click", async () => {
-    if (qrBusy || !patientLink) return;
+    if (qrBusy || !patientLink) {
+      return;
+    }
     try {
-      if (Date.parse(patientLink.expires_at) <= Date.now())
+      if (Date.parse(patientLink.expires_at) <= Date.now()) {
         throw new Error(window.HospitalI18n.t("errors.document_link_invalid"));
+      }
       await navigator.clipboard.writeText(api.patientFile(patientLink.token));
     } catch (error) {
       report(error);
@@ -624,7 +702,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
   $("revoke-qr-link").addEventListener("click", async () => {
-    if (qrBusy || !patientLink) return;
+    if (qrBusy || !patientLink) {
+      return;
+    }
     qrControls(true);
     try {
       await api.revokePatientLink(id, data.version, patientLink.file_version, patientLink.token);
@@ -640,11 +720,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
   async function archiveDocument() {
-    if (archiveBusy) return;
+    if (archiveBusy) {
+      return;
+    }
     const restore = Boolean(data.archived_at);
     archiveBusy = true;
     $("delete-button").disabled = true;
-    $("archive-dialog").querySelectorAll('button').forEach(button => { button.disabled = true; });
+    $("archive-dialog")
+      .querySelectorAll('button')
+      .forEach(button => {
+        button.disabled = true;
+      });
     try {
       await (restore ? api.restore(id, data.version) : api.archive(id, data.version));
       location.assign("documents.php");
@@ -652,20 +738,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       report(error);
       archiveBusy = false;
       $("delete-button").disabled = false;
-      $("archive-dialog").querySelectorAll('button').forEach(button => { button.disabled = false; });
+      $("archive-dialog")
+        .querySelectorAll('button')
+        .forEach(button => {
+          button.disabled = false;
+        });
     }
   }
   $("delete-button").addEventListener("click", () => {
-    if (data.archived_at) return archiveDocument();
+    if (data.archived_at) {
+      return archiveDocument();
+    }
     window.HospitalI18n.bindText($("archive-description"), () =>
       window.HospitalI18n.t("documents_viewer.archivar_value_se_conservaran_el_archivo_y_su_historial", {
         value0: data.title
-      }));
+      })
+    );
     $("archive-dialog").showModal();
   });
   $("confirm-archive").addEventListener("click", archiveDocument);
   $("archive-dialog").addEventListener("cancel", event => {
-    if (archiveBusy) event.preventDefault();
+    if (archiveBusy) {
+      event.preventDefault();
+    }
   });
   $("file-version").addEventListener("change", async event => {
     event.target.disabled = true;
@@ -697,11 +792,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     .querySelectorAll("[data-close-dialog]")
     .forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
   document.addEventListener("click", event => {
-    if (!event.target.closest(".more-wrap")) closeMenu();
+    if (!event.target.closest(".more-wrap")) {
+      closeMenu();
+    }
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeMenu();
-    if (event.target.closest("input,textarea,select,button,dialog") || !state.pages) return;
+    if (event.key === "Escape") {
+      closeMenu();
+    }
+    if (event.target.closest("input,textarea,select,button,dialog") || !state.pages) {
+      return;
+    }
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       setPage(state.page - 1);
@@ -717,18 +818,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   }).observe($("document-viewport"));
   window.addEventListener("pagehide", () => {
     thumbnailObserver?.disconnect();
-    if (image?.src) URL.revokeObjectURL(image.src);
+    if (image?.src) {
+      URL.revokeObjectURL(image.src);
+    }
   });
   async function init() {
     try {
-      if (!(await window.HospitalAuth.ready)) return;
-      if (!/^[1-9][0-9]*$/.test(id || ""))
+      if (!(await window.HospitalAuth.ready)) {
+        return;
+      }
+      if (!/^[1-9][0-9]*$/.test(id || "")) {
         throw new Error(window.HospitalI18n.t("documents_viewer.selecciona_un_documento_desde_la_lista"));
+      }
       data = await api.get(id);
       const requested = params.get("file_version");
       file = requested ? data.file_versions.find(item => String(item.version) === requested) : data.file;
-      if (!file)
+      if (!file) {
         throw new Error(window.HospitalI18n.t("documents_viewer.no_se_encontro_esa_version_del_archivo"));
+      }
       $("file-version").replaceChildren(
         ...data.file_versions.map(item =>
           window.HospitalI18n.option(
@@ -746,15 +853,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       actions.forEach(name => {
         $(name).disabled = false;
       });
-      if (data.archived_at)
+      if (data.archived_at) {
         ["download-button", "print-button", "qr-button"].forEach(name => {
           $(name).disabled = true;
         });
+      }
       await openFile();
       $("file-version").disabled = Boolean(data.archived_at);
     } catch (error) {
       report(error);
-      if (!file) window.HospitalI18n.bindText($("document-title"), () => '');
+      if (!file) {
+        window.HospitalI18n.bindText($("document-title"), () => '');
+      }
     }
   }
   init();

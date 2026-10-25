@@ -35,3 +35,10 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Added page/API/DOM headers; private translated getters are lazy functions; expanded guards, declarations, action branches and normalization stages; named account/person/destination records and comparators. Removed an identity-only route code wrapper.
 - Long templates preserve exact raw/cooked text and expression order. Kept native collection callbacks, short attribute choices, unused `_` placeholders and schematic x coordinates where clearer.
 - PASS: 742 UI checks / 20 desktop-phone/theme cases / 45 interaction groups, live bilingual switching suite, 98 existing boundary checks; source equivalence: 91 PHP / 35 JS / five exact files. No script errors or asset failures.
+
+## Batch 5 — document pages and requests
+
+- Files: document-api.js, document-form.js, documents.js and documents-viewer.js; added purpose/API/DOM headers.
+- Expanded guards, choices and declarations; named file-extension stages, query arguments and rotated image dimensions. QR/canvas assignments are explicit and retain the original setter order.
+- Kept native FormData serialization, two-field entry destructuring, short URL/attribute choices and QR x/y coordinates where clearer; request keys and binary handling are unchanged. Template splitting proves identical text/expression order.
+- PASS: 184 UI checks / 16 desktop-phone/theme cases; 182 document browser checks across eight root/mount/language/theme/viewport cases; 46 document-link SQL/API checks; 98 boundary checks. Source equivalence: 91 PHP / 35 JS / four exact files.

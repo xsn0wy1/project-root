@@ -1,3 +1,7 @@
+/* Lists documents, filters, pagination, selections and archive/restore actions.
+ * API: documents list/bulk-archive/restore through DocumentApi.
+ * DOM: documentsGrid, documentSearchInput, documentSelectionBar and documentActionStatus.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
   function emptyListing() {
@@ -38,15 +42,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const cancelSelectionButton = document.getElementById("cancelDocumentSelection");
   const actionStatus = document.getElementById("documentActionStatus");
   const selectedDocumentIds = new Set();
-  let total = 0,
-    loaded = false,
-    loading = false,
-    requestRevision = 0,
-    listState = "active",
-    searchTimer;
+  let total = 0;
+  let loaded = false;
+  let loading = false;
+  let requestRevision = 0;
+  let listState = "active";
+  let searchTimer;
   const api = window.DocumentApi;
   const archiveToggle = document.getElementById("documentsArchiveToggle");
-  const pageSize = () => (viewMode === "grid" ? 4 : 20);
+  const pageSize = () => {
+    if (viewMode === "grid") {
+      return 4;
+    } else {
+      return 20;
+    }
+  };
   let currentPage = 1;
   let viewMode = "grid";
   let selectedType = "";
@@ -54,7 +64,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   let selectionMode = null;
   let selectionOriginId = null;
   let isDeleting = false;
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
   let documents = [];
 
   const escapeHtml = window.HospitalUI.escapeHtml;
@@ -62,10 +74,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fileType = item => item.file.extension;
   const matches = () => documents;
   async function load(append = false) {
-    if (append && (loading || viewMode !== 'list' || documents.length >= total || isDeleting)) return;
-    if (!append && viewMode === 'list') currentPage = 1;
-    const revision = ++requestRevision,
-      nextPage = append ? currentPage + 1 : currentPage;
+    if (append && (loading || viewMode !== 'list' || documents.length >= total || isDeleting)) {
+      return;
+    }
+    if (!append && viewMode === 'list') {
+      currentPage = 1;
+    }
+    const revision = ++requestRevision;
+    let nextPageValue;
+    if (append) {
+      nextPageValue = currentPage + 1;
+    } else {
+      nextPageValue = currentPage;
+    }
+    const nextPage = nextPageValue;
     loading = true;
     if (!append) {
       loaded = false;
@@ -75,7 +97,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       render();
     }
     try {
-      if (!(await window.HospitalAuth.ready)) return;
+      if (!(await window.HospitalAuth.ready)) {
+        return;
+      }
       const result = await api.list({
         page: nextPage,
         page_size: pageSize(),
@@ -84,7 +108,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         sort: selectedDateOrder || 'recent',
         state: listState
       });
-      if (revision !== requestRevision) return;
+      if (revision !== requestRevision) {
+        return;
+      }
       total = result.meta.total;
       if (!append && currentPage > 1 && !result.data.length && total) {
         currentPage = Math.ceil(total / pageSize());
@@ -102,14 +128,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         loading = false;
         const top = grid.scrollTop;
         render();
-        if (append) grid.scrollTop = top;
+        if (append) {
+          grid.scrollTop = top;
+        }
         if (
           loaded &&
           viewMode === 'list' &&
           documents.length < total &&
           grid.scrollHeight <= grid.clientHeight + 2
-        )
+        ) {
           requestAnimationFrame(() => load(true));
+        }
       }
     }
   }
@@ -121,34 +150,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const cards = visible
       .map(
-        item => `
-      <${selectionMode ? 'div role="button" tabindex="0"' : `a href="documents-viewer.php?id=${encodeURIComponent(item.id)}"`} class="document-link" aria-label="${window.HospitalI18n.html("documents.abrir_value", { value0: item.title })}" data-i18n-aria-label="documents.abrir_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: item.title }))}" data-document-id="${escapeHtml(item.id)}" data-file-type="${escapeHtml(fileType(item))}"${selectionMode ? ' aria-describedby="documentSelectionStatus"' : ''}>
-        <article class="document-folder-card">
+        item =>
+          `
+      ` +
+          `<${selectionMode ? 'div role="button" tabindex="0"' : `a href="documents-viewer.php?id=${encodeURIComponent(item.id)}"`}` +
+          ` class="document-link" aria-label="${window.HospitalI18n.html("documents.abrir_value", { value0: item.title })}"` +
+          ` data-i18n-aria-label="documents.abrir_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: item.title }))}"` +
+          ` data-document-id="${escapeHtml(item.id)}" data-file-type="${escapeHtml(fileType(item))}"${selectionMode ? ' aria-describedby="documentSelectionStatus"' : ''}>
+        ` +
+          `<article class="document-folder-card">
           ${
             selectionMode
-              ? `<span class="document-selection-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${selectionMode === "edit" ? "1.8" : "2.5"}" stroke-linecap="round" stroke-linejoin="round"><path d="${selectionMode === "edit" ? "m16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5" : "m5 12 4 4L19 6"}"/></svg></span>`
+              ? `<span class="document-selection-check" aria-hidden="true">` +
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${selectionMode === "edit" ? "1.8" : "2.5"}"` +
+                ` stroke-linecap="round" stroke-linejoin="round">` +
+                `<path d="${selectionMode === "edit" ? "m16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5" : "m5 12 4 4L19 6"}"/>` +
+                `</svg>` +
+                `</span>`
               : `
-          <button type="button" class="more-options" aria-label="${window.HospitalI18n.html("documents.opciones_de_value", { value0: item.title })}" data-i18n-aria-label="documents.opciones_de_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: item.title }))}" aria-haspopup="true" aria-expanded="false">⋮</button>
-          <div class="document-dropdown-menu"><ul>
-            ${listState === "archived" ? `<li><button type="button" class="restore-btn">${window.HospitalI18n.mark("personnel.restaurar")}</button></li>` : `<li><button type="button" class="edit-btn">${window.HospitalI18n.mark("trace_view.editar")}</button></li><li><button type="button" class="select-btn">${window.HospitalI18n.mark("documents.seleccionar")}</button></li><li><button type="button" class="delete-btn">${window.HospitalI18n.mark("routes.eliminar")}</button></li>`}
-          </ul></div>`
+          ` +
+                `<button type="button" class="more-options" aria-label="${window.HospitalI18n.html("documents.opciones_de_value", { value0: item.title })}"` +
+                ` data-i18n-aria-label="documents.opciones_de_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: item.title }))}"` +
+                ` aria-haspopup="true" aria-expanded="false">⋮` +
+                `</button>
+          ` +
+                `<div class="document-dropdown-menu">` +
+                `<ul>
+            ${
+              listState === "archived"
+                ? `<li><button type="button" class="restore-btn">${window.HospitalI18n.mark("personnel.restaurar")}</button></li>`
+                : `<li>` +
+                  `<button type="button" class="edit-btn">${window.HospitalI18n.mark("trace_view.editar")}` +
+                  `</button>` +
+                  `</li>` +
+                  `<li>` +
+                  `<button type="button" class="select-btn">${window.HospitalI18n.mark("documents.seleccionar")}` +
+                  `</button>` +
+                  `</li>` +
+                  `<li>` +
+                  `<button type="button" class="delete-btn">${window.HospitalI18n.mark("routes.eliminar")}` +
+                  `</button>` +
+                  `</li>`
+            }
+          ` +
+                `</ul>` +
+                `</div>`
           }
-          <img src="../../../assets/Icons/folder-icon.svg" alt="">
-          <p class="document-date">${escapeHtml(api.date(item.document_date))}</p>
-          <p class="document-name">${escapeHtml(item.title)}</p>
-          <p class="document-size">${escapeHtml(api.size(item.file.byte_size))}</p>
-          <p class="document-time">${escapeHtml(api.time(item.created_at))}</p>
-        </article>
-      </${selectionMode ? 'div' : 'a'}>`
+          ` +
+          `<img src="../../../assets/Icons/folder-icon.svg" alt="">
+          ` +
+          `<p class="document-date">${escapeHtml(api.date(item.document_date))}` +
+          `</p>
+          ` +
+          `<p class="document-name">${escapeHtml(item.title)}` +
+          `</p>
+          ` +
+          `<p class="document-size">${escapeHtml(api.size(item.file.byte_size))}` +
+          `</p>
+          ` +
+          `<p class="document-time">${escapeHtml(api.time(item.created_at))}` +
+          `</p>
+        ` +
+          `</article>
+      ` +
+          `</${selectionMode ? 'div' : 'a'}>`
       )
       .join("");
-    const emptySlots =
-      viewMode === "grid"
-        ? Array.from(
-            { length: Math.max(0, pageSize() - visible.length) },
-            () => '<div class="document-placeholder" aria-hidden="true"></div>'
-          ).join("")
-        : "";
+    let emptySlotsValue;
+    if (viewMode === "grid") {
+      emptySlotsValue = Array.from(
+        { length: Math.max(0, pageSize() - visible.length) },
+        () => '<div class="document-placeholder" aria-hidden="true"></div>'
+      ).join("");
+    } else {
+      emptySlotsValue = "";
+    }
+    const emptySlots = emptySlotsValue;
 
     window.HospitalI18n.setHTML(grid, cards + emptySlots);
     if (!visible.length) {
@@ -162,7 +239,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     pagination.hidden = viewMode !== "grid";
     prevButton.disabled = loading || currentPage === 1;
     nextButton.disabled = loading || currentPage >= pageCount;
-    if (resultsStatus)
+    if (resultsStatus) {
       window.HospitalI18n.bindText(resultsStatus, () => {
         if (loaded) {
           if (viewMode === 'list') {
@@ -185,13 +262,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           return "";
         }
       });
+    }
     updateSelection();
   }
 
   function updateSelection() {
     const validIds = new Set(documents.map(item => String(item.id)));
     for (const id of selectedDocumentIds) {
-      if (!validIds.has(id)) selectedDocumentIds.delete(id);
+      if (!validIds.has(id)) {
+        selectedDocumentIds.delete(id);
+      }
     }
     const links = [...grid.querySelectorAll(".document-link")];
     links.forEach(link => {
@@ -206,7 +286,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             `${selectionMode === "edit" ? window.HospitalI18n.t("trace_view.editar") : window.HospitalI18n.t("documents.seleccionar")} ${name}`
         );
         link.setAttribute("aria-disabled", String(isDeleting));
-        if (selectionMode === "bulk") link.setAttribute("aria-pressed", String(selected));
+        if (selectionMode === "bulk") {
+          link.setAttribute("aria-pressed", String(selected));
+        }
       }
     });
     grid.classList.toggle("selection-mode", Boolean(selectionMode));
@@ -215,27 +297,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     editDocumentButton.disabled = isDeleting || loading || listState === "archived";
     selectionBar.hidden = !selectionMode;
     selectionBar.setAttribute("aria-busy", String(isDeleting));
-    if (!selectionMode) return;
+    if (!selectionMode) {
+      return;
+    }
 
     const bulk = selectionMode === "bulk";
     const count = selectedDocumentIds.size;
     const scope = matches();
     const allSelected = scope.length > 0 && scope.every(item => selectedDocumentIds.has(String(item.id)));
-    window.HospitalI18n.bindText(selectionTitle, () =>
-      bulk
-        ? window.HospitalI18n.t("documents.seleccionar_documentos")
-        : window.HospitalI18n.t("documents.elegi_un_documento_para_editar")
-    );
+    window.HospitalI18n.bindText(selectionTitle, () => {
+      if (bulk) {
+        return window.HospitalI18n.t("documents.seleccionar_documentos");
+      } else {
+        return window.HospitalI18n.t("documents.elegi_un_documento_para_editar");
+      }
+    });
     if (isDeleting) {
       window.HospitalI18n.bindText(selectionStatus, () =>
         window.HospitalI18n.t("documents.eliminando_documentos")
       );
     } else if (!bulk) {
-      window.HospitalI18n.bindText(selectionStatus, () =>
-        scope.length
-          ? window.HospitalI18n.t("documents.hace_clic_en_una_tarjeta_para_abrir_su_edicion")
-          : window.HospitalI18n.t("documents.no_hay_documentos_en_esta_vista_cambia_los_filtros_o_cancela")
-      );
+      window.HospitalI18n.bindText(selectionStatus, () => {
+        if (scope.length) {
+          return window.HospitalI18n.t("documents.hace_clic_en_una_tarjeta_para_abrir_su_edicion");
+        } else {
+          return window.HospitalI18n.t(
+            "documents.no_hay_documentos_en_esta_vista_cambia_los_filtros_o_cancela"
+          );
+        }
+      });
     } else if (!count) {
       window.HospitalI18n.bindText(selectionStatus, () =>
         window.HospitalI18n.t("documents.hace_clic_en_las_tarjetas_para_seleccionarlas")
@@ -251,11 +341,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     selectAllButton.hidden = !bulk;
     selectAllButton.disabled = isDeleting || !scope.length;
-    window.HospitalI18n.bindText(selectAllButton, () =>
-      allSelected
-        ? window.HospitalI18n.t("documents.deseleccionar_todos")
-        : window.HospitalI18n.t("documents.seleccionar_todos")
-    );
+    window.HospitalI18n.bindText(selectAllButton, () => {
+      if (allSelected) {
+        return window.HospitalI18n.t("documents.deseleccionar_todos");
+      } else {
+        return window.HospitalI18n.t("documents.seleccionar_todos");
+      }
+    });
     window.HospitalI18n.bindAttr(selectAllButton, "title", () =>
       window.HospitalI18n.t("documents.seleccionar_o_deseleccionar_los_documentos_de_esta_pagina")
     );
@@ -273,26 +365,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function startSelection(mode, id = null) {
-    if (isDeleting) return;
+    if (isDeleting) {
+      return;
+    }
     closeMenus();
     closeFilterMenus();
     selectedDocumentIds.clear();
     selectionMode = mode;
     selectionOriginId = id;
-    if (mode === "bulk" && id) selectedDocumentIds.add(id);
+    if (mode === "bulk" && id) {
+      selectedDocumentIds.add(id);
+    }
     actionStatus.hidden = true;
     render();
     focusDocument(id);
   }
 
   function cancelSelection() {
-    if (!selectionMode || isDeleting) return;
+    if (!selectionMode || isDeleting) {
+      return;
+    }
     const wasEdit = selectionMode === "edit";
     selectionMode = null;
     selectedDocumentIds.clear();
     render();
-    if (wasEdit) editDocumentButton.focus({ preventScroll: true });
-    else focusDocument(selectionOriginId);
+    if (wasEdit) {
+      editDocumentButton.focus({ preventScroll: true });
+    } else {
+      focusDocument(selectionOriginId);
+    }
     selectionOriginId = null;
   }
 
@@ -303,29 +404,43 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function activateCard(link) {
-    if (isDeleting) return;
+    if (isDeleting) {
+      return;
+    }
     const id = link.dataset.documentId;
     if (selectionMode === "edit") {
       editDocument(id);
     } else if (selectionMode === "bulk") {
-      if (selectedDocumentIds.has(id)) selectedDocumentIds.delete(id);
-      else selectedDocumentIds.add(id);
+      if (selectedDocumentIds.has(id)) {
+        selectedDocumentIds.delete(id);
+      } else {
+        selectedDocumentIds.add(id);
+      }
       updateSelection();
     }
   }
 
   async function deleteDocuments(ids) {
-    if (isDeleting) return;
+    if (isDeleting) {
+      return;
+    }
     const items = documents.filter(item => ids.includes(String(item.id)));
-    if (!items.length) return;
-    const question =
-      items.length === 1
-        ? window.HospitalI18n.t("documents.archivar_value", { value0: items[0].title })
-        : window.HospitalI18n.t(
-            "documents.archivar_los_value_documentos_seleccionados_se_conservaran_los_archivos_y_su_historial",
-            { value0: items.length }
-          );
-    if (!confirm(question)) return;
+    if (!items.length) {
+      return;
+    }
+    let questionValue;
+    if (items.length === 1) {
+      questionValue = window.HospitalI18n.t("documents.archivar_value", { value0: items[0].title });
+    } else {
+      questionValue = window.HospitalI18n.t(
+        "documents.archivar_los_value_documentos_seleccionados_se_conservaran_los_archivos_y_su_historial",
+        { value0: items.length }
+      );
+    }
+    const question = questionValue;
+    if (!confirm(question)) {
+      return;
+    }
 
     closeMenus();
     isDeleting = true;
@@ -353,11 +468,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         )
       );
       const count = results.length - failures.length;
-      window.HospitalI18n.bindText(actionStatus, () =>
-        count
-          ? `${count} ${count === 1 ? window.HospitalI18n.t("documents.documento_archivado") : window.HospitalI18n.t("documents.documentos_archivados")}.`
-          : ""
-      );
+      window.HospitalI18n.bindText(actionStatus, () => {
+        if (count) {
+          return `${count} ${count === 1 ? window.HospitalI18n.t("documents.documento_archivado") : window.HospitalI18n.t("documents.documentos_archivados")}.`;
+        } else {
+          return "";
+        }
+      });
       actionStatus.hidden = !count;
     } catch (error) {
       window.HospitalApi.report(error, "documents");
@@ -419,7 +536,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     menu.addEventListener("click", event => {
       const option = event.target.closest(`button[data-${key}]`);
-      if (!option) return;
+      if (!option) {
+        return;
+      }
       event.stopPropagation();
       menu.querySelectorAll("button").forEach(item => {
         item.setAttribute("aria-pressed", String(item === option));
@@ -464,9 +583,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   setupFilter(dateButton, dateMenu, "date", (value, label) => {
     selectedDateOrder = value;
-    window.HospitalI18n.bindText(document.getElementById("documentDateLabel"), () =>
-      value ? label : window.HospitalI18n.t("documents.fecha")
-    );
+    window.HospitalI18n.bindText(document.getElementById("documentDateLabel"), () => {
+      if (value) {
+        return label;
+      } else {
+        return window.HospitalI18n.t("documents.fecha");
+      }
+    });
   });
 
   function closeMenus() {
@@ -481,7 +604,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   grid.addEventListener("click", async event => {
     const link = event.target.closest(".document-link");
-    if (!link) return;
+    if (!link) {
+      return;
+    }
     if (selectionMode || isDeleting) {
       event.preventDefault();
       event.stopPropagation();
@@ -489,7 +614,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
     const button = event.target.closest("button");
-    if (!button) return;
+    if (!button) {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     const card = button.closest(".document-folder-card");
@@ -522,33 +649,49 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   grid.addEventListener("keydown", event => {
     const link = event.target.closest(".document-link");
-    if (!selectionMode || !link || !["Enter", " "].includes(event.key)) return;
+    if (!selectionMode || !link || !["Enter", " "].includes(event.key)) {
+      return;
+    }
     event.preventDefault();
     activateCard(link);
   });
   editDocumentButton.addEventListener("click", () => {
-    if (selectionMode === "edit") cancelSelection();
-    else startSelection("edit");
+    if (selectionMode === "edit") {
+      cancelSelection();
+    } else {
+      startSelection("edit");
+    }
   });
   cancelSelectionButton.addEventListener("click", cancelSelection);
   selectAllButton.addEventListener("click", () => {
-    if (selectionMode !== "bulk" || isDeleting) return;
+    if (selectionMode !== "bulk" || isDeleting) {
+      return;
+    }
     const ids = matches().map(item => String(item.id));
     const allSelected = ids.length > 0 && ids.every(id => selectedDocumentIds.has(id));
     ids.forEach(id => {
-      if (allSelected) selectedDocumentIds.delete(id);
-      else selectedDocumentIds.add(id);
+      if (allSelected) {
+        selectedDocumentIds.delete(id);
+      } else {
+        selectedDocumentIds.add(id);
+      }
     });
     updateSelection();
   });
   editSelectedButton.addEventListener("click", () => {
-    if (selectionMode === "bulk" && selectedDocumentIds.size === 1) editDocument([...selectedDocumentIds][0]);
+    if (selectionMode === "bulk" && selectedDocumentIds.size === 1) {
+      editDocument([...selectedDocumentIds][0]);
+    }
   });
   deleteSelectedButton.addEventListener("click", () => {
-    if (selectionMode === "bulk") deleteDocuments([...selectedDocumentIds]);
+    if (selectionMode === "bulk") {
+      deleteDocuments([...selectedDocumentIds]);
+    }
   });
   document.addEventListener("keydown", event => {
-    if (event.key !== "Escape") return;
+    if (event.key !== "Escape") {
+      return;
+    }
     const openFilterButton = [typeButton, dateButton].find(
       button => button.getAttribute("aria-expanded") === "true"
     );
@@ -590,19 +733,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   archiveToggle.addEventListener("click", () => {
     listState = listState === "active" ? "archived" : "active";
     archiveToggle.setAttribute("aria-pressed", String(listState === "archived"));
-    window.HospitalI18n.bindText(archiveToggle, () =>
-      listState === "archived"
-        ? window.HospitalI18n.t("personnel.ver_activos")
-        : window.HospitalI18n.t("personnel.ver_archivados")
-    );
+    window.HospitalI18n.bindText(archiveToggle, () => {
+      if (listState === "archived") {
+        return window.HospitalI18n.t("personnel.ver_activos");
+      } else {
+        return window.HospitalI18n.t("personnel.ver_archivados");
+      }
+    });
     currentPage = 1;
     load();
   });
   window.addEventListener("pageshow", event => {
-    if (event.persisted) load();
+    if (event.persisted) {
+      load();
+    }
   });
   grid.addEventListener('scroll', () => {
-    if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 100) load(true);
+    if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 100) {
+      load(true);
+    }
   });
   load();
   window.addEventListener('hospital:localechange', () => {

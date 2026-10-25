@@ -1,10 +1,17 @@
+/* Uploads or edits document metadata and attachments, retaining failed input.
+ * API: documents get/create-token/create/update/replace-file;
+ * catalogs document-categories/patients through DocumentApi.
+ * DOM: documentForm, archivo, paciente, categoria and category-button.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
 
   const form = document.getElementById("documentForm");
-  if (!form) return;
+  if (!form) {
+    return;
+  }
   const api = window.DocumentApi;
   const fileInput = document.getElementById("archivo");
   const uploadArea = document.getElementById("uploadArea");
@@ -21,20 +28,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const panel = document.querySelector(".document-form-panel");
   const editing = form.dataset.mode === "update";
   const id = new URLSearchParams(location.search).get("id");
-  let current = null,
-    createToken = null,
-    categories = [],
-    patient = null,
-    options = [],
-    busy = true;
-  let patientTimer,
-    searchRevision = 0;
+  let current = null;
+  let createToken = null;
+  let categories = [];
+  let patient = null;
+  let options = [];
+  let busy = true;
+  let patientTimer;
+  let searchRevision = 0;
   const report = error => window.HospitalApi.report(error, "documents");
   const validation = text => report(new window.HospitalApi.ApiError(text, 422, "VALIDATION_FAILED"));
   const patientLabel = item => `${item.full_name} · ${item.national_id}`;
   const setBusy = value => {
     busy = value;
-    if (value) closeCategory();
+    if (value) {
+      closeCategory();
+    }
     form.querySelectorAll('input,select,textarea,button').forEach(control => {
       control.disabled = value;
     });
@@ -43,7 +52,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const clearFile = () => {
     fileInput.value = "";
     fileSummary.hidden = true;
-    if (currentFile) currentFile.hidden = !current;
+    if (currentFile) {
+      currentFile.hidden = !current;
+    }
   };
   function showFile() {
     const file = fileInput.files[0];
@@ -51,7 +62,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       clearFile();
       return true;
     }
-    const extension = file.name.split(".").pop().toLowerCase();
+    const splitParts = file.name.split(".");
+    const processedValues = splitParts.pop();
+    const extension = processedValues.toLowerCase();
     if (
       !["pdf", "docx", "jpg", "jpeg", "png"].includes(extension) ||
       !file.size ||
@@ -69,7 +82,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       () => `${extension.toUpperCase()} · ${api.size(file.size)}`
     );
     fileSummary.hidden = false;
-    if (currentFile) currentFile.hidden = true;
+    if (currentFile) {
+      currentFile.hidden = true;
+    }
     return true;
   }
   function patientRequirement() {
@@ -77,10 +92,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       categories.find(item => item.id === categoryInput.value)?.requires_patient
     );
   }
-  const categoryLabel = value =>
-    value
-      ? window.HospitalI18n.category(categories.find(item => item.id === value))
-      : window.HospitalI18n.t("documents_edit.selecciona_una_categoria");
+  const categoryLabel = value => {
+    if (value) {
+      return window.HospitalI18n.category(categories.find(item => item.id === value));
+    } else {
+      return window.HospitalI18n.t("documents_edit.selecciona_una_categoria");
+    }
+  };
   window.HospitalDropdown.enhance(categoryInput, {
     button: categoryButton,
     menu: categoryMenu,
@@ -107,7 +125,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     patientTimer = setTimeout(async () => {
       try {
         const found = await api.patients(patientInput.value.trim());
-        if (revision !== searchRevision) return;
+        if (revision !== searchRevision) {
+          return;
+        }
         options = found;
         patientOptions.replaceChildren(
           ...found.map(item => {
@@ -137,7 +157,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   );
   uploadArea.addEventListener("drop", event => {
     const files = event.dataTransfer?.files;
-    if (!files?.length || busy) return;
+    if (!files?.length || busy) {
+      return;
+    }
     if (files.length !== 1) {
       validation(window.HospitalI18n.t("document_form.selecciona_un_solo_archivo"));
       return;
@@ -149,7 +171,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    if (busy || !form.checkValidity()) return;
+    if (busy || !form.checkValidity()) {
+      return;
+    }
     selectPatient();
     if (patientInput.value.trim() && !patient) {
       validation(
@@ -161,7 +185,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       validation(window.HospitalI18n.t("document_form.selecciona_un_paciente_del_hospital"));
       return;
     }
-    if (!showFile()) return;
+    if (!showFile()) {
+      return;
+    }
     const fields = {
       title: form.elements.nombre.value,
       description: form.elements.descripcion.value,
@@ -169,17 +195,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       category_id: categoryInput.value,
       patient_id: patient?.id ?? null
     };
-    if (editing) Object.assign(fields, { id: current.id, version: current.version });
-    else fields.create_token = createToken;
+    if (editing) {
+      Object.assign(fields, { id: current.id, version: current.version });
+    } else {
+      fields.create_token = createToken;
+    }
     setBusy(true);
     window.HospitalI18n.bindText(message, () => window.HospitalI18n.t("document_form.guardando_documento"));
     try {
       const saved = await api.save(fields, fileInput.files[0], !editing);
-      window.HospitalI18n.bindText(message, () =>
-        editing
-          ? window.HospitalI18n.t("document_form.cambios_guardados_correctamente")
-          : window.HospitalI18n.t("document_form.documento_cargado_correctamente")
-      );
+      window.HospitalI18n.bindText(message, () => {
+        if (editing) {
+          return window.HospitalI18n.t("document_form.cambios_guardados_correctamente");
+        } else {
+          return window.HospitalI18n.t("document_form.documento_cargado_correctamente");
+        }
+      });
       location.assign(`documents.php?document_id=${encodeURIComponent(saved.id)}`);
     } catch (error) {
       // Keep both selected bytes and typed fields; a stale revision requires reopening.
@@ -191,7 +222,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function init() {
     setBusy(true);
     try {
-      if (!(await window.HospitalAuth.ready)) return;
+      if (!(await window.HospitalAuth.ready)) {
+        return;
+      }
       categories = await api.categories();
       categoryInput.replaceChildren(
         window.HospitalI18n.option(
@@ -203,11 +236,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         )
       );
       if (editing) {
-        if (!/^[1-9][0-9]*$/.test(id || ""))
+        if (!/^[1-9][0-9]*$/.test(id || "")) {
           throw new Error(window.HospitalI18n.t("documents_viewer.selecciona_un_documento_desde_la_lista"));
+        }
         current = await api.get(id);
-        if (current.archived_at)
+        if (current.archived_at) {
           throw new Error(window.HospitalI18n.t("document_form.restaura_el_documento_antes_de_editarlo"));
+        }
         form.elements.nombre.value = current.title;
         form.elements.descripcion.value = current.description;
         form.elements.fecha.value = current.document_date;
@@ -230,7 +265,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       setBusy(false);
     } catch (error) {
       report(error);
-      if (currentFile) currentFile.hidden = true;
+      if (currentFile) {
+        currentFile.hidden = true;
+      }
     }
   }
   init();
