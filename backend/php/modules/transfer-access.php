@@ -10,14 +10,16 @@ function transfer_dispatch(PDO $db, string $actor): bool
 
 function transfer_require_dispatch(PDO $db, string $actor): void
 {
-    if (!transfer_dispatch($db, $actor))
+    if (!transfer_dispatch($db, $actor)) {
         throw new ApiException(403, 'FORBIDDEN', \Hospital\I18n::t("errors.se_requiere_permiso_de_coordinacion_de_traslados"));
+    }
 }
 
 function transfer_scope(PDO $db, string $actor, array &$args): string
 {
-    if (transfer_dispatch($db, $actor))
+    if (transfer_dispatch($db, $actor)) {
         return '1=1';
+    }
     $args[] = $actor;
     return 'EXISTS (SELECT 1 FROM transfer_crew tc JOIN users au ON au.staff_id=tc.staff_id WHERE tc.transfer_id=t.id AND au.id=?)';
 }
@@ -30,8 +32,9 @@ function transfer_actor(PDO $db, string $actor): void
         || $user['status'] !== 'active'
         || $user['staff_status'] !== 'active'
         || (int)$user['auth_version'] !== (int)($_SESSION['auth_version'] ?? 0)
-    )
+    ) {
         throw new ApiException(401, 'SESSION_EXPIRED', \Hospital\I18n::t("errors.la_sesion_ya_no_tiene_acceso"));
+    }
     transfer_require_dispatch($db, $actor);
 }
 
@@ -45,8 +48,9 @@ function transfer_serialized(PDO $db, array $config, callable $work, string $nam
     $key = transfer_lock_name($config, $name);
     $stmt = $db->prepare('SELECT GET_LOCK(?,5)');
     $stmt->execute([$key]);
-    if ((int)$stmt->fetchColumn() !== 1)
+    if ((int)$stmt->fetchColumn() !== 1) {
         throw new ApiException(409, 'RESOURCE_BUSY', \Hospital\I18n::t("errors.hay_otra_actualizacion_en_curso_reintenta"));
+    }
     try {
         return $work();
     } finally {
@@ -76,10 +80,12 @@ function transfer_catalog_transaction(
                 $db->commit();
                 return $result;
             } catch (\Throwable $error) {
-                if ($db->inTransaction())
+                if ($db->inTransaction()) {
                     $db->rollBack();
-                if ($error instanceof \PDOException && ($error->errorInfo[1] ?? 0) === 1062)
+                }
+                if ($error instanceof \PDOException && ($error->errorInfo[1] ?? 0) === 1062) {
                     throw new ApiException(409, $conflictCode, \Hospital\I18n::t($messageKey));
+                }
                 throw $error;
             }
         }
@@ -88,6 +94,6 @@ function transfer_catalog_transaction(
 
 function transfer_audit(PDO $db, ?string $actor, string $action, ?string $id, string $type = 'transfer'): void
 {
-    $s = $db->prepare('INSERT INTO audit_events (actor_user_id,action,resource_type,resource_id,request_id) VALUES (?,?,?,?,?)');
-    $s->execute([$actor, $action, $type, $id, $GLOBALS['request_id'] ?? 'cli-' . bin2hex(random_bytes(12))]);
+    $preparedStatement = $db->prepare('INSERT INTO audit_events (actor_user_id,action,resource_type,resource_id,request_id) VALUES (?,?,?,?,?)');
+    $preparedStatement->execute([$actor, $action, $type, $id, $GLOBALS['request_id'] ?? 'cli-' . bin2hex(random_bytes(12))]);
 }

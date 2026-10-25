@@ -87,3 +87,11 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Kept straightforward nullable serializer values, native callbacks and raw SQL where clearer or frozen. No validation, permission, transaction, version or archive rule changed.
 - PASS: 408 SQL/API checks across six isolated modules, 43 fleet browser, 924 catalog UI / 24 desktop-phone/theme cases and 71 bilingual checks; source equivalence: 91 PHP / 35 JS / six exact files.
 - Two stale tests expected the superseded role-denial redirect. They now require the accepted HTML 403 page with no Location header; the complete Patients/Routes reruns pass.
+
+## Batch 12 — PHP documents, transfers, tracking and surveys
+
+- Files: document-files.php, documents.php, transfer-access.php, transfer-input.php, transfers.php, tracking.php and surveys.php; existing audit permission assertion updated.
+- Added explicit control bodies/layout and descriptive statement/record/question/link/geometry names. Replaced extract/compact catalog packing with the same ordered six-key array; each location resolver branch guarantees the four resolved keys.
+- SQL/string/HTML literals are unchanged except four explicit reads of existing catalog keys. Kept native serialization, nullable values, geometry math and concise callbacks where clearer; binary/version, conflict, permission, simulation and survey rules are preserved.
+- PASS: 233 isolated SQL/API checks, 93 transfer/survey workflow and 435 document/transfer/survey UI checks / 48 desktop-phone/theme cases; source equivalence: 91 PHP / 35 JS / seven exact files.
+- The audit suite's stale account-page redirect assertion now requires the accepted HTML 403 page without Location; its full rerun passes. All rewrite batches are complete; full final regression remains due.

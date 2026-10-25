@@ -40,7 +40,11 @@ def run():
     check(target.call('/api/v1/accounts.php?action=directory')[0]==401,'pending accounts cannot access account administration')
     manage(pending,'approve',['staff','dispatcher']);assert target.login(person,PASSWORD)[0]==200
     other=Client();assert other.login(person,PASSWORD)[0]==200
-    check(target.call('/api/v1/accounts.php?action=directory')[0]==403 and target.call('/src/views/management/accounts.php')[0]==303,'ordinary staff cannot access the account API or page')
+    forbidden_status, forbidden_html, forbidden_headers = target.call('/src/views/management/accounts.php')
+    check(target.call('/api/v1/accounts.php?action=directory')[0] == 403 and
+          forbidden_status == 403 and 'Location' not in forbidden_headers and
+          'text/html' in forbidden_headers['Content-Type'] and '<html' in forbidden_html,
+          'ordinary staff cannot access the account API and receive the accepted HTML 403 page')
     selected=record(person);manage(selected,'roles',['staff','dispatcher','records_manager'])
     check(target.call('/api/v1/auth.php?action=me')[0]==401 and other.call('/api/v1/auth.php?action=me')[0]==401,'role changes invalidate all existing sessions')
     check(system.call('/api/v1/accounts.php?action=manage','POST',dict(user_id=selected['id'],version=selected['version'],action='disable',roles=[]))[0]==409,'stale account edits are rejected')

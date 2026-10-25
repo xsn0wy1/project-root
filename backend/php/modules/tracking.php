@@ -21,44 +21,44 @@ function tracking_position(array $row): array
 
 function tracking_latest(PDO $db, string $id): ?array
 {
-    $s = $db->prepare('SELECT p.* FROM transfer_latest_positions l JOIN transfer_positions p ON p.id=l.position_id WHERE l.transfer_id=?');
-    $s->execute([$id]);
-    $row = $s->fetch();
+    $preparedStatement = $db->prepare('SELECT p.* FROM transfer_latest_positions l JOIN transfer_positions p ON p.id=l.position_id WHERE l.transfer_id=?');
+    $preparedStatement->execute([$id]);
+    $row = $preparedStatement->fetch();
     return $row ? tracking_position($row) : null;
 }
 
 function tracking_sample(PDO $db, string $id, array $points, float $progress, ?string $run, int $generation): void
 {
     if (count($points) < 2) {
-        $s = $db->prepare('DELETE FROM transfer_latest_positions WHERE transfer_id=?');
-        $s->execute([$id]);
+        $preparedStatement = $db->prepare('DELETE FROM transfer_latest_positions WHERE transfer_id=?');
+        $preparedStatement->execute([$id]);
         return;
     }
     $progress = max(0, min(1, $progress));
     $lengths = [];
     $total = 0;
-    for ($i = 1;$i < count($points);$i++) {
-        $length = transfer_input_distance($points[$i - 1], $points[$i]);
+    for ($pointIndex = 1;$pointIndex < count($points);$pointIndex++) {
+        $length = transfer_input_distance($points[$pointIndex - 1], $points[$pointIndex]);
         $lengths[] = $length;
         $total += $length;
     }
     $remaining = $total * $progress;
     $point = $points[count($points) - 1];
-    foreach ($lengths as $i => $length) {
+    foreach ($lengths as $pointIndex => $length) {
         if ($remaining <= $length) {
             $fraction = $length > 0 ? $remaining / $length : 0;
             $point = [
-                'latitude' => $points[$i]['latitude'] + ($points[$i + 1]['latitude'] - $points[$i]['latitude']) * $fraction,
-                'longitude' => $points[$i]['longitude'] + ($points[$i + 1]['longitude'] - $points[$i]['longitude']) * $fraction
+                'latitude' => $points[$pointIndex]['latitude'] + ($points[$pointIndex + 1]['latitude'] - $points[$pointIndex]['latitude']) * $fraction,
+                'longitude' => $points[$pointIndex]['longitude'] + ($points[$pointIndex + 1]['longitude'] - $points[$pointIndex]['longitude']) * $fraction
             ];
             break;
         }$remaining -= $length;
     }
-    $s = $db->prepare('INSERT INTO transfer_positions (transfer_id,run_id,generation,progress,latitude,longitude) VALUES (?,?,?,?,?,?)');
-    $s->execute([$id, $run, $generation, $progress, $point['latitude'], $point['longitude']]);
+    $preparedStatement = $db->prepare('INSERT INTO transfer_positions (transfer_id,run_id,generation,progress,latitude,longitude) VALUES (?,?,?,?,?,?)');
+    $preparedStatement->execute([$id, $run, $generation, $progress, $point['latitude'], $point['longitude']]);
     $position = $db->lastInsertId();
-    $s = $db->prepare('INSERT INTO transfer_latest_positions (transfer_id,position_id) VALUES (?,?) ON DUPLICATE KEY UPDATE position_id=VALUES(position_id)');
-    $s->execute([$id, $position]);
+    $preparedStatement = $db->prepare('INSERT INTO transfer_latest_positions (transfer_id,position_id) VALUES (?,?) ON DUPLICATE KEY UPDATE position_id=VALUES(position_id)');
+    $preparedStatement->execute([$id, $position]);
 }
 
 function tracking_status(PDO $db): array
@@ -79,11 +79,13 @@ function tracking_status(PDO $db): array
 
 function tracking_control(PDO $db, array $config, string $command, $version, $speed = 1): array
 {
-    if (PHP_SAPI !== 'cli')
+    if (PHP_SAPI !== 'cli') {
         throw new ApiException(403, 'FORBIDDEN', Hospital\I18n::t('errors.operacion_no_permitida'));
+    }
     transfer_input_choice($command, ['start', 'pause', 'resume', 'stop', 'reset']);
-    if ((!is_int($speed) && !is_float($speed)) || !is_finite((float)$speed) || $speed < 0.1 || $speed > 100)
+    if ((!is_int($speed) && !is_float($speed)) || !is_finite((float)$speed) || $speed < 0.1 || $speed > 100) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.velocidad_de_simulacion_no_valida"));
+    }
     transfer_serialized(
         $db,
         $config,
@@ -91,22 +93,24 @@ function tracking_control(PDO $db, array $config, string $command, $version, $sp
             $db->beginTransaction();
             try {
                 $state = $db->query('SELECT * FROM simulation_state WHERE id=1 FOR UPDATE')->fetch();
-                if ((int)$state['version'] !== \Hospital\Http\Request::version($version))
+                if ((int)$state['version'] !== \Hospital\Http\Request::version($version)) {
                     throw new ApiException(409, 'VERSION_CONFLICT', \Hospital\I18n::t("errors.la_simulacion_cambio"));
+                }
                 $run = null;
                 if ($state['current_run_id'] !== null) {
-                    $s = $db->prepare('SELECT * FROM simulation_runs WHERE id=? FOR UPDATE');
-                    $s->execute([$state['current_run_id']]);
-                    $run = $s->fetch();
+                    $preparedStatement = $db->prepare('SELECT * FROM simulation_runs WHERE id=? FOR UPDATE');
+                    $preparedStatement->execute([$state['current_run_id']]);
+                    $run = $preparedStatement->fetch();
                 }
                 if ($command === 'start') {
-                    if ($run && $run['status'] !== 'stopped')
+                    if ($run && $run['status'] !== 'stopped') {
                         throw new ApiException(409, 'SIMULATION_STATE', \Hospital\I18n::t("errors.la_simulacion_ya_esta_iniciada"));
-                    $s = $db->prepare("INSERT INTO simulation_runs (speed) VALUES (?)");
-                    $s->execute([$speed]);
+                    }
+                    $preparedStatement = $db->prepare("INSERT INTO simulation_runs (speed) VALUES (?)");
+                    $preparedStatement->execute([$speed]);
                     $id = $db->lastInsertId();
-                    $s = $db->prepare('UPDATE simulation_state SET current_run_id=?,version=version+1 WHERE id=1');
-                    $s->execute([$id]);
+                    $preparedStatement = $db->prepare('UPDATE simulation_state SET current_run_id=?,version=version+1 WHERE id=1');
+                    $preparedStatement->execute([$id]);
                 } else {
                     if (
                         !$run
@@ -115,24 +119,34 @@ function tracking_control(PDO $db, array $config, string $command, $version, $sp
                         && $run['status'] !== 'running')
                         || ($command === 'resume'
                         && $run['status'] !== 'paused')
-                    )
+                    ) {
                         throw new ApiException(409, 'SIMULATION_STATE', \Hospital\I18n::t("errors.el_estado_de_la_simulacion_no_permite_esa_accion"));
+                    }
                     $status = ['pause' => 'paused', 'resume' => 'running', 'stop' => 'stopped', 'reset' => $run['status']][$command];
-                    $s = $db->prepare('UPDATE simulation_runs SET status=?,last_tick_at=NULL,version=version+1,generation=generation+? WHERE id=?');
-                    $s->execute([$status, $command === 'reset' ? 1 : 0, $run['id']]);
+                    $preparedStatement = $db->prepare('UPDATE simulation_runs SET status=?,last_tick_at=NULL,version=version+1,generation=generation+? WHERE id=?');
+                    $preparedStatement->execute([$status, $command === 'reset' ? 1 : 0, $run['id']]);
                     if ($command === 'reset') {
                         $rows = $db->query("SELECT id,geometry FROM transfers WHERE status='in_progress' ORDER BY id FOR UPDATE")->fetchAll();
-                        foreach ($rows as $row)
-                            tracking_sample($db, (string)$row['id'], json_decode($row['geometry'], true), 0, (string)$run['id'], (int)$run['generation'] + 1);
+                        foreach ($rows as $row) {
+                            tracking_sample(
+                                $db,
+                                (string)$row['id'],
+                                json_decode($row['geometry'], true),
+                                0,
+                                (string)$run['id'],
+                                (int)$run['generation'] + 1
+                            );
+                        }
                     }
                     $db->exec('UPDATE simulation_state SET version=version+1 WHERE id=1');
                 }
                 transfer_audit($db, null, 'simulation.' . $command, null, 'simulation');
                 $db->commit();
-            } catch (\Throwable $e) {
-                if ($db->inTransaction())
+            } catch (\Throwable $caughtError) {
+                if ($db->inTransaction()) {
                     $db->rollBack();
-                throw $e;
+                }
+                throw $caughtError;
             }
         }
     );
@@ -147,21 +161,22 @@ function tracking_tick(PDO $db, array $config): int
         function () use ($db) {
             $db->beginTransaction();
             try {
-                $s = $db->query('SELECT r.*,UTC_TIMESTAMP() AS now_utc FROM simulation_state s JOIN simulation_runs r ON r.id=s.current_run_id WHERE s.id=1 FOR UPDATE');
-                $run = $s->fetch();
+                $preparedStatement = $db->query('SELECT r.*,UTC_TIMESTAMP() AS now_utc FROM simulation_state s JOIN simulation_runs r ON r.id=s.current_run_id WHERE s.id=1 FOR UPDATE');
+                $run = $preparedStatement->fetch();
                 if (!$run || $run['status'] === 'stopped') {
                     $db->commit();
                     return 0;
                 }
                 $seconds = $run['last_tick_at'] === null ? 0 : max(0, min(5, strtotime($run['now_utc'] . ' UTC') - strtotime($run['last_tick_at'] . ' UTC')));
-                $s = $db->prepare('UPDATE simulation_runs SET heartbeat_at=UTC_TIMESTAMP(),last_tick_at=UTC_TIMESTAMP() WHERE id=?');
-                $s->execute([$run['id']]);
+                $preparedStatement = $db->prepare('UPDATE simulation_runs SET heartbeat_at=UTC_TIMESTAMP(),last_tick_at=UTC_TIMESTAMP() WHERE id=?');
+                $preparedStatement->execute([$run['id']]);
                 $count = 0;
                 if ($run['status'] === 'running') {
                     $rows = $db->query("SELECT t.*,p.progress FROM transfers t LEFT JOIN transfer_latest_positions l ON l.transfer_id=t.id LEFT JOIN transfer_positions p ON p.id=l.position_id WHERE t.status='in_progress' ORDER BY t.id FOR UPDATE")->fetchAll();
                     foreach ($rows as $row) {
-                        if ($row['duration_seconds'] === null || (int)$row['duration_seconds'] <= 0)
-                        continue;
+                        if ($row['duration_seconds'] === null || (int)$row['duration_seconds'] <= 0) {
+                            continue;
+                        }
                         $progress = min(1, (float)($row['progress'] ?? 0) + $seconds * (float)$run['speed'] / (int)$row['duration_seconds']);
                         tracking_sample(
                             $db,
@@ -173,8 +188,8 @@ function tracking_tick(PDO $db, array $config): int
                         );
                         $count++;
                         if ($progress >= 1) {
-                            $s = $db->prepare("UPDATE transfers SET status='arrived',arrived_at=UTC_TIMESTAMP(),version=version+1,updated_at=UTC_TIMESTAMP() WHERE id=?");
-                            $s->execute([$row['id']]);
+                            $preparedStatement = $db->prepare("UPDATE transfers SET status='arrived',arrived_at=UTC_TIMESTAMP(),version=version+1,updated_at=UTC_TIMESTAMP() WHERE id=?");
+                            $preparedStatement->execute([$row['id']]);
                             transfers_event($db, (string)$row['id'], null, 'simulation_arrived', 'in_progress', 'arrived');
                             transfer_audit($db, null, 'transfer.simulation_arrived', (string)$row['id']);
                         }
@@ -182,10 +197,11 @@ function tracking_tick(PDO $db, array $config): int
                 }
                 $db->commit();
                 return $count;
-            } catch (\Throwable $e) {
-                if ($db->inTransaction())
+            } catch (\Throwable $caughtError) {
+                if ($db->inTransaction()) {
                     $db->rollBack();
-                throw $e;
+                }
+                throw $caughtError;
             }
         }
     );
@@ -193,8 +209,9 @@ function tracking_tick(PDO $db, array $config): int
 
 function tracking_snapshot(PDO $db, string $actor, array $query): array
 {
-    if (array_diff(array_keys($query), ['after_id', 'transfer_id']))
+    if (array_diff(array_keys($query), ['after_id', 'transfer_id'])) {
         throw new ApiException(422, 'UNEXPECTED_FIELDS', \Hospital\I18n::t("errors.filtro_no_permitido"));
+    }
     $args = [];
     $scope = transfer_scope($db, $actor, $args);
     $where = [$scope];
@@ -202,14 +219,16 @@ function tracking_snapshot(PDO $db, string $actor, array $query): array
         $where[] = 't.id=?';
         $args[] = Request::id($query['transfer_id']);
         transfers_row($db, $actor, (string)$args[count($args) - 1]);
-    } else $where[] = "t.status IN ('scheduled','in_progress','arrived')";
+    } else {
+        $where[] = "t.status IN ('scheduled','in_progress','arrived')";
+    }
     if (isset($query['after_id'])) {
         $where[] = 't.id>?';
         $args[] = Request::id($query['after_id']);
     }
-    $s = $db->prepare('SELECT t.* FROM transfers t WHERE ' . implode(' AND ', $where) . ' ORDER BY t.id LIMIT 101');
-    $s->execute($args);
-    $rows = $s->fetchAll();
+    $preparedStatement = $db->prepare('SELECT t.* FROM transfers t WHERE ' . implode(' AND ', $where) . ' ORDER BY t.id LIMIT 101');
+    $preparedStatement->execute($args);
+    $rows = $preparedStatement->fetchAll();
     $more = count($rows) > 100;
     $rows = array_slice($rows, 0, 100);
     $data = [];

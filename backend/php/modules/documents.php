@@ -16,8 +16,9 @@ function documents_actor(PDO $db, string $actor): void
         || $user['status'] !== 'active'
         || $user['staff_status'] !== 'active'
         || (int) $user['auth_version'] !== (int) ($_SESSION['auth_version'] ?? 0)
-    )
+    ) {
         throw new ApiException(401, 'SESSION_EXPIRED', \Hospital\I18n::t("errors.la_sesion_ya_no_tiene_acceso"));
+    }
 }
 
 function documents_missing(): void
@@ -36,30 +37,35 @@ function documents_row(PDO $db, string $actor, string $id, bool $lock = false): 
     $stmt = $db->prepare($sql . ($lock ? ' FOR UPDATE' : ''));
     $stmt->execute($parameters);
     $row = $stmt->fetch();
-    if (!$row)
+    if (!$row) {
         documents_missing();
+    }
     return $row;
 }
 
 function documents_revision(array $row, $version): void
 {
-    if ((!is_int($version) && !is_string($version)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $version))
+    if ((!is_int($version) && !is_string($version)) || !preg_match('/^[1-9][0-9]{0,9}$/', (string) $version)) {
         throw new ApiException(422, 'VERSION_REQUIRED', \Hospital\I18n::t("errors.se_requiere_la_revision_actual"));
-    if ((int) $row['version'] !== (int) $version)
+    }
+    if ((int) $row['version'] !== (int) $version) {
         throw new ApiException(409, 'VERSION_CONFLICT', \Hospital\I18n::t("errors.el_documento_cambio_volve_a_abrirlo_antes_de_guardar"));
+    }
 }
 
 function documents_metadata(PDO $db, array $input, bool $lock = false, ?string $existingPatient = null): array
 {
     $description = $input['description'] ?? '';
-    if (!is_string($description) || !mb_check_encoding($description, 'UTF-8'))
+    if (!is_string($description) || !mb_check_encoding($description, 'UTF-8')) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.descripcion_no_valida"));
+    }
     $description = trim(str_replace(["\r\n", "\r"], "\n", $description));
     if (
         mb_strlen($description, 'UTF-8') > 1000
         || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]|[\p{Cf}\p{Cs}\p{Co}\p{Cn}]/u', $description)
-    )
+    ) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.revisa_la_descripcion_y_su_longitud"));
+    }
     $fields = [
         'title' => settings_text($input['title'] ?? null, 'title', 150, false),
         'description' => $description,
@@ -71,33 +77,37 @@ function documents_metadata(PDO $db, array $input, bool $lock = false, ?string $
         || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $parts)
         || (int) $parts[1] < 1900
         || !checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1])
-    )
+    ) {
         throw new ApiException(
             422,
             'VALIDATION_FAILED',
             \Hospital\I18n::t("errors.ingresa_una_fecha_valida"),
             ['document_date' => \Hospital\I18n::t("errors.fecha_invalida")]
         );
+    }
     $fields['document_date'] = $date;
     $stmt = $db->prepare('SELECT requires_patient FROM document_categories WHERE id = ?');
     $stmt->execute([$fields['category_id']]);
     $category = $stmt->fetch();
-    if (!$category)
+    if (!$category) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.selecciona_una_categoria_valida"));
+    }
     $patient = $input['patient_id'] ?? null;
     $fields['patient_id'] = ($patient === null || $patient === '') ? null : Request::id($patient);
-    if ($category['requires_patient'] && $fields['patient_id'] === null)
+    if ($category['requires_patient'] && $fields['patient_id'] === null) {
         throw new ApiException(
             422,
             'VALIDATION_FAILED',
             \Hospital\I18n::t("document_form.selecciona_un_paciente_del_hospital"),
             ['patient_id' => \Hospital\I18n::t("errors.paciente_requerido")]
         );
+    }
     if ($fields['patient_id'] !== null) {
         $stmt = $db->prepare('SELECT id FROM patients WHERE id = ?' . ($fields['patient_id'] === $existingPatient ? '' : " AND status = 'active'") . ($lock ? ' FOR UPDATE' : ''));
         $stmt->execute([$fields['patient_id']]);
-        if (!$stmt->fetchColumn())
+        if (!$stmt->fetchColumn()) {
             throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.selecciona_un_paciente_activo_del_hospital"));
+        }
     }
     return $fields;
 }
@@ -121,8 +131,9 @@ function documents_create(PDO $db, array $config, string $actor, array $input, a
 {
     $fields = documents_metadata($db, $input);
     $key = $input['create_token'] ?? null;
-    if (!is_string($key) || !preg_match('/^[a-f0-9]{64}$/', $key))
+    if (!is_string($key) || !preg_match('/^[a-f0-9]{64}$/', $key)) {
         throw new ApiException(422, 'CREATE_TOKEN_REQUIRED', \Hospital\I18n::t("errors.se_requiere_la_referencia_de_esta_carga"));
+    }
     $file = document_file_stage($config, $upload);
     $committed = false;
     try {
@@ -135,12 +146,13 @@ function documents_create(PDO $db, array $config, string $actor, array $input, a
         $stmt->execute([$actor, hash('sha256', $key)]);
         $existing = $stmt->fetch();
         if ($existing) {
-            if (!hash_equals($existing['create_fingerprint'], $fingerprint))
+            if (!hash_equals($existing['create_fingerprint'], $fingerprint)) {
                 throw new ApiException(
                     409,
                     'CREATE_TOKEN_REUSED',
                     \Hospital\I18n::t("errors.esta_referencia_de_carga_ya_se_utilizo_con_otros_datos")
                 );
+            }
             $id = (string) $existing['id'];
             $db->commit();
             document_file_discard($file);
@@ -164,12 +176,14 @@ function documents_create(PDO $db, array $config, string $actor, array $input, a
         $db->commit();
         $committed = true;
     } catch (\Throwable $error) {
-        if ($db->inTransaction())
+        if ($db->inTransaction()) {
             $db->rollBack();
+        }
         throw $error;
     } finally {
-        if (!$committed)
+        if (!$committed) {
             document_file_discard($file);
+        }
     }
     return documents_get($db, $actor, $id);
 }
@@ -182,19 +196,23 @@ function documents_update(PDO $db, array $config, string $actor, string $id, arr
         // Permission/version checks precede parsing potentially expensive uploads.
         $row = documents_row($db, $actor, $id);
         documents_revision($row, $input['version'] ?? null);
-        if ($row['archived_at'] !== null)
+        if ($row['archived_at'] !== null) {
             throw new ApiException(409, 'DOCUMENT_ARCHIVED', \Hospital\I18n::t("document_form.restaura_el_documento_antes_de_editarlo"));
+        }
         $hasMetadata = array_key_exists('title', $input);
-        if ($upload === null || $hasMetadata)
+        if ($upload === null || $hasMetadata) {
             documents_metadata($db, $input, false, $row['patient_id'] === null ? null : (string) $row['patient_id']);
-        if ($upload !== null)
+        }
+        if ($upload !== null) {
             $file = document_file_stage($config, $upload);
+        }
         $db->beginTransaction();
         documents_actor($db, $actor);
         $row = documents_row($db, $actor, $id, true);
         documents_revision($row, $input['version'] ?? null);
-        if ($row['archived_at'] !== null)
+        if ($row['archived_at'] !== null) {
             throw new ApiException(409, 'DOCUMENT_ARCHIVED', \Hospital\I18n::t("document_form.restaura_el_documento_antes_de_editarlo"));
+        }
         if ($upload === null || $hasMetadata) {
             $fields = documents_metadata($db, $input, true, $row['patient_id'] === null ? null : (string) $row['patient_id']);
             $stmt = $db->prepare('UPDATE documents SET title = ?, description = ?, category_id = ?, patient_id = ?, document_date = ? WHERE id = ?');
@@ -206,8 +224,9 @@ function documents_update(PDO $db, array $config, string $actor, string $id, arr
                 $fields['document_date'],
                 $id
             ]);
-        } elseif (array_diff(array_keys($input), ['id', 'version']))
+        } elseif (array_diff(array_keys($input), ['id', 'version'])) {
             throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.envia_todos_los_datos_o_solamente_el_archivo"));
+        }
         if ($file !== null) {
             document_file_publish($config, $file);
             $next = (int) $row['current_file_version'] + 1;
@@ -221,12 +240,14 @@ function documents_update(PDO $db, array $config, string $actor, string $id, arr
         $db->commit();
         $committed = true;
     } catch (\Throwable $error) {
-        if ($db->inTransaction())
+        if ($db->inTransaction()) {
             $db->rollBack();
+        }
         throw $error;
     } finally {
-        if (!$committed)
+        if (!$committed) {
             document_file_discard($file);
+        }
     }
     return documents_get($db, $actor, $id);
 }
@@ -238,8 +259,9 @@ function documents_archive(PDO $db, string $actor, string $id, $version, bool $r
         documents_actor($db, $actor);
         $row = documents_row($db, $actor, $id, true);
         documents_revision($row, $version);
-        if (($row['archived_at'] === null) === $restore)
+        if (($row['archived_at'] === null) === $restore) {
             throw new ApiException(409, 'DOCUMENT_STATE_CONFLICT', \Hospital\I18n::t("errors.el_estado_del_documento_ya_cambio"));
+        }
         $stmt = $db->prepare('UPDATE documents SET archived_at = ' . ($restore ? 'NULL' : 'UTC_TIMESTAMP()') . ', version = version + 1, updated_at = UTC_TIMESTAMP() WHERE id = ?');
         $stmt->execute([$id]);
         if (!$restore) {
@@ -309,29 +331,37 @@ function documents_get(PDO $db, string $actor, string $id): array
 {
     $row = documents_row($db, $actor, $id);
     $versions = documents_versions($db, $id);
-    $file = array_values(array_filter($versions, static fn (array $v): bool => $v['version'] === (int) $row['current_file_version']))[0] ?? null;
-    if (!$file)
+    $file = array_values(array_filter(
+        $versions,
+        static fn (array $fileVersionRecord): bool => $fileVersionRecord['version'] === (int) $row['current_file_version']
+    ))[0] ?? null;
+    if (!$file) {
         documents_missing();
+    }
     documents_audit($db, $actor, 'document.viewed', $id);
     return documents_payload($row, $file) + ['file_versions' => $versions];
 }
 
 function documents_listing(PDO $db, string $actor, array $query): array
 {
-    if (array_diff(array_keys($query), ['page', 'page_size', 'q', 'type', 'sort', 'state']))
+    if (array_diff(array_keys($query), ['page', 'page_size', 'q', 'type', 'sort', 'state'])) {
         throw new ApiException(422, 'UNEXPECTED_FIELDS', \Hospital\I18n::t("errors.filtro_no_permitido"));
-    foreach ($query as $value)
-        if (!is_string($value))
+    }
+    foreach ($query as $value) {
+        if (!is_string($value)) {
             throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.filtro_invalido"));
+        }
+    }
     $page = $query['page'] ?? '1';
     $size = $query['page_size'] ?? '20';
     if (
         !preg_match('/^[1-9][0-9]{0,5}$/', $page)
         || !preg_match('/^[1-9][0-9]{0,2}$/', $size)
         || (int) $size > 100
-    )
+    ) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.paginacion_invalida"));
-    $q = settings_text($query['q'] ?? '', 'q', 150, true);
+    }
+    $searchQuery = settings_text($query['q'] ?? '', 'q', 150, true);
     $type = $query['type'] ?? '';
     $sort = $query['sort'] ?? 'recent';
     $state = $query['state'] ?? 'active';
@@ -339,8 +369,9 @@ function documents_listing(PDO $db, string $actor, array $query): array
         !in_array($type, ['', 'pdf', 'docx', 'png', 'jpg'], true)
         || !in_array($sort, ['recent', 'oldest'], true)
         || !in_array($state, ['active', 'archived'], true)
-    )
+    ) {
         throw new ApiException(422, 'VALIDATION_FAILED', \Hospital\I18n::t("errors.filtro_invalido"));
+    }
     $where = ['d.archived_at IS ' . ($state === 'active' ? 'NULL' : 'NOT NULL')];
     $params = [];
     if (!documents_manager($db, $actor)) {
@@ -351,9 +382,9 @@ function documents_listing(PDO $db, string $actor, array $query): array
         $where[] = 'v.extension = ?';
         $params[] = $type;
     }
-    if ($q !== '') {
+    if ($searchQuery !== '') {
         $where[] = "(d.title LIKE ? ESCAPE '!' OR d.description LIKE ? ESCAPE '!')";
-        $pattern = '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $q) . '%';
+        $pattern = '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $searchQuery) . '%';
         array_push($params, $pattern, $pattern);
     }
     $join = " FROM documents d JOIN document_versions v ON v.document_id = d.id AND v.version_number = d.current_file_version JOIN stored_files f ON f.id = v.stored_file_id AND f.state = 'ready' AND f.purpose = 'document' JOIN document_categories c ON c.id = d.category_id LEFT JOIN patients p ON p.id = d.patient_id JOIN users u ON u.id = d.uploader_user_id JOIN staff s ON s.id = u.staff_id WHERE " . implode(' AND ', $where);
@@ -378,8 +409,9 @@ function documents_listing(PDO $db, string $actor, array $query): array
 function documents_content(PDO $db, array $config, string $actor, string $id, ?string $version, bool $download): array
 {
     $row = documents_row($db, $actor, $id);
-    if ($row['archived_at'] !== null)
+    if ($row['archived_at'] !== null) {
         documents_missing();
+    }
     $number = $version ?? (string) $row['current_file_version'];
     $file = documents_file($db, $id, $number);
     $response = documents_file_response($config, $file);
@@ -392,16 +424,18 @@ function documents_file(PDO $db, string $id, string $number, bool $readyOnly = t
     $stmt = $db->prepare("SELECT v.id AS document_version_id, v.original_name, v.extension, f.storage_key, f.mime_type, f.byte_size FROM document_versions v JOIN stored_files f ON f.id = v.stored_file_id AND f.purpose = 'document'" . ($readyOnly ? " AND f.state = 'ready'" : '') . ' WHERE v.document_id = ? AND v.version_number = ?');
     $stmt->execute([$id, $number]);
     $file = $stmt->fetch();
-    if (!$file)
+    if (!$file) {
         documents_missing();
+    }
     return $file;
 }
 
 function documents_file_response(array $config, array $file): array
 {
     $path = (new Hospital\Storage\PrivateStorage($config))->path('documents', $file['storage_key']);
-    if (!is_file($path) || filesize($path) !== (int) $file['byte_size'])
+    if (!is_file($path) || filesize($path) !== (int) $file['byte_size']) {
         documents_missing();
+    }
     return [
         'path' => $path,
         'name' => $file['original_name'],
@@ -430,18 +464,21 @@ function documents_patient_link(
         documents_actor($db, $actor);
         $row = documents_row($db, $actor, $id, true);
         documents_revision($row, $revision);
-        if ($row['archived_at'] !== null)
+        if ($row['archived_at'] !== null) {
             documents_missing();
+        }
         // Revocation must still work while a file is missing or quarantined.
         $file = documents_file($db, $id, $fileVersion, $revokeToken === null);
-        if ($revokeToken === null)
+        if ($revokeToken === null) {
             documents_file_response($config, $file);
+        }
         $stmt = $db->prepare('SELECT * FROM document_access_links WHERE document_version_id = ? FOR UPDATE');
         $stmt->execute([$file['document_version_id']]);
         $link = $stmt->fetch();
         if ($revokeToken !== null) {
-            if (!$link || !hash_equals($link['token_hash'], hash('sha256', $revokeToken)))
+            if (!$link || !hash_equals($link['token_hash'], hash('sha256', $revokeToken))) {
                 throw new ApiException(409, 'DOCUMENT_LINK_CHANGED', \Hospital\I18n::t("errors.document_link_changed"));
+            }
             $stmt = $db->prepare('UPDATE document_access_links SET revoked_at = UTC_TIMESTAMP() WHERE document_version_id = ?');
             $stmt->execute([$file['document_version_id']]);
             documents_audit($db, $actor, 'document.patient_link_revoked', $id);
@@ -477,8 +514,9 @@ function documents_patient_link(
         $db->commit();
         return $result;
     } catch (\Throwable $error) {
-        if ($db->inTransaction())
+        if ($db->inTransaction()) {
             $db->rollBack();
+        }
         throw $error;
     }
 }
@@ -491,7 +529,8 @@ function documents_patient_content(PDO $db, array $config, string $token): array
         $stmt->execute([hash('sha256', $token)]);
         $file = $stmt->fetch();
     }
-    if (!$file)
+    if (!$file) {
         throw new ApiException(404, 'DOCUMENT_LINK_INVALID', \Hospital\I18n::t("errors.document_link_invalid"));
+    }
     return documents_file_response($config, $file);
 }

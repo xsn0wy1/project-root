@@ -405,3 +405,5 @@ Batch 9 core PHP is verified: 172 isolated SQL/API checks and the full all-page 
 Batch 10 PHP auth/settings/mail is verified: 161 SQL/API, 61 theme/session, 71 i18n/first-paint and 197 UI checks pass, as does source equivalence. Continue the six catalog modules and remaining seven document/transfer/survey modules; full final regression still due.
 
 Batch 11 catalog PHP is verified: 408 SQL/API, 43 fleet browser, 924 UI and 71 language checks pass; source equivalence passes. Patients/Routes tests now enforce the accepted HTML 403 page rather than the obsolete redirect. Continue the last seven domain modules, then the required full regression.
+
+Batch 12 final PHP domains are verified: 233 SQL/API, 93 workflow and 435 UI checks pass with source equivalence. The audit test now enforces the accepted HTML 403 contract. All 12 readability batches are complete; run the full all-page strict style/pixel matrix (including pilot open states), all browser suites, translation coverage, full SQL/API/install/integrity checks and final metrics before concluding.

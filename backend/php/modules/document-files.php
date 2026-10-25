@@ -9,35 +9,41 @@ const DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
 function document_file_stage(array $config, array $file): array
 {
     $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
-    if (!is_int($error) || $error !== UPLOAD_ERR_OK)
+    if (!is_int($error) || $error !== UPLOAD_ERR_OK) {
         throw new ApiException(
             in_array($error, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) ? 413 : 422,
             'INVALID_UPLOAD',
             \Hospital\I18n::t("errors.no_se_recibio_un_archivo_valido")
         );
+    }
     if (
         !is_string($file['tmp_name'] ?? null)
         || !is_uploaded_file($file['tmp_name'])
         || !is_string($file['name'] ?? null)
-    )
+    ) {
         throw new ApiException(422, 'INVALID_UPLOAD', \Hospital\I18n::t("errors.se_requiere_un_archivo"));
+    }
     $size = filesize($file['tmp_name']);
-    if (!$size || $size > DOCUMENT_MAX_BYTES)
+    if (!$size || $size > DOCUMENT_MAX_BYTES) {
         throw new ApiException(
             $size ? 413 : 422,
             'FILE_SIZE_INVALID',
             \Hospital\I18n::t("errors.el_archivo_debe_tener_contenido_y_no_superar_10_mib")
         );
+    }
     $name = basename(str_replace('\\', '/', $file['name']));
-    if (!mb_check_encoding($name, 'UTF-8') || mb_strlen($name) > 255 || preg_match('/[\x00-\x1f\x7f:]/', $name))
+    if (!mb_check_encoding($name, 'UTF-8') || mb_strlen($name) > 255 || preg_match('/[\x00-\x1f\x7f:]/', $name)) {
         throw new ApiException(422, 'INVALID_FILENAME', \Hospital\I18n::t("errors.el_nombre_de_archivo_no_es_valido"));
+    }
     $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-    if (!in_array($extension, ['pdf', 'docx', 'jpg', 'jpeg', 'png'], true))
+    if (!in_array($extension, ['pdf', 'docx', 'jpg', 'jpeg', 'png'], true)) {
         throw new ApiException(415, 'UNSUPPORTED_FILE', \Hospital\I18n::t("errors.usa_pdf_docx_jpg_o_png"));
+    }
     $key = bin2hex(random_bytes(32));
     $path = (new PrivateStorage($config))->directory('quarantine', true) . '/' . $key . '.bin';
-    if (!move_uploaded_file($file['tmp_name'], $path))
+    if (!move_uploaded_file($file['tmp_name'], $path)) {
         throw new \RuntimeException('Private upload staging failed.');
+    }
     chmod($path, 0600);
     try {
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($path);
@@ -88,8 +94,9 @@ function document_file_pdf(string $path, int $size, $mime): void
         $mime !== 'application/pdf'
         || !preg_match('/^%PDF-(?:1\.[0-7]|2\.0)\b/', $header)
         || !preg_match('/^\s*(?:xref\b|[0-9]+\s+[0-9]+\s+obj\b)/', $xref)
-    )
+    ) {
         document_file_invalid();
+    }
 }
 
 function document_file_image(string $path, string $extension, $mime): string
@@ -102,11 +109,13 @@ function document_file_image(string $path, string $extension, $mime): string
         || $info['mime'] !== $expected
         || max($info[0], $info[1]) > 8192
         || $info[0] * $info[1] > 16000000
-    )
+    ) {
         document_file_invalid();
+    }
     $image = @imagecreatefromstring(file_get_contents($path));
-    if (!$image)
+    if (!$image) {
         document_file_invalid();
+    }
     imagedestroy($image);
     return $extension === 'jpeg' ? 'jpg' : $extension;
 }
@@ -118,8 +127,9 @@ function document_file_invalid(): void
 
 function document_file_xml(string $bytes): \DOMDocument
 {
-    if (stripos($bytes, '<!DOCTYPE') !== false || stripos($bytes, '<!ENTITY') !== false)
+    if (stripos($bytes, '<!DOCTYPE') !== false || stripos($bytes, '<!ENTITY') !== false) {
         document_file_invalid();
+    }
     $xml = new \DOMDocument();
     $previous = libxml_use_internal_errors(true);
     try {
@@ -128,23 +138,26 @@ function document_file_xml(string $bytes): \DOMDocument
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
     }
-    if (!$valid || $xml->doctype !== null)
+    if (!$valid || $xml->doctype !== null) {
         document_file_invalid();
+    }
     return $xml;
 }
 
 function document_file_office(string $path): void
 {
     $zip = new \ZipArchive();
-    if ($zip->open($path, \ZipArchive::CHECKCONS) !== true)
+    if ($zip->open($path, \ZipArchive::CHECKCONS) !== true) {
         document_file_invalid();
+    }
     try {
-        if ($zip->numFiles < 3 || $zip->numFiles > 512)
+        if ($zip->numFiles < 3 || $zip->numFiles > 512) {
             document_file_invalid();
+        }
         $expanded = 0;
         $seen = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $entry = $zip->statIndex($i);
+        for ($entryIndex = 0; $entryIndex < $zip->numFiles; $entryIndex++) {
+            $entry = $zip->statIndex($entryIndex);
             $name = $entry['name'];
             $lower = strtolower($name);
             $expanded += $entry['size'];
@@ -155,21 +168,24 @@ function document_file_office(string $path): void
                 || $expanded > 40 * 1024 * 1024
                 || $entry['size'] > 16 * 1024 * 1024
                 || preg_match('#(?:vbaproject|activex/|embeddings/|\.exe$|\.js$|\.html?$)#', $lower)
-            )
+            ) {
                 document_file_invalid();
+            }
             $seen[$lower] = true;
             // Validate XML without resolving network resources/entities. Reject active links/objects.
             if (str_ends_with($lower, '.xml') || str_ends_with($lower, '.rels')) {
-                $bytes = $zip->getFromIndex($i);
-                if (!is_string($bytes) || strlen($bytes) !== $entry['size'])
+                $bytes = $zip->getFromIndex($entryIndex);
+                if (!is_string($bytes) || strlen($bytes) !== $entry['size']) {
                     document_file_invalid();
+                }
                 $xml = document_file_xml($bytes);
                 if (str_ends_with($lower, '.rels')) {
                     if (
                         $xml->documentElement->localName !== 'Relationships'
                         || $xml->documentElement->namespaceURI !== 'http://schemas.openxmlformats.org/package/2006/relationships'
-                    )
+                    ) {
                         document_file_invalid();
+                    }
                     foreach ((new \DOMXPath($xml))->query('//*[local-name()="Relationship"]') as $relationship) {
                         if (strtolower($relationship->getAttribute('TargetMode')) === 'external') {
                             $type = $relationship->getAttribute('Type');
@@ -182,24 +198,28 @@ function document_file_office(string $path): void
                                 ],
                                 true
                             );
-                            if (!$hyperlink || !preg_match('#^(https?://|mailto:)[^\x00-\x20]+$#i', $target))
+                            if (!$hyperlink || !preg_match('#^(https?://|mailto:)[^\x00-\x20]+$#i', $target)) {
                                 document_file_invalid();
+                            }
                         }
                     }
                 }
             }
         }
-        foreach (['[Content_Types].xml', '_rels/.rels', 'word/document.xml'] as $required)
-            if ($zip->locateName($required) === false)
+        foreach (['[Content_Types].xml', '_rels/.rels', 'word/document.xml'] as $required) {
+            if ($zip->locateName($required) === false) {
                 document_file_invalid();
+            }
+        }
         $types = document_file_xml($zip->getFromName('[Content_Types].xml'));
         $found = false;
         foreach ($types->getElementsByTagNameNS('*', 'Override') as $item) {
             if (
                 $item->getAttribute('PartName') === '/word/document.xml'
                 && $item->getAttribute('ContentType') === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml'
-            )
+            ) {
                 $found = true;
+            }
         }
         $root = document_file_xml($zip->getFromName('word/document.xml'))->documentElement;
         if (
@@ -213,8 +233,9 @@ function document_file_office(string $path): void
                 ],
                 true
             )
-        )
+        ) {
             document_file_invalid();
+        }
     } finally {
         $zip->close();
     }
@@ -223,18 +244,21 @@ function document_file_office(string $path): void
 function document_file_scan(array $config, string $path): string
 {
     $scanner = $config['document_scanner'];
-    if ($scanner === '')
+    if ($scanner === '') {
         return 'structure_validated';
+    }
     // Optional local ClamAV; fail closed when configured but unavailable.
-    if (!is_file($scanner) || !is_executable($scanner))
+    if (!is_file($scanner) || !is_executable($scanner)) {
         throw new \RuntimeException('Document scanner unavailable.');
+    }
     $process = proc_open(
         [$scanner, '--no-summary', '--infected', $path],
         [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
         $pipes
     );
-    if (!is_resource($process))
+    if (!is_resource($process)) {
         throw new \RuntimeException('Document scanner unavailable.');
+    }
     $deadline = microtime(true) + 20;
     $exit = -1;
     try {
@@ -253,23 +277,27 @@ function document_file_scan(array $config, string $path): string
     } finally {
         proc_close($process);
     }
-    if ($exit === 1)
+    if ($exit === 1) {
         throw new ApiException(415, 'FILE_REJECTED', \Hospital\I18n::t("errors.el_analisis_local_rechazo_el_archivo"));
-    if ($exit !== 0)
+    }
+    if ($exit !== 0) {
         throw new \RuntimeException('Document scanner failed.');
+    }
     return 'antivirus_clean';
 }
 
 function document_file_publish(array $config, array &$file): void
 {
     $destination = (new PrivateStorage($config))->directory('documents', true) . '/' . $file['key'] . '.bin';
-    if (file_exists($destination) || !rename($file['path'], $destination))
+    if (file_exists($destination) || !rename($file['path'], $destination)) {
         throw new \RuntimeException('Private upload publication failed.');
+    }
     $file['path'] = $destination;
 }
 
 function document_file_discard(?array $file): void
 {
-    if ($file !== null && is_file($file['path']) && !@unlink($file['path']))
+    if ($file !== null && is_file($file['path']) && !@unlink($file['path'])) {
         error_log('Hospital document cleanup deferred.');
+    }
 }
