@@ -1,3 +1,8 @@
+/* Manages destination records, filters, details and archive dialogs.
+ * API: destinations list/get/create/update/archive/restore.
+ * DOM: destinations-rows, destinations-form and destination-dialog.
+ * HospitalI18n.t translates labels when rendered.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
@@ -12,32 +17,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     other: 'other'
   };
   const typeLabels = {
-      get hospital() {
-        return window.HospitalI18n.t("destinations.hospital");
-      },
-      get sanatorium() {
-        return window.HospitalI18n.t("destinations.sanatorio");
-      },
-      get health_center() {
-        return window.HospitalI18n.t("destinations.centro_de_salud");
-      },
-      get other() {
-        return window.HospitalI18n.t("trace_new.otro");
-      }
+    hospital: function () {
+      return window.HospitalI18n.t("destinations.hospital");
     },
-    statusLabels = {
-      get active() {
-        return window.HospitalI18n.t("destinations.activo");
-      },
-      get inactive() {
-        return window.HospitalI18n.t("destinations.inactivo");
-      }
-    };
-  const fromApi = d => ({
-    ...d,
-    type: d.facility_type,
-    archived: d.status === 'archived',
-    status: d.status === 'active' && d.availability === 'active' ? 'active' : 'inactive'
+    sanatorium: function () {
+      return window.HospitalI18n.t("destinations.sanatorio");
+    },
+    health_center: function () {
+      return window.HospitalI18n.t("destinations.centro_de_salud");
+    },
+    other: function () {
+      return window.HospitalI18n.t("trace_new.otro");
+    }
+  };
+  const statusLabels = {
+    active: function () {
+      return window.HospitalI18n.t("destinations.activo");
+    },
+    inactive: function () {
+      return window.HospitalI18n.t("destinations.inactivo");
+    }
+  };
+  const fromApi = destinationRecord => ({
+    ...destinationRecord,
+    type: destinationRecord.facility_type,
+    archived: destinationRecord.status === 'archived',
+    status:
+      destinationRecord.status === 'active' && destinationRecord.availability === 'active'
+        ? 'active'
+        : 'inactive'
   });
   const rows = document.getElementById('destinations-rows');
   const search = document.getElementById('destinations-search');
@@ -53,13 +61,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const detailDialog = document.getElementById('destination-dialog');
   const deleteDialog = document.getElementById('delete-dialog');
   const filterButtons = [...document.querySelectorAll('[data-filter]')];
-  if (!api || !rows || !search || !form || !detailDialog || !deleteDialog) return;
+  if (!api || !rows || !search || !form || !detailDialog || !deleteDialog) {
+    return;
+  }
 
   let destinations = [];
-  let busy = false,
-    dirty = false,
-    editingVersion = null,
-    deletingVersion = null;
+  let busy = false;
+  let dirty = false;
+  let editingVersion = null;
+  let deletingVersion = null;
   let activeFilter = 'active';
   let currentPage = 1;
   let editingId = null;
@@ -69,9 +79,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const report = error => api.report(error, 'destinations');
   function upsert(data) {
     const item = fromApi(data);
-    if (destinations.some(d => d.id === item.id))
-      destinations = destinations.map(d => (d.id === item.id ? item : d));
-    else destinations.push(item);
+    if (destinations.some(destinationRecord => destinationRecord.id === item.id)) {
+      destinations = destinations.map(destinationRecord => {
+        if (destinationRecord.id === item.id) {
+          return item;
+        } else {
+          return destinationRecord;
+        }
+      });
+    } else {
+      destinations.push(item);
+    }
     return item;
   }
   function setBusy(value) {
@@ -81,8 +99,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...rows.querySelectorAll('button'),
       ...filterButtons,
       ...deleteDialog.querySelectorAll('button')
-    ].forEach(el => {
-      el.disabled = value;
+    ].forEach(controlElement => {
+      controlElement.disabled = value;
     });
   }
   async function refresh() {
@@ -90,31 +108,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     render();
   }
   async function current(id, action) {
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     try {
       const item = upsert(await api.get(`destinations.php?action=get&id=${encodeURIComponent(id)}`));
-      if (action === 'view') showDestination(item);
-      else if (action === 'edit' && !item.archived) editDestination(item);
-      else if (action === 'delete' || action === 'restore') confirmDeletion(item);
+      if (action === 'view') {
+        showDestination(item);
+      } else if (action === 'edit' && !item.archived) {
+        editDestination(item);
+      } else if (action === 'delete' || action === 'restore') {
+        confirmDeletion(item);
+      }
     } catch (error) {
       report(error);
     }
   }
 
   function normalize(value) {
-    return value
-      .toLocaleLowerCase('es')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const lowercaseText = value.toLocaleLowerCase('es');
+    const normalizedText = lowercaseText.normalize('NFD');
+    const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+    const replacedText2 = replacedText.replace(/\s+/g, ' ');
+    return replacedText2.trim();
   }
 
   function getMatchingDestinations() {
     const words = normalize(search.value).split(' ').filter(Boolean);
     return destinations.filter(destination => {
       const content = normalize(
-        `${destination.name} ${destination.address} ${destination.locality} ${typeLabels[destination.type]} ${destination.phone}`
+        `${destination.name} ${destination.address} ${destination.locality} ${typeLabels[destination.type]?.()} ${destination.phone}`
       );
       return destination.status === activeFilter && words.every(word => content.includes(word));
     });
@@ -162,7 +185,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.HospitalI18n.bindText(name, () => destination.name);
     window.HospitalI18n.bindAttr(name, "title", () => destination.name);
     const type = document.createElement('small');
-    window.HospitalI18n.bindText(type, () => typeLabels[destination.type]);
+    window.HospitalI18n.bindText(type, () => typeLabels[destination.type]?.());
     copy.append(name, type);
     nameContent.append(avatar, copy);
     nameCell.append(nameContent);
@@ -175,9 +198,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     dot.setAttribute('aria-hidden', 'true');
     status.append(
       dot,
-      window.HospitalI18n.textNode(() =>
-        destination.archived ? window.HospitalI18n.t("personnel.archivado") : statusLabels[destination.status]
-      )
+      window.HospitalI18n.textNode(() => {
+        if (destination.archived) {
+          return window.HospitalI18n.t("personnel.archivado");
+        } else {
+          return statusLabels[destination.status]?.();
+        }
+      })
     );
     statusCell.append(status);
 
@@ -185,15 +212,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const actions = document.createElement('div');
     actions.className = 'row-actions';
     actions.append(makeAction('view', window.HospitalI18n.t("personnel.ver"), 'eye.svg', destination));
-    if (destination.archived)
+    if (destination.archived) {
       actions.append(
         makeAction('restore', window.HospitalI18n.t("personnel.restaurar"), 'save-floppy.svg', destination)
       );
-    else
+    } else {
       actions.append(
         makeAction('edit', window.HospitalI18n.t("trace_view.editar"), 'pencil-icon.svg', destination),
         makeAction('delete', window.HospitalI18n.t("routes.eliminar"), 'trash-icon.svg', destination)
       );
+    }
     actionsCell.append(actions);
     row.append(
       nameCell,
@@ -231,36 +259,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             : window.HospitalI18n.t("destinations.destinos_registrados")
       })
     );
-    window.HospitalI18n.bindText(document.getElementById('results-summary'), () =>
-      matching.length
-        ? window.HospitalI18n.t("personnel.mostrando_value_a_value_de_value_resultados", {
-            value0: start + 1,
-            value1: start + visible.length,
-            value2: matching.length
-          })
-        : window.HospitalI18n.t("personnel.mostrando_0_resultados")
-    );
+    window.HospitalI18n.bindText(document.getElementById('results-summary'), () => {
+      if (matching.length) {
+        return window.HospitalI18n.t("personnel.mostrando_value_a_value_de_value_resultados", {
+          value0: start + 1,
+          value1: start + visible.length,
+          value2: matching.length
+        });
+      } else {
+        return window.HospitalI18n.t("personnel.mostrando_0_resultados");
+      }
+    });
     window.HospitalI18n.bindText(document.getElementById('page-number'), () => String(currentPage));
     document.getElementById('page-prev').disabled = currentPage === 1;
     document.getElementById('page-next').disabled = currentPage === pageCount;
 
     const noRecords = destinations.length === 0;
     document.getElementById('empty-state').hidden = matching.length > 0;
-    window.HospitalI18n.bindText(document.getElementById('empty-title'), () =>
-      noRecords
-        ? window.HospitalI18n.t("destinations.aun_no_hay_destinos")
-        : window.HospitalI18n.t("destinations.no_se_encontraron_destinos")
-    );
-    window.HospitalI18n.bindText(document.getElementById('empty-description'), () =>
-      noRecords
-        ? window.HospitalI18n.t("destinations.agrega_el_primer_destino_desde_el_formulario")
-        : window.HospitalI18n.t("destinations.prueba_con_otro_nombre_direccion_localidad_o_estado")
-    );
-    window.HospitalI18n.bindText(document.getElementById('empty-action'), () =>
-      noRecords
-        ? window.HospitalI18n.t("destinations.agregar_destino")
-        : window.HospitalI18n.t("destinations.limpiar_busqueda")
-    );
+    window.HospitalI18n.bindText(document.getElementById('empty-title'), () => {
+      if (noRecords) {
+        return window.HospitalI18n.t("destinations.aun_no_hay_destinos");
+      } else {
+        return window.HospitalI18n.t("destinations.no_se_encontraron_destinos");
+      }
+    });
+    window.HospitalI18n.bindText(document.getElementById('empty-description'), () => {
+      if (noRecords) {
+        return window.HospitalI18n.t("destinations.agrega_el_primer_destino_desde_el_formulario");
+      } else {
+        return window.HospitalI18n.t("destinations.prueba_con_otro_nombre_direccion_localidad_o_estado");
+      }
+    });
+    window.HospitalI18n.bindText(document.getElementById('empty-action'), () => {
+      if (noRecords) {
+        return window.HospitalI18n.t("destinations.agregar_destino");
+      } else {
+        return window.HospitalI18n.t("destinations.limpiar_busqueda");
+      }
+    });
   }
 
   function showFeedback(message, tone = '') {
@@ -340,15 +376,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     detailId = destination.id;
     document.getElementById('detail-edit').hidden = destination.archived;
     window.HospitalI18n.bindText(document.getElementById('destination-detail-name'), () => destination.name);
-    window.HospitalI18n.bindText(
-      document.getElementById('destination-detail-type'),
-      () => typeLabels[destination.type]
+    window.HospitalI18n.bindText(document.getElementById('destination-detail-type'), () =>
+      typeLabels[destination.type]?.()
     );
     const status = document.getElementById('destination-detail-status');
     status.classList.toggle('is-active', !destination.archived && destination.status === 'active');
-    window.HospitalI18n.bindText(status, () =>
-      destination.archived ? window.HospitalI18n.t('personnel.archivado') : statusLabels[destination.status]
-    );
+    window.HospitalI18n.bindText(status, () => {
+      if (destination.archived) {
+        return window.HospitalI18n.t('personnel.archivado');
+      } else {
+        return statusLabels[destination.status]?.();
+      }
+    });
     window.HospitalUI.detailRows(document.getElementById('dialog-details'), [
       ['destinations.direccion', destination.address],
       ['destinations.localidad', destination.locality || '—'],
@@ -367,26 +406,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   function confirmDeletion(destination) {
     deletingId = destination.id;
     deletingVersion = destination.version;
-    window.HospitalI18n.bindText(document.getElementById('delete-title'), () =>
-      destination.archived
-        ? window.HospitalI18n.t("destinations.restaurar_destino")
-        : window.HospitalI18n.t("destinations.eliminar_destino")
-    );
-    window.HospitalI18n.bindText(document.getElementById('delete-confirm').querySelector('span'), () =>
-      destination.archived
-        ? window.HospitalI18n.t("destinations.restaurar_destino")
-        : window.HospitalI18n.t("destinations.eliminar_destino")
-    );
-    window.HospitalI18n.bindText(document.getElementById('delete-description'), () =>
-      destination.archived
-        ? window.HospitalI18n.t("destinations.restaurar_value_con_su_estado_anterior", {
-            value0: destination.name
-          })
-        : window.HospitalI18n.t(
-            "destinations.archivar_value_se_conservara_el_historial_y_podras_restaurarlo_desde_inactivos",
-            { value0: destination.name }
-          )
-    );
+    window.HospitalI18n.bindText(document.getElementById('delete-title'), () => {
+      if (destination.archived) {
+        return window.HospitalI18n.t("destinations.restaurar_destino");
+      } else {
+        return window.HospitalI18n.t("destinations.eliminar_destino");
+      }
+    });
+    window.HospitalI18n.bindText(document.getElementById('delete-confirm').querySelector('span'), () => {
+      if (destination.archived) {
+        return window.HospitalI18n.t("destinations.restaurar_destino");
+      } else {
+        return window.HospitalI18n.t("destinations.eliminar_destino");
+      }
+    });
+    window.HospitalI18n.bindText(document.getElementById('delete-description'), () => {
+      if (destination.archived) {
+        return window.HospitalI18n.t("destinations.restaurar_value_con_su_estado_anterior", {
+          value0: destination.name
+        });
+      } else {
+        return window.HospitalI18n.t(
+          "destinations.archivar_value_se_conservara_el_historial_y_podras_restaurarlo_desde_inactivos",
+          { value0: destination.name }
+        );
+      }
+    });
     deleteDialog.showModal();
   }
 
@@ -421,17 +466,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (destinations.length === 0) {
       clearForm();
       nameInput.focus();
-    } else search.focus();
+    } else {
+      search.focus();
+    }
   });
 
   rows.addEventListener('click', event => {
     const button = event.target.closest('button[data-action]');
-    if (button) current(button.dataset.id, button.dataset.action);
+    if (button) {
+      current(button.dataset.id, button.dataset.action);
+    }
   });
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     showFeedback('');
     const requiredInputs = [
       [nameInput, () => window.HospitalI18n.t("destinations.ingresa_el_nombre_del_destino")],
@@ -460,7 +511,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       showFeedback(() => window.HospitalI18n.t("destinations.revisa_el_telefono_de_contacto"), 'error');
       return;
     }
-    if (!form.checkValidity()) return;
+    if (!form.checkValidity()) {
+      return;
+    }
     const record = {
       name: nameInput.value.trim(),
       address: addressInput.value.trim(),
@@ -471,7 +524,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       availability: statusInput.value === 'active' ? 'active' : 'inactive'
     };
     const wasEditing = editingId !== null;
-    if (wasEditing) Object.assign(record, { id: editingId, version: editingVersion });
+    if (wasEditing) {
+      Object.assign(record, { id: editingId, version: editingVersion });
+    }
     setBusy(true);
     try {
       const saved = upsert(
@@ -480,12 +535,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       clearForm();
       search.value = '';
       setFilter(saved.status);
-      currentPage = Math.floor(getMatchingDestinations().findIndex(d => d.id === saved.id) / pageSize) + 1;
-      showFeedback(() =>
-        wasEditing
-          ? window.HospitalI18n.t("destinations.destino_actualizado")
-          : window.HospitalI18n.t("destinations.destino_guardado")
-      );
+      currentPage =
+        Math.floor(
+          getMatchingDestinations().findIndex(destinationRecord => destinationRecord.id === saved.id) /
+            pageSize
+        ) + 1;
+      showFeedback(() => {
+        if (wasEditing) {
+          return window.HospitalI18n.t("destinations.destino_actualizado");
+        } else {
+          return window.HospitalI18n.t("destinations.destino_guardado");
+        }
+      });
     } catch (error) {
       report(error);
     } finally {
@@ -512,7 +573,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       deleteDialog.close();
       return;
     }
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     setBusy(true);
     try {
       upsert(
@@ -521,13 +584,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           version: deletingVersion
         })
       );
-      if (editingId === destination.id) clearForm();
+      if (editingId === destination.id) {
+        clearForm();
+      }
       deleteDialog.close();
-      showFeedback(() =>
-        destination.archived
-          ? window.HospitalI18n.t("destinations.destino_restaurado")
-          : window.HospitalI18n.t("destinations.destino_eliminado_del_listado")
-      );
+      showFeedback(() => {
+        if (destination.archived) {
+          return window.HospitalI18n.t("destinations.destino_restaurado");
+        } else {
+          return window.HospitalI18n.t("destinations.destino_eliminado_del_listado");
+        }
+      });
     } catch (error) {
       report(error);
     } finally {
@@ -540,15 +607,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   [detailDialog, deleteDialog].forEach(dialog => {
     dialog.addEventListener('click', event => {
-      if (event.target !== dialog || busy) return;
+      if (event.target !== dialog || busy) {
+        return;
+      }
       const bounds = dialog.getBoundingClientRect();
       if (
         event.clientX < bounds.left ||
         event.clientX > bounds.right ||
         event.clientY < bounds.top ||
         event.clientY > bounds.bottom
-      )
+      ) {
         dialog.close();
+      }
     });
   });
 
@@ -559,10 +629,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     dirty = true;
   });
   deleteDialog.addEventListener('cancel', event => {
-    if (busy) event.preventDefault();
+    if (busy) {
+      event.preventDefault();
+    }
   });
   window.addEventListener('focus', () => {
-    if (!busy && !dirty && !editingId && !detailDialog.open && !deleteDialog.open) refresh().catch(report);
+    if (!busy && !dirty && !editingId && !detailDialog.open && !deleteDialog.open) {
+      refresh().catch(report);
+    }
   });
   async function start() {
     setBusy(true);
@@ -572,7 +646,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     try {
       const session = await window.HospitalAuth.ready;
-      if (!session) return;
+      if (!session) {
+        return;
+      }
       if (!session.user.roles.includes('dispatcher')) {
         location.replace(api.page('src/views/management/management.php'));
         return;
@@ -588,8 +664,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('hospital:localechange', () => {
     render();
     if (detailDialog.open) {
-      const item = destinations.find(d => d.id === detailId);
-      if (item) showDestination(item);
+      const item = destinations.find(destinationRecord => destinationRecord.id === detailId);
+      if (item) {
+        showDestination(item);
+      }
     }
   });
 });

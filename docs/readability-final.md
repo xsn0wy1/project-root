@@ -28,3 +28,10 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Split long templates into concatenated literals; a development-only AST comparison proves identical raw/cooked template text and expression order. Native collection operations and short attribute choices remain where clearer.
 - PASS: 384 UI checks / 12 desktop-phone/theme cases / 19 interaction groups; 43 fleet browser checks; 99 fleet API checks in its own fresh database; 98 existing boundary checks. Source equivalence: 91 PHP / 35 JS / three exact files.
 - An initial fleet run used the shared visual fixture, whose extra administrator roles violate that suite's assumptions. The existing isolated module runner supplied the correct fixture and passed; no application change was needed.
+
+## Batch 4 — account and operational management
+
+- Files: accounts.js, personnel.js, destinations.js, routes.js and the previously empty management.js (header only).
+- Added page/API/DOM headers; private translated getters are lazy functions; expanded guards, declarations, action branches and normalization stages; named account/person/destination records and comparators. Removed an identity-only route code wrapper.
+- Long templates preserve exact raw/cooked text and expression order. Kept native collection callbacks, short attribute choices, unused `_` placeholders and schematic x coordinates where clearer.
+- PASS: 742 UI checks / 20 desktop-phone/theme cases / 45 interaction groups, live bilingual switching suite, 98 existing boundary checks; source equivalence: 91 PHP / 35 JS / five exact files. No script errors or asset failures.

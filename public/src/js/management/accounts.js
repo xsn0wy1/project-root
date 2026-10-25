@@ -1,15 +1,20 @@
+/* Manages staff accounts, approvals, permissions, sessions and password resets.
+ * API: accounts directory/manage/reset-password.
+ * DOM: account-list, account-detail, account-form and account-dialog.
+ * $ finds an element by ID; HospitalI18n.t translates labels when rendered.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
 
-  const api = window.HospitalApi,
-    $ = id => document.getElementById(id),
-    dialog = $('account-dialog'),
-    form = $('account-form');
-  const stateButton = $('account-state-button'),
-    stateMenu = $('account-state-menu'),
-    stateOptions = [...stateMenu.querySelectorAll('[data-account-state]')];
+  const api = window.HospitalApi;
+  const $ = id => document.getElementById(id);
+  const dialog = $('account-dialog');
+  const form = $('account-form');
+  const stateButton = $('account-state-button');
+  const stateMenu = $('account-state-menu');
+  const stateOptions = [...stateMenu.querySelectorAll('[data-account-state]')];
   const stateLabels = {
     '': 'routes.todas',
     pending: 'accounts.pendientes',
@@ -17,46 +22,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     disabled: 'accounts.desactivadas'
   };
   const labels = {
-      get pending() {
-        return window.HospitalI18n.t("accounts.pendiente");
-      },
-      get active() {
-        return window.HospitalI18n.t("routes.activa");
-      },
-      get disabled() {
-        return window.HospitalI18n.t("shared.desactivada");
-      }
+    pending: function () {
+      return window.HospitalI18n.t("accounts.pendiente");
     },
-    roles = {
-      get staff() {
-        return window.HospitalI18n.t("trace_view.personal");
-      },
-      get records_manager() {
-        return window.HospitalI18n.t("accounts.registros_clinicos");
-      },
-      get dispatcher() {
-        return window.HospitalI18n.t("survey.traslados");
-      },
-      get admin() {
-        return window.HospitalI18n.t("management.administracion");
-      }
-    };
+    active: function () {
+      return window.HospitalI18n.t("routes.activa");
+    },
+    disabled: function () {
+      return window.HospitalI18n.t("shared.desactivada");
+    }
+  };
+  const roles = {
+    staff: function () {
+      return window.HospitalI18n.t("trace_view.personal");
+    },
+    records_manager: function () {
+      return window.HospitalI18n.t("accounts.registros_clinicos");
+    },
+    dispatcher: function () {
+      return window.HospitalI18n.t("survey.traslados");
+    },
+    admin: function () {
+      return window.HospitalI18n.t("management.administracion");
+    }
+  };
   const escape = value =>
     String(value ?? '').replace(
       /[&<>"']/g,
-      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+      character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]
     );
-  let users = [],
-    selected = null,
-    base = null,
-    action = null,
-    busy = false,
-    self = null,
-    timer,
-    stateFilter = '';
+  let users = [];
+  let selected = null;
+  let base = null;
+  let action = null;
+  let busy = false;
+  let self = null;
+  let timer;
+  let stateFilter = '';
   function render() {
-    const q = $('account-search').value.trim().toLocaleLowerCase(),
-      state = stateFilter;
+    const query = $('account-search').value.trim().toLocaleLowerCase();
+    const state = stateFilter;
     window.HospitalI18n.bindText($('account-state-label'), () =>
       window.HospitalI18n.t(stateLabels[stateFilter])
     );
@@ -71,15 +76,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       option.setAttribute('aria-pressed', String(option.dataset.accountState === stateFilter))
     );
     const rows = users.filter(
-      u => (!state || u.status === state) && `${u.username} ${u.email}`.toLocaleLowerCase().includes(q)
+      accountRecord =>
+        (!state || accountRecord.status === state) &&
+        `${accountRecord.username} ${accountRecord.email}`.toLocaleLowerCase().includes(query)
     );
-    if (selected && !rows.some(u => u.id === selected)) selected = null;
+    if (selected && !rows.some(accountRecord => accountRecord.id === selected)) {
+      selected = null;
+    }
     window.HospitalI18n.setHTML(
       $('account-list'),
       rows
         .map(
-          u =>
-            `<button class="route-card${u.id === selected ? ' is-selected' : ''}" type="button" data-account-id="${escape(u.id)}" aria-label="${window.HospitalI18n.html("accounts.ver_cuenta_value", { value0: u.username })}" data-i18n-aria-label="accounts.ver_cuenta_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: u.username }))}"><span class="route-card-top"><strong>${escape(u.username)}</strong><span class="status-pill">${labels[u.status]}</span></span><span class="route-card-name">${escape(u.email)}</span><span class="route-card-meta">${escape(u.roles.map(r => roles[r]).join(' · '))}</span></button>`
+          accountRecord =>
+            `<button class="route-card${accountRecord.id === selected ? ' is-selected' : ''}" type="button" data-account-id="${escape(accountRecord.id)}"` +
+            ` aria-label="${window.HospitalI18n.html("accounts.ver_cuenta_value", { value0: accountRecord.username })}"` +
+            ` data-i18n-aria-label="accounts.ver_cuenta_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: accountRecord.username }))}">` +
+            `<span class="route-card-top">` +
+            `<strong>${escape(accountRecord.username)}` +
+            `</strong>` +
+            `<span class="status-pill">${labels[accountRecord.status]?.()}` +
+            `</span>` +
+            `</span>` +
+            `<span class="route-card-name">${escape(accountRecord.email)}` +
+            `</span>` +
+            `<span class="route-card-meta">${escape(accountRecord.roles.map(roleCode => roles[roleCode]?.()).join(' · '))}` +
+            `</span>` +
+            `</button>`
         )
         .join('')
     );
@@ -89,39 +111,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('account-list').hidden = !rows.length;
     $('account-empty').hidden = !!rows.length;
     window.HospitalI18n.bindText($('account-empty-title'), () =>
-      window.HospitalI18n.t(q || state ? 'accounts.no_matches' : 'accounts.no_accounts')
+      window.HospitalI18n.t(query || state ? 'accounts.no_matches' : 'accounts.no_accounts')
     );
     window.HospitalI18n.bindText($('account-empty-description'), () =>
-      window.HospitalI18n.t(q || state ? 'accounts.no_matches_help' : 'accounts.no_accounts_help')
+      window.HospitalI18n.t(query || state ? 'accounts.no_matches_help' : 'accounts.no_accounts_help')
     );
-    const u = users.find(u => u.id === selected);
-    $('account-detail').classList.toggle('is-empty', !u);
-    if (!u) {
+    const accountRecord = users.find(accountRecord => accountRecord.id === selected);
+    $('account-detail').classList.toggle('is-empty', !accountRecord);
+    if (!accountRecord) {
       window.HospitalI18n.setHTML(
         $('account-detail'),
-        `<div class="accounts-placeholder"><span class="account-empty-icon" aria-hidden="true"><img src="../../../assets/Icons/person-icon.svg" alt=""></span><h2>${window.HospitalI18n.mark("accounts.select_user_to_begin")}</h2><p>${window.HospitalI18n.mark("accounts.selection_help")}</p></div>`
+        `<div class="accounts-placeholder">` +
+          `<span class="account-empty-icon" aria-hidden="true">` +
+          `<img src="../../../assets/Icons/person-icon.svg" alt="">` +
+          `</span>` +
+          `<h2>${window.HospitalI18n.mark("accounts.select_user_to_begin")}` +
+          `</h2>` +
+          `<p>${window.HospitalI18n.mark("accounts.selection_help")}` +
+          `</p>` +
+          `</div>`
       );
       return;
     }
     let actions;
-    if (u.status === 'pending') {
+    if (accountRecord.status === 'pending') {
       actions = [['approve', window.HospitalI18n.t("accounts.aprobar_cuenta")]];
+    } else if (accountRecord.status === 'disabled') {
+      actions = [['reactivate', window.HospitalI18n.t("accounts.reactivar_cuenta")]];
     } else {
-      if (u.status === 'disabled') {
-        actions = [['reactivate', window.HospitalI18n.t("accounts.reactivar_cuenta")]];
-      } else {
-        actions = [
-          ['roles', window.HospitalI18n.t("accounts.editar_permisos")],
-          ['disable', window.HospitalI18n.t("accounts.desactivar_cuenta")],
-          ['revoke_sessions', window.HospitalI18n.t("accounts.cerrar_sesiones")]
-        ];
-      }
+      actions = [
+        ['roles', window.HospitalI18n.t("accounts.editar_permisos")],
+        ['disable', window.HospitalI18n.t("accounts.desactivar_cuenta")],
+        ['revoke_sessions', window.HospitalI18n.t("accounts.cerrar_sesiones")]
+      ];
     }
-    if (u.status !== 'pending' && u.id !== self)
+    if (accountRecord.status !== 'pending' && accountRecord.id !== self) {
       actions.push(['password', window.HospitalI18n.t("accounts.restablecer_contrasena")]);
+    }
     window.HospitalI18n.setHTML(
       $('account-detail'),
-      `<h2>${escape(u.username)}</h2><p>${escape(u.email)}</p><p>${labels[u.status]}</p><p>${escape(u.roles.map(r => roles[r]).join(' · '))}</p><div class="detail-actions">${actions.map(([key, label]) => `<button type="button" class="secondary-button" data-action="${key}">${label}</button>`).join('')}</div>`
+      `<h2>${escape(accountRecord.username)}` +
+        `</h2>` +
+        `<p>${escape(accountRecord.email)}` +
+        `</p>` +
+        `<p>${labels[accountRecord.status]?.()}` +
+        `</p>` +
+        `<p>${escape(accountRecord.roles.map(roleCode => roles[roleCode]?.()).join(' · '))}` +
+        `</p>` +
+        `<div class="detail-actions">${actions.map(([key, label]) => `<button type="button" class="secondary-button" data-action="${key}">${label}</button>`).join('')}` +
+        `</div>`
     );
   }
   async function load() {
@@ -130,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   function setBusy(value) {
     busy = value;
-    [...form.elements].forEach(el => (el.disabled = value));
+    [...form.elements].forEach(controlElement => (controlElement.disabled = value));
   }
   $('account-search').addEventListener('input', render);
   // Reuse the Documents filter interaction pattern with the account status codes.
@@ -143,8 +181,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     stateButton.setAttribute('aria-expanded', 'true');
   }
   stateButton.addEventListener('click', () => {
-    if (stateMenu.hidden) openStateMenu();
-    else closeStateMenu();
+    if (stateMenu.hidden) {
+      openStateMenu();
+    } else {
+      closeStateMenu();
+    }
   });
   stateButton.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -159,7 +200,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   stateMenu.addEventListener('click', event => {
     const option = event.target.closest('[data-account-state]');
-    if (!option) return;
+    if (!option) {
+      return;
+    }
     stateFilter = option.dataset.accountState;
     closeStateMenu();
     render();
@@ -189,10 +232,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   document.addEventListener('click', event => {
-    if (!stateButton.parentElement.contains(event.target)) closeStateMenu();
+    if (!stateButton.parentElement.contains(event.target)) {
+      closeStateMenu();
+    }
   });
   document.addEventListener('focusin', event => {
-    if (!stateButton.parentElement.contains(event.target)) closeStateMenu();
+    if (!stateButton.parentElement.contains(event.target)) {
+      closeStateMenu();
+    }
   });
   $('account-list').addEventListener('click', event => {
     const button = event.target.closest('[data-account-id]');
@@ -203,9 +250,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   $('account-detail').addEventListener('click', event => {
     const button = event.target.closest('[data-action]');
-    if (!button || busy) return;
-    base = users.find(u => u.id === selected);
-    if (!base) return;
+    if (!button || busy) {
+      return;
+    }
+    base = users.find(accountRecord => accountRecord.id === selected);
+    if (!base) {
+      return;
+    }
     action = button.dataset.action;
     form.reset();
     window.HospitalI18n.bindText($('account-title'), () => button.textContent);
@@ -216,7 +267,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     form
       .querySelectorAll('[name=role]')
       .forEach(
-        el => (el.checked = base.roles.includes(el.value) || (action === 'approve' && el.value === 'staff'))
+        controlElement =>
+          (controlElement.checked =
+            base.roles.includes(controlElement.value) ||
+            (action === 'approve' && controlElement.value === 'staff'))
       );
     dialog.showModal();
   });
@@ -227,12 +281,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   dialog.addEventListener('cancel', event => {
-    if (busy) event.preventDefault();
-    else form.reset();
+    if (busy) {
+      event.preventDefault();
+    } else {
+      form.reset();
+    }
   });
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy || !base) return;
+    if (busy || !base) {
+      return;
+    }
     if (!form.checkValidity()) {
       api.report(
         new api.ApiError(
@@ -244,23 +303,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
       return;
     }
-    const chosen = [...form.querySelectorAll('[name=role]:checked')].map(el => el.value),
-      password = $('account-password').value;
+    const chosen = [...form.querySelectorAll('[name=role]:checked')].map(
+      controlElement => controlElement.value
+    );
+    const password = $('account-password').value;
     setBusy(true);
     try {
-      if (action === 'password')
+      if (action === 'password') {
         await api.post('accounts.php?action=reset-password', {
           user_id: base.id,
           version: base.version,
           new_password: password
         });
-      else
+      } else {
         await api.post('accounts.php?action=manage', {
           user_id: base.id,
           version: base.version,
           action,
           roles: chosen
         });
+      }
       form.reset();
       dialog.close();
       if (base.id === self) {
@@ -282,7 +344,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   try {
     const session = await window.HospitalAuth.ready;
-    if (!session) return;
+    if (!session) {
+      return;
+    }
     self = session.user.id;
     await load();
   } catch (error) {
@@ -290,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   window.addEventListener('hospital:localechange', () => {
     render();
-    if (dialog.open && action)
+    if (dialog.open && action) {
       window.HospitalI18n.bindText(
         $('account-title'),
         () =>
@@ -303,5 +367,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             password: window.HospitalI18n.t('accounts.restablecer_contrasena')
           })[action]
       );
+    }
   });
 });

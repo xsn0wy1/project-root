@@ -1,3 +1,8 @@
+/* Manages crew records, driver/companion filters, details and archive dialogs.
+ * API: personnel list/get/create/update/archive/restore.
+ * DOM: personnel-rows, personnel-form and person-dialog.
+ * HospitalI18n.t translates labels when rendered.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
@@ -7,29 +12,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const iconBase = '../../../assets/Icons/';
   const roleCodes = { driver: 'driver', copilot: 'copilot' };
   const roleLabels = {
-      get driver() {
-        return window.HospitalI18n.t("personnel.chofer");
-      },
-      get copilot() {
-        return window.HospitalI18n.t("personnel.copiloto");
-      }
+    driver: function () {
+      return window.HospitalI18n.t("personnel.chofer");
     },
-    statusLabels = {
-      get active() {
-        return window.HospitalI18n.t("destinations.activo");
-      },
-      get inactive() {
-        return window.HospitalI18n.t("destinations.inactivo");
-      }
-    };
-  const fromApi = p => ({
-    ...p,
-    name: p.full_name,
-    document: p.national_id,
-    license: p.driving_license,
-    role: p.responsibility,
-    archived: p.status === 'archived',
-    status: p.availability === 'active' && p.staff_status === 'active' ? 'active' : 'inactive'
+    copilot: function () {
+      return window.HospitalI18n.t("personnel.copiloto");
+    }
+  };
+  const statusLabels = {
+    active: function () {
+      return window.HospitalI18n.t("destinations.activo");
+    },
+    inactive: function () {
+      return window.HospitalI18n.t("destinations.inactivo");
+    }
+  };
+  const fromApi = personRecord => ({
+    ...personRecord,
+    name: personRecord.full_name,
+    document: personRecord.national_id,
+    license: personRecord.driving_license,
+    role: personRecord.responsibility,
+    archived: personRecord.status === 'archived',
+    status:
+      personRecord.availability === 'active' && personRecord.staff_status === 'active' ? 'active' : 'inactive'
   });
   const rows = document.getElementById('personnel-rows');
   const search = document.getElementById('personnel-search');
@@ -44,24 +50,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   const formSubtitle = document.getElementById('form-subtitle');
   const feedback = document.getElementById('form-feedback');
   const dialog = document.getElementById('person-dialog');
-  if (!api || !rows || !search || !form || !dialog) return;
+  if (!api || !rows || !search || !form || !dialog) {
+    return;
+  }
 
   let people = [];
-  let archived = false,
-    editingVersion = null,
-    busy = false,
-    dirty = false;
+  let archived = false;
+  let editingVersion = null;
+  let busy = false;
+  let dirty = false;
   const archiveToggle = document.getElementById("personnel-archive-toggle");
   let activeRole = 'driver';
   let currentPage = 1;
-  let editingId = null,
-    detailId = null;
+  let editingId = null;
+  let detailId = null;
 
   const report = error => api.report(error, 'personnel');
   function upsert(data) {
     const person = fromApi(data);
-    if (people.some(p => p.id === person.id)) people = people.map(p => (p.id === person.id ? person : p));
-    else people.push(person);
+    if (people.some(personRecord => personRecord.id === person.id)) {
+      people = people.map(personRecord => {
+        if (personRecord.id === person.id) {
+          return person;
+        } else {
+          return personRecord;
+        }
+      });
+    } else {
+      people.push(person);
+    }
     return person;
   }
   function setBusy(value) {
@@ -71,8 +88,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...rows.querySelectorAll('button'),
       ...document.querySelectorAll('.role-tab'),
       archiveToggle
-    ].forEach(el => {
-      el.disabled = value;
+    ].forEach(controlElement => {
+      controlElement.disabled = value;
     });
   }
   async function refresh() {
@@ -81,17 +98,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function normalize(value) {
-    return value
-      .toLocaleLowerCase('es')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim();
+    const lowercaseText = value.toLocaleLowerCase('es');
+    const normalizedText = lowercaseText.normalize('NFD');
+    const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+    return replacedText.trim();
   }
 
   function matchesSearch(person, query) {
-    if (!query) return true;
+    if (!query) {
+      return true;
+    }
     const content = normalize(`${person.name} ${person.document} ${person.phone} ${person.license}`);
-    if (content.includes(query)) return true;
+    if (content.includes(query)) {
+      return true;
+    }
     const compactQuery = query.replace(/[^a-z0-9]/g, '');
     return compactQuery.length > 0 && content.replace(/[^a-z0-9]/g, '').includes(compactQuery);
   }
@@ -142,9 +162,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     dot.className = 'status-dot' + (person.archived || person.status === 'inactive' ? ' is-inactive' : '');
     dot.setAttribute('aria-hidden', 'true');
     const statusLabel = document.createElement('span');
-    window.HospitalI18n.bindText(statusLabel, () =>
-      person.archived ? window.HospitalI18n.t("personnel.archivado") : statusLabels[person.status]
-    );
+    window.HospitalI18n.bindText(statusLabel, () => {
+      if (person.archived) {
+        return window.HospitalI18n.t("personnel.archivado");
+      } else {
+        return statusLabels[person.status]?.();
+      }
+    });
     status.append(dot, statusLabel);
     statusCell.append(status);
 
@@ -152,20 +176,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const actions = document.createElement('div');
     actions.className = 'row-actions';
     actions.append(makeAction('view', window.HospitalI18n.t("personnel.ver"), 'eye.svg', person));
-    if (person.archived)
+    if (person.archived) {
       actions.append(
         makeAction('restore', window.HospitalI18n.t("personnel.restaurar"), 'save-floppy.svg', person)
       );
-    else
+    } else {
       actions.append(
         makeAction('edit', window.HospitalI18n.t("trace_view.editar"), 'pencil-icon.svg', person),
         makeAction('delete', window.HospitalI18n.t("routes.eliminar"), 'trash-icon.svg', person)
       );
+    }
     actionsCell.append(actions);
 
     row.append(
       nameCell,
-      makeCell(roleLabels[person.role]),
+      makeCell(roleLabels[person.role]?.()),
       makeCell(person.phone),
       makeCell(person.license || person.document || '—'),
       statusCell,
@@ -186,10 +211,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     visible.forEach(person => fragment.append(makeRow(person)));
     rows.replaceChildren(fragment);
 
-    const plural =
-      activeRole === 'driver'
-        ? window.HospitalI18n.t("personnel.choferes_2")
-        : window.HospitalI18n.t("personnel.copilotos_2");
+    let pluralValue;
+    if (activeRole === 'driver') {
+      pluralValue = window.HospitalI18n.t("personnel.choferes_2");
+    } else {
+      pluralValue = window.HospitalI18n.t("personnel.copilotos_2");
+    }
+    const plural = pluralValue;
     window.HospitalI18n.bindText(document.getElementById('list-title'), () =>
       window.HospitalI18n.t("personnel.listado_de_value", {
         value0:
@@ -213,15 +241,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     document
       .getElementById('personnel-list')
       .setAttribute('aria-labelledby', activeRole === 'driver' ? 'tab-chofer' : 'tab-copiloto');
-    window.HospitalI18n.bindText(document.getElementById('results-summary'), () =>
-      matching.length
-        ? window.HospitalI18n.t("personnel.mostrando_value_a_value_de_value_resultados", {
-            value0: start + 1,
-            value1: start + visible.length,
-            value2: matching.length
-          })
-        : window.HospitalI18n.t("personnel.mostrando_0_resultados")
-    );
+    window.HospitalI18n.bindText(document.getElementById('results-summary'), () => {
+      if (matching.length) {
+        return window.HospitalI18n.t("personnel.mostrando_value_a_value_de_value_resultados", {
+          value0: start + 1,
+          value1: start + visible.length,
+          value2: matching.length
+        });
+      } else {
+        return window.HospitalI18n.t("personnel.mostrando_0_resultados");
+      }
+    });
     document.getElementById('empty-state').hidden = matching.length > 0;
     window.HospitalI18n.bindText(document.getElementById('page-number'), () => String(currentPage));
     document.getElementById('page-prev').disabled = currentPage === 1;
@@ -274,19 +304,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showPerson(person) {
     detailId = person.id;
     window.HospitalI18n.bindText(document.getElementById('person-detail-name'), () => person.name);
-    window.HospitalI18n.bindText(
-      document.getElementById('person-detail-role'),
-      () => roleLabels[person.role]
+    window.HospitalI18n.bindText(document.getElementById('person-detail-role'), () =>
+      roleLabels[person.role]?.()
     );
     document.getElementById('person-detail-icon').src =
       iconBase + (person.role === 'driver' ? 'steering-wheel.svg' : 'person-icon.svg');
     const status = document.getElementById('person-detail-status');
     status.classList.toggle('is-active', !person.archived && person.status === 'active');
-    window.HospitalI18n.bindText(status, () =>
-      person.archived ? window.HospitalI18n.t('personnel.archivado') : statusLabels[person.status]
-    );
+    window.HospitalI18n.bindText(status, () => {
+      if (person.archived) {
+        return window.HospitalI18n.t('personnel.archivado');
+      } else {
+        return statusLabels[person.status]?.();
+      }
+    });
     window.HospitalUI.detailRows(document.getElementById('dialog-details'), [
-      ['personnel.rol', () => roleLabels[person.role]],
+      ['personnel.rol', () => roleLabels[person.role]?.()],
       ['destinations.telefono', person.phone],
       ['documents_viewer.documento', person.document || '—'],
       ['personnel.licencia', person.license || '—']
@@ -295,7 +328,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function editPerson(person) {
-    if (person.role !== activeRole) switchRole(person.role);
+    if (person.role !== activeRole) {
+      switchRole(person.role);
+    }
     clearForm();
     editingId = person.id;
     editingVersion = person.version;
@@ -323,7 +358,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     tab.addEventListener('keydown', event => {
       if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
         event.preventDefault();
-        const nextRole = activeRole === 'driver' ? 'copilot' : 'driver';
+        let nextRoleValue;
+        if (activeRole === 'driver') {
+          nextRoleValue = 'copilot';
+        } else {
+          nextRoleValue = 'driver';
+        }
+        const nextRole = nextRoleValue;
         switchRole(nextRole);
         document.querySelector(`.role-tab[data-role="${nextRole}"]`).focus();
       }
@@ -332,8 +373,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('[data-add-role]').forEach(button => {
     button.addEventListener('click', () => {
-      if (button.dataset.addRole !== activeRole) switchRole(button.dataset.addRole);
-      else clearForm();
+      if (button.dataset.addRole !== activeRole) {
+        switchRole(button.dataset.addRole);
+      } else {
+        clearForm();
+      }
       window.HospitalDropdown.refresh();
       nameInput.focus();
     });
@@ -359,7 +403,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   rows.addEventListener('click', async event => {
     const button = event.target.closest('button[data-action]');
-    if (!button || busy) return;
+    if (!button || busy) {
+      return;
+    }
     try {
       const person = upsert(
         await api.get(`personnel.php?action=get&id=${encodeURIComponent(button.dataset.id)}`)
@@ -369,7 +415,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
       if (button.dataset.action === 'edit') {
-        if (!person.archived) editPerson(person);
+        if (!person.archived) {
+          editPerson(person);
+        }
         return;
       }
       const restore = button.dataset.action === 'restore';
@@ -382,8 +430,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 { value0: person.name }
               )
         )
-      )
+      ) {
         return;
+      }
       setBusy(true);
       upsert(
         await api.post(`personnel.php?action=${restore ? 'restore' : 'archive'}`, {
@@ -391,12 +440,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           version: person.version
         })
       );
-      if (editingId === person.id) clearForm();
-      window.HospitalI18n.bindText(feedback, () =>
-        restore
-          ? window.HospitalI18n.t("personnel.registro_restaurado")
-          : window.HospitalI18n.t("personnel.registro_eliminado_del_listado")
-      );
+      if (editingId === person.id) {
+        clearForm();
+      }
+      window.HospitalI18n.bindText(feedback, () => {
+        if (restore) {
+          return window.HospitalI18n.t("personnel.registro_restaurado");
+        } else {
+          return window.HospitalI18n.t("personnel.registro_eliminado_del_listado");
+        }
+      });
     } catch (error) {
       report(error);
     } finally {
@@ -407,7 +460,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     window.HospitalI18n.bindText(feedback, () => '');
     const name = nameInput.value.trim();
     const phone = phoneInput.value.trim();
@@ -423,7 +478,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       phoneInput.checkValidity();
       return;
     }
-    if (!form.checkValidity()) return;
+    if (!form.checkValidity()) {
+      return;
+    }
     const record = {
       full_name: name,
       national_id: documentInput.value.trim(),
@@ -433,25 +490,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       availability: statusInput.value === 'active' ? 'active' : 'inactive'
     };
     const wasEditing = Boolean(editingId);
-    if (wasEditing) Object.assign(record, { id: editingId, version: editingVersion });
+    if (wasEditing) {
+      Object.assign(record, { id: editingId, version: editingVersion });
+    }
     setBusy(true);
     try {
       const saved = upsert(
         await api.post(`personnel.php?action=${wasEditing ? 'update' : 'create'}`, record)
       );
-      if (saved.role !== activeRole) switchRole(saved.role);
-      else clearForm();
+      if (saved.role !== activeRole) {
+        switchRole(saved.role);
+      } else {
+        clearForm();
+      }
       archived = false;
       window.HospitalI18n.bindText(archiveToggle, () => window.HospitalI18n.t("personnel.ver_archivados"));
       archiveToggle.setAttribute('aria-pressed', 'false');
       search.value = '';
-      const rolePeople = people.filter(p => p.role === activeRole && !p.archived);
-      currentPage = Math.floor(rolePeople.findIndex(p => p.id === saved.id) / pageSize) + 1;
-      window.HospitalI18n.bindText(feedback, () =>
-        wasEditing
-          ? window.HospitalI18n.t("personnel.registro_actualizado")
-          : window.HospitalI18n.t("personnel.registro_guardado")
+      const rolePeople = people.filter(
+        personRecord => personRecord.role === activeRole && !personRecord.archived
       );
+      currentPage =
+        Math.floor(rolePeople.findIndex(personRecord => personRecord.id === saved.id) / pageSize) + 1;
+      window.HospitalI18n.bindText(feedback, () => {
+        if (wasEditing) {
+          return window.HospitalI18n.t("personnel.registro_actualizado");
+        } else {
+          return window.HospitalI18n.t("personnel.registro_guardado");
+        }
+      });
     } catch (error) {
       report(error);
     } finally {
@@ -466,7 +533,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     (trigger || search).focus({ preventScroll: true });
   });
   dialog.addEventListener('click', event => {
-    if (event.target === dialog) dialog.close();
+    if (event.target === dialog) {
+      dialog.close();
+    }
   });
   form.addEventListener('input', () => {
     dirty = true;
@@ -478,16 +547,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     archived = !archived;
     currentPage = 1;
     clearForm();
-    window.HospitalI18n.bindText(archiveToggle, () =>
-      archived
-        ? window.HospitalI18n.t("personnel.ver_activos")
-        : window.HospitalI18n.t("personnel.ver_archivados")
-    );
+    window.HospitalI18n.bindText(archiveToggle, () => {
+      if (archived) {
+        return window.HospitalI18n.t("personnel.ver_activos");
+      } else {
+        return window.HospitalI18n.t("personnel.ver_archivados");
+      }
+    });
     archiveToggle.setAttribute('aria-pressed', String(archived));
     render();
   });
   window.addEventListener('focus', () => {
-    if (!busy && !dirty && !editingId && !dialog.open) refresh().catch(report);
+    if (!busy && !dirty && !editingId && !dialog.open) {
+      refresh().catch(report);
+    }
   });
   async function start() {
     setBusy(true);
@@ -495,7 +568,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateStatusDot();
     try {
       const session = await window.HospitalAuth.ready;
-      if (!session) return;
+      if (!session) {
+        return;
+      }
       if (!session.user.roles.includes('dispatcher')) {
         location.replace(api.page('src/views/management/management.php'));
         return;

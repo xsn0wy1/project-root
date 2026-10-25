@@ -1,3 +1,8 @@
+/* Manages saved routes, stops, schematic details and archive dialogs.
+ * API: routes list/create/update/archive/restore.
+ * DOM: route-list, route-form, route-detail-content and route-dialog.
+ * HospitalI18n.t translates labels when rendered; x is a schematic coordinate.
+ */
 (async () => {
   "use strict";
   function schematicPointLabel(index, positions) {
@@ -36,33 +41,32 @@
 
   const api = window.HospitalApi;
   const categoryLabels = {
-    get interhospital() {
+    interhospital: function () {
       return window.HospitalI18n.t("routes.interhospitalario");
     },
-    get consultation() {
+    consultation: function () {
       return window.HospitalI18n.t("routes.consulta");
     },
-    get treatment() {
+    treatment: function () {
       return window.HospitalI18n.t("routes.tratamiento");
     },
-    get discharge() {
+    discharge: function () {
       return window.HospitalI18n.t("routes.category_discharge");
     }
   };
   const directionLabels = {
-    get one_way() {
+    one_way: function () {
       return window.HospitalI18n.t("routes.solo_ida");
     },
-    get round_trip() {
+    round_trip: function () {
       return window.HospitalI18n.t("routes.ida_y_vuelta");
     }
   };
-  const keyFor = (labels, value) => value;
   const statusLabels = {
-    get active() {
+    active: function () {
       return window.HospitalI18n.t("routes.activa");
     },
-    get inactive() {
+    inactive: function () {
       return window.HospitalI18n.t("routes.inactiva");
     }
   };
@@ -85,7 +89,9 @@
     [...form.elements, ...deleteDialog.querySelectorAll('button')].forEach(
       control => (control.disabled = value)
     );
-    if (!value) byId('add-stop').disabled = draftStops.length >= 6;
+    if (!value) {
+      byId('add-stop').disabled = draftStops.length >= 6;
+    }
   }
   const byId = id => document.getElementById(id);
   const list = byId("route-list");
@@ -101,9 +107,9 @@
   const pagination = byId("route-pagination");
   let pageSize = 3;
   let routes = [];
-  let busy = true,
-    editVersion = null,
-    deleteVersion = null;
+  let busy = true;
+  let editVersion = null;
+  let deleteVersion = null;
   let selectedId = null;
   let currentPage = 1;
   let activeFilter = "all";
@@ -144,7 +150,7 @@
         const terms = [
           route.code,
           route.name,
-          categoryLabels[route.category],
+          categoryLabels[route.category]?.(),
           route.origin.name,
           route.origin.address,
           route.destination.name,
@@ -153,40 +159,71 @@
         ].join(" ");
         return (activeFilter === "all" || route.status === activeFilter) && normalize(terms).includes(query);
       })
-      .sort((a, b) => {
-        if (sort.value === "name")
+      .sort((leftValue, rightValue) => {
+        if (sort.value === "name") {
           return (
-            a.name.localeCompare(b.name, window.HospitalI18n.locale, { sensitivity: "base" }) ||
-            a.code.localeCompare(b.code)
+            leftValue.name.localeCompare(rightValue.name, window.HospitalI18n.locale, {
+              sensitivity: "base"
+            }) || leftValue.code.localeCompare(rightValue.code)
           );
-        if (sort.value === "duration")
-          return a.duration - b.duration || a.name.localeCompare(b.name, window.HospitalI18n.locale);
-        return a.code.localeCompare(b.code, window.HospitalI18n.locale, { numeric: true });
+        }
+        if (sort.value === "duration") {
+          return (
+            leftValue.duration - rightValue.duration ||
+            leftValue.name.localeCompare(rightValue.name, window.HospitalI18n.locale)
+          );
+        }
+        return leftValue.code.localeCompare(rightValue.code, window.HospitalI18n.locale, { numeric: true });
       });
   }
 
   function statusPill(route) {
-    return `<span class="status-pill${route.status === "inactive" ? " is-inactive" : ""}">${escapeHtml(statusLabels[route.status])}</span>`;
+    return `<span class="status-pill${route.status === "inactive" ? " is-inactive" : ""}">${escapeHtml(statusLabels[route.status]?.())}</span>`;
   }
 
   function renderPagination(pages) {
     let pageNumbers;
-    if (pages <= 5) pageNumbers = Array.from({ length: pages }, (_, index) => index + 1);
-    else if (currentPage <= 3) pageNumbers = [1, 2, 3, "…", pages];
-    else if (currentPage >= pages - 2) pageNumbers = [1, "…", pages - 2, pages - 1, pages];
-    else pageNumbers = [1, "…", currentPage, "…", pages];
+    if (pages <= 5) {
+      pageNumbers = Array.from({ length: pages }, (_, index) => index + 1);
+    } else if (currentPage <= 3) {
+      pageNumbers = [1, 2, 3, "…", pages];
+    } else if (currentPage >= pages - 2) {
+      pageNumbers = [1, "…", pages - 2, pages - 1, pages];
+    } else {
+      pageNumbers = [1, "…", currentPage, "…", pages];
+    }
     window.HospitalI18n.setHTML(
       pagination,
-      `<button type="button" id="page-prev" data-page="${currentPage - 1}" aria-label="${window.HospitalI18n.html("trace.pagina_anterior")}" data-i18n-aria-label="trace.pagina_anterior" ${currentPage === 1 ? "disabled" : ""}>‹</button>
-      ${pageNumbers.map(page => (typeof page === "number" ? `<button type="button" data-page="${page}" class="${page === currentPage ? "is-active" : ""}" aria-label="${window.HospitalI18n.html("ambulances.pagina_value", { value0: page })}" data-i18n-aria-label="ambulances.pagina_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: page }))}" ${page === currentPage ? 'aria-current="page"' : ""}>${page}</button>` : '<span class="pagination-ellipsis" aria-hidden="true">…</span>')).join("")}
-      <button type="button" id="page-next" data-page="${currentPage + 1}" aria-label="${window.HospitalI18n.html("trace.pagina_siguiente")}" data-i18n-aria-label="trace.pagina_siguiente" ${currentPage === pages ? "disabled" : ""}>›</button>`
+      `<button type="button" id="page-prev" data-page="${currentPage - 1}" aria-label="${window.HospitalI18n.html("trace.pagina_anterior")}"` +
+        ` data-i18n-aria-label="trace.pagina_anterior" ${currentPage === 1 ? "disabled" : ""}>‹` +
+        `</button>
+      ${pageNumbers
+        .map(page => {
+          if (typeof page === "number") {
+            return (
+              `<button type="button" data-page="${page}" class="${page === currentPage ? "is-active" : ""}" aria-label="${window.HospitalI18n.html("ambulances.pagina_value", { value0: page })}"` +
+              ` data-i18n-aria-label="ambulances.pagina_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: page }))}"` +
+              ` ${page === currentPage ? 'aria-current="page"' : ""}>${page}` +
+              `</button>`
+            );
+          } else {
+            return '<span class="pagination-ellipsis" aria-hidden="true">…</span>';
+          }
+        })
+        .join("")}
+      ` +
+        `<button type="button" id="page-next" data-page="${currentPage + 1}" aria-label="${window.HospitalI18n.html("trace.pagina_siguiente")}"` +
+        ` data-i18n-aria-label="trace.pagina_siguiente" ${currentPage === pages ? "disabled" : ""}>›` +
+        `</button>`
     );
   }
 
   function fitCatalogPage() {
     let capacity = 3;
     if (!window.matchMedia("(max-width: 770px)").matches) {
-      if (!list.clientHeight) return;
+      if (!list.clientHeight) {
+        return;
+      }
       const style = getComputedStyle(list);
       const availableHeight =
         list.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
@@ -194,16 +231,22 @@
       const gap = parseFloat(style.rowGap);
       capacity = Math.max(1, Math.min(6, Math.floor((availableHeight + gap) / (cardHeight + gap))));
     }
-    if (capacity === pageSize) return;
+    if (capacity === pageSize) {
+      return;
+    }
     pageSize = capacity;
     const selectedIndex = filteredRoutes().findIndex(route => route.id === selectedId);
-    if (selectedIndex >= 0) currentPage = Math.floor(selectedIndex / pageSize) + 1;
+    if (selectedIndex >= 0) {
+      currentPage = Math.floor(selectedIndex / pageSize) + 1;
+    }
     const focusedRoute = document.activeElement?.dataset.routeId;
     const focusedPage = document.activeElement?.dataset.page;
     renderCatalog();
-    if (focusedRoute)
+    if (focusedRoute) {
       list.querySelector(`[data-route-id="${CSS.escape(focusedRoute)}"]`)?.focus({ preventScroll: true });
-    else if (focusedPage) pagination.querySelector('[aria-current="page"]')?.focus({ preventScroll: true });
+    } else if (focusedPage) {
+      pagination.querySelector('[aria-current="page"]')?.focus({ preventScroll: true });
+    }
   }
 
   function renderCatalog() {
@@ -212,37 +255,73 @@
     currentPage = Math.min(currentPage, pages);
     const start = (currentPage - 1) * pageSize;
     const visible = matching.slice(start, start + pageSize);
-    if (!visible.some(route => route.id === selectedId)) selectedId = visible[0]?.id ?? null;
+    if (!visible.some(route => route.id === selectedId)) {
+      selectedId = visible[0]?.id ?? null;
+    }
     window.HospitalI18n.setHTML(
       list,
       visible
         .map(
-          route => `<button type="button" class="route-card${route.id === selectedId ? " is-selected" : ""}" data-route-id="${escapeHtml(route.id)}" aria-pressed="${route.id === selectedId}" aria-controls="route-detail-content" aria-label="${window.HospitalI18n.html("routes.ver_ruta_value", { value0: route.name })}" data-i18n-aria-label="routes.ver_ruta_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: route.name }))}">
-      <span class="route-card-top"><span class="route-code">${escapeHtml(route.code)}</span><span class="route-category">${escapeHtml(categoryLabels[route.category])}</span>${statusPill(route)}</span>
-      <span class="route-card-name" title="${escapeHtml(route.name)}">${escapeHtml(route.name)}</span>
-      <span class="route-corridor"><span title="${escapeHtml(route.origin.name)}">${escapeHtml(route.origin.name)}</span><span class="corridor-line" aria-hidden="true"></span><span title="${escapeHtml(route.destination.name)}">${escapeHtml(route.destination.name)}</span></span>
-      <span class="route-card-meta"><span>${icon("time-icon") + window.HospitalI18n.mark("trace_view.value_min", { value0: route.duration })}</span><span>${icon("location-icon") + window.HospitalI18n.mark("trace_view.value_km", { value0: formatDistance(route.distance) })}</span><span>${route.stops.length ? `${route.stops.length} ${route.stops.length === 1 ? window.HospitalI18n.t("routes.parada") : window.HospitalI18n.t("routes.paradas")}` : window.HospitalI18n.t("routes.directa")}</span><span class="selection-arrow" aria-hidden="true">↗</span></span>
-    </button>`
+          route =>
+            `<button type="button" class="route-card${route.id === selectedId ? " is-selected" : ""}" data-route-id="${escapeHtml(route.id)}"` +
+            ` aria-pressed="${route.id === selectedId}" aria-controls="route-detail-content" aria-label="${window.HospitalI18n.html("routes.ver_ruta_value", { value0: route.name })}"` +
+            ` data-i18n-aria-label="routes.ver_ruta_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: route.name }))}">
+      ` +
+            `<span class="route-card-top">` +
+            `<span class="route-code">${escapeHtml(route.code)}` +
+            `</span>` +
+            `<span class="route-category">${escapeHtml(categoryLabels[route.category]?.())}` +
+            `</span>${statusPill(route)}` +
+            `</span>
+      ` +
+            `<span class="route-card-name" title="${escapeHtml(route.name)}">${escapeHtml(route.name)}` +
+            `</span>
+      ` +
+            `<span class="route-corridor">` +
+            `<span title="${escapeHtml(route.origin.name)}">${escapeHtml(route.origin.name)}` +
+            `</span>` +
+            `<span class="corridor-line" aria-hidden="true">` +
+            `</span>` +
+            `<span title="${escapeHtml(route.destination.name)}">${escapeHtml(route.destination.name)}` +
+            `</span>` +
+            `</span>
+      ` +
+            `<span class="route-card-meta">` +
+            `<span>${icon("time-icon") + window.HospitalI18n.mark("trace_view.value_min", { value0: route.duration })}` +
+            `</span>` +
+            `<span>${icon("location-icon") + window.HospitalI18n.mark("trace_view.value_km", { value0: formatDistance(route.distance) })}` +
+            `</span>` +
+            `<span>${route.stops.length ? `${route.stops.length} ${route.stops.length === 1 ? window.HospitalI18n.t("routes.parada") : window.HospitalI18n.t("routes.paradas")}` : window.HospitalI18n.t("routes.directa")}` +
+            `</span>` +
+            `<span class="selection-arrow" aria-hidden="true">↗` +
+            `</span>` +
+            `</span>
+    ` +
+            `</button>`
         )
         .join("")
     );
     list.hidden = !matching.length;
     byId("catalog-empty").hidden = Boolean(matching.length);
-    window.HospitalI18n.bindText(byId("empty-description"), () =>
-      routes.length
-        ? window.HospitalI18n.t("routes.prueba_con_otra_busqueda_o_cambia_el_filtro")
-        : window.HospitalI18n.t("routes.crea_tu_primera_ruta_para_empezar_a_organizar_tus_recorridos")
-    );
+    window.HospitalI18n.bindText(byId("empty-description"), () => {
+      if (routes.length) {
+        return window.HospitalI18n.t("routes.prueba_con_otra_busqueda_o_cambia_el_filtro");
+      } else {
+        return window.HospitalI18n.t("routes.crea_tu_primera_ruta_para_empezar_a_organizar_tus_recorridos");
+      }
+    });
     byId("clear-filters").hidden = !routes.length;
-    window.HospitalI18n.bindText(byId("results-summary"), () =>
-      matching.length
-        ? window.HospitalI18n.t("routes.value_value_de_value_rutas", {
-            value0: start + 1,
-            value1: start + visible.length,
-            value2: matching.length
-          })
-        : window.HospitalI18n.t("routes.0_rutas")
-    );
+    window.HospitalI18n.bindText(byId("results-summary"), () => {
+      if (matching.length) {
+        return window.HospitalI18n.t("routes.value_value_de_value_rutas", {
+          value0: start + 1,
+          value1: start + visible.length,
+          value2: matching.length
+        });
+      } else {
+        return window.HospitalI18n.t("routes.0_rutas");
+      }
+    });
     renderPagination(pages);
     window.HospitalI18n.bindText(byId("total-routes"), () => routes.length);
     window.HospitalI18n.bindText(
@@ -262,51 +341,144 @@
       (_, index) => 32 + index * (296 / (route.stops.length + 1))
     );
 
-    return `<div class="route-schematic"><div class="schematic-heading"><span>${icon("map-icon")}${window.HospitalI18n.mark("routes.esquema_del_recorrido")}</span><span>${window.HospitalI18n.mark("routes.sin_escala")}</span></div>
-      <svg viewBox="0 0 360 90" role="img" aria-label="${window.HospitalI18n.html("routes.recorrido_desde_el_origen_hasta_el_destino_con_value_paradas_intermedias", { value0: route.stops.length })}" data-i18n-aria-label="routes.recorrido_desde_el_origen_hasta_el_destino_con_value_paradas_intermedias" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: route.stops.length }))}">
-        <path d="M32 45 H328" fill="none" stroke="var(--route-line, rgba(169, 188, 229, .14))" stroke-width="12" stroke-linecap="round"/>
-        <path d="M32 45 H328" fill="none" stroke="var(--route-accent, #a9bcf6)" stroke-width="2" stroke-dasharray="5 5"/>
-        ${positions.map((x, index) => `<circle cx="${x}" cy="45" r="${index === 0 || index === positions.length - 1 ? 13 : 10}" fill="var(--schematic-surface, #101a33)" stroke="${index === positions.length - 1 ? "var(--route-green, #57c879)" : "var(--route-accent, #a9bcf6)"}" stroke-width="2"/><text x="${x}" y="49" text-anchor="middle" fill="${index === positions.length - 1 ? "var(--route-green, #57c879)" : "var(--route-text, #f2f3f7)"}" font-size="10" font-family="Inclusive Sans, sans-serif">${schematicPointLabel(index, positions)}</text>`).join("")}
-      </svg><div class="schematic-labels"><span>${window.HospitalI18n.mark("trace_view.origen")}</span><span>${escapeHtml(directionLabels[route.direction])}</span><span>${window.HospitalI18n.mark("trace_view.destino")}</span></div></div>`;
+    return (
+      `<div class="route-schematic">` +
+      `<div class="schematic-heading">` +
+      `<span>${icon("map-icon")}${window.HospitalI18n.mark("routes.esquema_del_recorrido")}` +
+      `</span>` +
+      `<span>${window.HospitalI18n.mark("routes.sin_escala")}` +
+      `</span>` +
+      `</div>
+      ` +
+      `<svg viewBox="0 0 360 90" role="img" aria-label="${window.HospitalI18n.html("routes.recorrido_desde_el_origen_hasta_el_destino_con_value_paradas_intermedias", { value0: route.stops.length })}"` +
+      ` data-i18n-aria-label="routes.recorrido_desde_el_origen_hasta_el_destino_con_value_paradas_intermedias" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: route.stops.length }))}">
+        ` +
+      `<path d="M32 45 H328" fill="none" stroke="var(--route-line, rgba(169, 188, 229, .14))" stroke-width="12" stroke-linecap="round"/>
+        ` +
+      `<path d="M32 45 H328" fill="none" stroke="var(--route-accent, #a9bcf6)" stroke-width="2" stroke-dasharray="5 5"/>
+        ${positions
+          .map(
+            (x, index) =>
+              `<circle cx="${x}" cy="45" r="${index === 0 || index === positions.length - 1 ? 13 : 10}" fill="var(--schematic-surface, #101a33)"` +
+              ` stroke="${index === positions.length - 1 ? "var(--route-green, #57c879)" : "var(--route-accent, #a9bcf6)"}"` +
+              ` stroke-width="2"/>` +
+              `<text x="${x}" y="49" text-anchor="middle" fill="${index === positions.length - 1 ? "var(--route-green, #57c879)" : "var(--route-text, #f2f3f7)"}"` +
+              ` font-size="10" font-family="Inclusive Sans, sans-serif">${schematicPointLabel(index, positions)}` +
+              `</text>`
+          )
+          .join("")}
+      ` +
+      `</svg>` +
+      `<div class="schematic-labels">` +
+      `<span>${window.HospitalI18n.mark("trace_view.origen")}` +
+      `</span>` +
+      `<span>${escapeHtml(directionLabels[route.direction]?.())}` +
+      `</span>` +
+      `<span>${window.HospitalI18n.mark("trace_view.destino")}` +
+      `</span>` +
+      `</div>` +
+      `</div>`
+    );
   }
 
   function renderDetail() {
     const route = routes.find(item => item.id === selectedId);
     byId("detail-actions").hidden = !route;
     byId('edit-route').disabled = Boolean(route?.archived);
-    window.HospitalI18n.bindText(byId('delete-route'), () =>
-      route?.archived
-        ? window.HospitalI18n.t("personnel.restaurar")
-        : window.HospitalI18n.t("routes.eliminar")
-    );
+    window.HospitalI18n.bindText(byId('delete-route'), () => {
+      if (route?.archived) {
+        return window.HospitalI18n.t("personnel.restaurar");
+      } else {
+        return window.HospitalI18n.t("routes.eliminar");
+      }
+    });
     if (!route) {
       window.HospitalI18n.setHTML(
         detail,
-        `<div class="detail-placeholder"><span class="empty-icon">${icon("map-icon")}</span><h2>${window.HospitalI18n.mark("routes.tu_proximo_recorrido")}</h2><p>${routes.length ? window.HospitalI18n.t("routes.selecciona_una_ruta_del_catalogo_para_consultar_su_itinerario") : window.HospitalI18n.t("routes.anade_una_ruta_para_ver_aqui_su_itinerario_y_sus_caracteristicas")}</p></div>`
+        `<div class="detail-placeholder">` +
+          `<span class="empty-icon">${icon("map-icon")}` +
+          `</span>` +
+          `<h2>${window.HospitalI18n.mark("routes.tu_proximo_recorrido")}` +
+          `</h2>` +
+          `<p>${routes.length ? window.HospitalI18n.t("routes.selecciona_una_ruta_del_catalogo_para_consultar_su_itinerario") : window.HospitalI18n.t("routes.anade_una_ruta_para_ver_aqui_su_itinerario_y_sus_caracteristicas")}` +
+          `</p>` +
+          `</div>`
       );
       return;
     }
     const points = [route.origin, ...route.stops, route.destination];
     window.HospitalI18n.setHTML(
       detail,
-      `<div class="detail-title-row"><span class="route-code">${escapeHtml(route.code)}</span>${statusPill(route)}</div>
-      <h2>${escapeHtml(route.name)}</h2><p class="detail-category">${escapeHtml(categoryLabels[route.category])} · ${escapeHtml(directionLabels[route.direction])}</p>
+      `<div class="detail-title-row">` +
+        `<span class="route-code">${escapeHtml(route.code)}` +
+        `</span>${statusPill(route)}` +
+        `</div>
+      ` +
+        `<h2>${escapeHtml(route.name)}` +
+        `</h2>` +
+        `<p class="detail-category">${escapeHtml(categoryLabels[route.category]?.())} · ${escapeHtml(directionLabels[route.direction]?.())}` +
+        `</p>
       ${schematic(route)}
-      <div class="route-estimates"><div><strong>${formatDistance(route.distance)} <small>${window.HospitalI18n.mark("trace_map.km")}</small></strong><span>${window.HospitalI18n.mark("routes.distancia_estimada")}</span></div><div><strong>${route.duration} <small>${window.HospitalI18n.mark("routes.min")}</small></strong><span>${window.HospitalI18n.mark("routes.duracion_estimada")}</span></div><div><strong>${route.stops.length}</strong><span>${window.HospitalI18n.mark("routes.paradas_intermedias")}</span></div></div>
-      <h3 class="section-label">${window.HospitalI18n.mark("routes.itinerario")}<span>${window.HospitalI18n.mark("routes.tramo_de_ida")}</span></h3>
-      <ol class="itinerary">${points
-        .map((point, index) => {
-          const last = index === points.length - 1;
+      ` +
+        `<div class="route-estimates">` +
+        `<div>` +
+        `<strong>${formatDistance(route.distance)} ` +
+        `<small>${window.HospitalI18n.mark("trace_map.km")}` +
+        `</small>` +
+        `</strong>` +
+        `<span>${window.HospitalI18n.mark("routes.distancia_estimada")}` +
+        `</span>` +
+        `</div>` +
+        `<div>` +
+        `<strong>${route.duration} ` +
+        `<small>${window.HospitalI18n.mark("routes.min")}` +
+        `</small>` +
+        `</strong>` +
+        `<span>${window.HospitalI18n.mark("routes.duracion_estimada")}` +
+        `</span>` +
+        `</div>` +
+        `<div>` +
+        `<strong>${route.stops.length}` +
+        `</strong>` +
+        `<span>${window.HospitalI18n.mark("routes.paradas_intermedias")}` +
+        `</span>` +
+        `</div>` +
+        `</div>
+      ` +
+        `<h3 class="section-label">${window.HospitalI18n.mark("routes.itinerario")}` +
+        `<span>${window.HospitalI18n.mark("routes.tramo_de_ida")}` +
+        `</span>` +
+        `</h3>
+      ` +
+        `<ol class="itinerary">${points
+          .map((point, index) => {
+            const last = index === points.length - 1;
 
-          return `<li class="${itineraryClass(last, index)}"><span class="stop-marker" aria-hidden="true">${last ? window.HospitalI18n.t("routes.b") : index || window.HospitalI18n.t("routes.a")}</span><div class="itinerary-copy"><span>${itineraryLabel(last, index)}</span><strong>${escapeHtml(point.name)}</strong><p>${escapeHtml(point.address)}</p></div></li>`;
-        })
-        .join("")}</ol>
+            return (
+              `<li class="${itineraryClass(last, index)}">` +
+              `<span class="stop-marker" aria-hidden="true">${last ? window.HospitalI18n.t("routes.b") : index || window.HospitalI18n.t("routes.a")}` +
+              `</span>` +
+              `<div class="itinerary-copy">` +
+              `<span>${itineraryLabel(last, index)}` +
+              `</span>` +
+              `<strong>${escapeHtml(point.name)}` +
+              `</strong>` +
+              `<p>${escapeHtml(point.address)}` +
+              `</p>` +
+              `</div>` +
+              `</li>`
+            );
+          })
+          .join("")}` +
+        `</ol>
       ${route.notes ? `<section class="route-notes"><h3>${window.HospitalI18n.mark("routes.indicaciones_para_el_equipo")}</h3><p>${escapeHtml(route.notes)}</p></section>` : ""}`
     );
   }
 
   function selectRoute(id) {
-    if (!routes.some(route => route.id === id)) return;
+    if (!routes.some(route => route.id === id)) {
+      return;
+    }
     selectedId = id;
     list.querySelectorAll("[data-route-id]").forEach(button => {
       const selected = button.dataset.routeId === id;
@@ -342,14 +514,43 @@
       stopEditor,
       draftStops
         .map(
-          (stop, index) => `<div class="stop-editor-row" data-stop-index="${index}">
-      <div class="stop-editor-heading"><span>${window.HospitalI18n.mark("routes.parada_value", { value0: index + 1 })}</span><div class="stop-editor-actions">
-        <button type="button" class="icon-button" data-stop-action="up" aria-label="${window.HospitalI18n.html("routes.subir_parada_value", { value0: index + 1 })}" data-i18n-aria-label="routes.subir_parada_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: index + 1 }))}" ${index === 0 ? "disabled" : ""}>↑</button>
-        <button type="button" class="icon-button" data-stop-action="down" aria-label="${window.HospitalI18n.html("routes.bajar_parada_value", { value0: index + 1 })}" data-i18n-aria-label="routes.bajar_parada_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: index + 1 }))}" ${index === draftStops.length - 1 ? "disabled" : ""}>↓</button>
-        <button type="button" class="icon-button" data-stop-action="remove" aria-label="${window.HospitalI18n.html("routes.quitar_parada_value", { value0: index + 1 })}" data-i18n-aria-label="routes.quitar_parada_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: index + 1 }))}">${icon("trash-icon")}</button>
-      </div></div>
-      <div class="form-grid"><label>${window.HospitalI18n.mark("routes.punto_de_parada")}<input type="text" data-stop-field="name" value="${escapeHtml(stop.name)}" placeholder="${window.HospitalI18n.html("routes.institucion_o_punto_de_encuentro")}" data-i18n-placeholder="routes.institucion_o_punto_de_encuentro" maxlength="100" required></label><label>${window.HospitalI18n.mark("routes.direccion_de_la_parada")}<input type="text" data-stop-field="address" value="${escapeHtml(stop.address)}" placeholder="${window.HospitalI18n.html("routes.calle_y_numero")}" data-i18n-placeholder="routes.calle_y_numero" maxlength="160" required></label></div>
-    </div>`
+          (stop, index) =>
+            `<div class="stop-editor-row" data-stop-index="${index}">
+      ` +
+            `<div class="stop-editor-heading">` +
+            `<span>${window.HospitalI18n.mark("routes.parada_value", { value0: index + 1 })}` +
+            `</span>` +
+            `<div class="stop-editor-actions">
+        ` +
+            `<button type="button" class="icon-button" data-stop-action="up" aria-label="${window.HospitalI18n.html("routes.subir_parada_value", { value0: index + 1 })}"` +
+            ` data-i18n-aria-label="routes.subir_parada_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: index + 1 }))}"` +
+            ` ${index === 0 ? "disabled" : ""}>↑` +
+            `</button>
+        ` +
+            `<button type="button" class="icon-button" data-stop-action="down" aria-label="${window.HospitalI18n.html("routes.bajar_parada_value", { value0: index + 1 })}"` +
+            ` data-i18n-aria-label="routes.bajar_parada_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: index + 1 }))}"` +
+            ` ${index === draftStops.length - 1 ? "disabled" : ""}>↓` +
+            `</button>
+        ` +
+            `<button type="button" class="icon-button" data-stop-action="remove" aria-label="${window.HospitalI18n.html("routes.quitar_parada_value", { value0: index + 1 })}"` +
+            ` data-i18n-aria-label="routes.quitar_parada_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: index + 1 }))}">${icon("trash-icon")}` +
+            `</button>
+      ` +
+            `</div>` +
+            `</div>
+      ` +
+            `<div class="form-grid">` +
+            `<label>${window.HospitalI18n.mark("routes.punto_de_parada")}` +
+            `<input type="text" data-stop-field="name" value="${escapeHtml(stop.name)}" placeholder="${window.HospitalI18n.html("routes.institucion_o_punto_de_encuentro")}"` +
+            ` data-i18n-placeholder="routes.institucion_o_punto_de_encuentro" maxlength="100" required>` +
+            `</label>` +
+            `<label>${window.HospitalI18n.mark("routes.direccion_de_la_parada")}` +
+            `<input type="text" data-stop-field="address" value="${escapeHtml(stop.address)}" placeholder="${window.HospitalI18n.html("routes.calle_y_numero")}"` +
+            ` data-i18n-placeholder="routes.calle_y_numero" maxlength="160" required>` +
+            `</label>` +
+            `</div>
+    ` +
+            `</div>`
         )
         .join("")
     );
@@ -358,29 +559,45 @@
   }
 
   function openForm(id = null) {
-    const route = id ? routes.find(item => item.id === id) : null;
-    if (busy || (id && (!route || route.archived))) return;
+    let routeValue;
+    if (id) {
+      routeValue = routes.find(item => item.id === id);
+    } else {
+      routeValue = null;
+    }
+    const route = routeValue;
+    if (busy || (id && (!route || route.archived))) {
+      return;
+    }
     editVersion = route?.version ?? null;
     dialogTrigger = document.activeElement;
     editingId = route?.id ?? null;
     form.reset();
     formError.hidden = true;
     window.HospitalI18n.bindText(formError, () => "");
-    window.HospitalI18n.bindText(byId("form-title"), () =>
-      route ? window.HospitalI18n.t("routes.editar_ruta") : window.HospitalI18n.t("routes.nueva_ruta")
-    );
-    window.HospitalI18n.bindText(byId("form-description"), () =>
-      route
-        ? window.HospitalI18n.t("routes.actualiza_el_recorrido_value_y_sus_caracteristicas", {
-            value0: route.code
-          })
-        : window.HospitalI18n.t("routes.define_un_recorrido_para_reutilizarlo_en_tus_traslados")
-    );
-    window.HospitalI18n.bindText(byId("save-label"), () =>
-      route
-        ? window.HospitalI18n.t("trace_view.guardar_cambios")
-        : window.HospitalI18n.t("routes.guardar_ruta")
-    );
+    window.HospitalI18n.bindText(byId("form-title"), () => {
+      if (route) {
+        return window.HospitalI18n.t("routes.editar_ruta");
+      } else {
+        return window.HospitalI18n.t("routes.nueva_ruta");
+      }
+    });
+    window.HospitalI18n.bindText(byId("form-description"), () => {
+      if (route) {
+        return window.HospitalI18n.t("routes.actualiza_el_recorrido_value_y_sus_caracteristicas", {
+          value0: route.code
+        });
+      } else {
+        return window.HospitalI18n.t("routes.define_un_recorrido_para_reutilizarlo_en_tus_traslados");
+      }
+    });
+    window.HospitalI18n.bindText(byId("save-label"), () => {
+      if (route) {
+        return window.HospitalI18n.t("trace_view.guardar_cambios");
+      } else {
+        return window.HospitalI18n.t("routes.guardar_ruta");
+      }
+    });
     if (route) {
       const values = {
         name: route.name,
@@ -407,8 +624,11 @@
   }
 
   function restoreDialogFocus() {
-    if (dialogTrigger?.isConnected) dialogTrigger.focus({ preventScroll: true });
-    else byId("new-route").focus({ preventScroll: true });
+    if (dialogTrigger?.isConnected) {
+      dialogTrigger.focus({ preventScroll: true });
+    } else {
+      byId("new-route").focus({ preventScroll: true });
+    }
   }
 
   function showError(message, target) {
@@ -445,9 +665,13 @@
   });
   pagination.addEventListener("click", event => {
     const button = event.target.closest("[data-page]");
-    if (!button || button.disabled) return;
+    if (!button || button.disabled) {
+      return;
+    }
     const nextPage = Number(button.dataset.page);
-    if (nextPage === currentPage) return;
+    if (nextPage === currentPage) {
+      return;
+    }
     currentPage = nextPage;
     renderCatalog();
     detail.scrollTop = 0;
@@ -455,13 +679,17 @@
   });
   list.addEventListener("click", event => {
     const button = event.target.closest("[data-route-id]");
-    if (button) selectRoute(button.dataset.routeId);
+    if (button) {
+      selectRoute(button.dataset.routeId);
+    }
   });
   byId("new-route").addEventListener("click", () => openForm());
   byId("edit-route").addEventListener("click", () => openForm(selectedId));
   document.querySelectorAll("[data-close-form]").forEach(button =>
     button.addEventListener("click", () => {
-      if (!busy) formDialog.close();
+      if (!busy) {
+        formDialog.close();
+      }
     })
   );
   formDialog.addEventListener("close", () => {
@@ -473,25 +701,32 @@
   });
 
   byId("add-stop").addEventListener("click", () => {
-    if (draftStops.length >= 6) return;
+    if (draftStops.length >= 6) {
+      return;
+    }
     draftStops.push({ name: "", address: "" });
     renderStops();
     stopEditor.lastElementChild.querySelector("input").focus();
   });
   stopEditor.addEventListener("input", event => {
     const field = event.target.dataset.stopField;
-    if (!field) return;
+    if (!field) {
+      return;
+    }
     const index = Number(event.target.closest("[data-stop-index]").dataset.stopIndex);
     draftStops[index][field] = event.target.value;
   });
   stopEditor.addEventListener("click", event => {
     const button = event.target.closest("[data-stop-action]");
-    if (!button || button.disabled) return;
+    if (!button || button.disabled) {
+      return;
+    }
     const index = Number(button.closest("[data-stop-index]").dataset.stopIndex);
     const action = button.dataset.stopAction;
     let focusIndex = index;
-    if (action === "remove") draftStops.splice(index, 1);
-    else {
+    if (action === "remove") {
+      draftStops.splice(index, 1);
+    } else {
       const target = index + (action === "up" ? -1 : 1);
       [draftStops[index], draftStops[target]] = [draftStops[target], draftStops[index]];
       focusIndex = target;
@@ -503,7 +738,9 @@
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     if (!form.checkValidity()) {
       showError(
         () => window.HospitalI18n.t("routes.revisa_los_campos_obligatorios_y_las_estimaciones"),
@@ -544,8 +781,9 @@
     }
     const origin = { name: field("originName"), address: field("originAddress") };
     const destination = { name: field("destinationName"), address: field("destinationAddress") };
-    const samePlace = (a, b) =>
-      normalize(a.name) === normalize(b.name) && normalize(a.address) === normalize(b.address);
+    const samePlace = (leftValue, rightValue) =>
+      normalize(leftValue.name) === normalize(rightValue.name) &&
+      normalize(leftValue.address) === normalize(rightValue.address);
     if (samePlace(origin, destination)) {
       showError(
         () => window.HospitalI18n.t("routes.el_origen_y_el_destino_deben_ser_diferentes"),
@@ -564,8 +802,8 @@
     const previous = routes.find(route => route.id === editingId);
     const body = {
       name: field('name'),
-      category: keyFor(categoryLabels, field('category')),
-      direction: keyFor(directionLabels, field('direction')),
+      category: field('category'),
+      direction: field('direction'),
       availability: field('status') === 'active' ? 'active' : 'inactive',
       origin_name: origin.name,
       origin_address: origin.address,
@@ -576,7 +814,9 @@
       duration_seconds: Number(field('duration')) * 60,
       notes: field('notes')
     };
-    if (editingId) Object.assign(body, { id: editingId, version: editVersion });
+    if (editingId) {
+      Object.assign(body, { id: editingId, version: editVersion });
+    }
     setBusy(true);
     try {
       const route = adapt(await api.post(`routes.php?action=${editingId ? 'update' : 'create'}`, body));
@@ -588,17 +828,20 @@
       renderCatalog();
       detail.scrollTop = 0;
       formDialog.close();
-      notify(() =>
-        previous
-          ? window.HospitalI18n.t("trace_view.cambios_guardados")
-          : window.HospitalI18n.t("routes.ruta_creada")
-      );
-      if (!route.geometry.length)
+      notify(() => {
+        if (previous) {
+          return window.HospitalI18n.t("trace_view.cambios_guardados");
+        } else {
+          return window.HospitalI18n.t("routes.ruta_creada");
+        }
+      });
+      if (!route.geometry.length) {
         console.warn(
           window.HospitalI18n.t(
             "shared.hospital_routes_ruta_guardada_con_mapa_pendiente_revisa_las_direcciones_o_la_conexion"
           )
         );
+      }
     } catch (error) {
       api.report(error, 'routes');
     } finally {
@@ -608,25 +851,33 @@
 
   byId("delete-route").addEventListener("click", () => {
     const route = routes.find(item => item.id === selectedId);
-    if (busy || !route) return;
+    if (busy || !route) {
+      return;
+    }
     deleteVersion = route.version;
-    window.HospitalI18n.bindText(byId("delete-title"), () =>
-      route.archived
-        ? window.HospitalI18n.t("routes.restaurar_esta_ruta")
-        : window.HospitalI18n.t("routes.archivar_esta_ruta")
-    );
-    window.HospitalI18n.bindText(byId("confirm-delete"), () =>
-      route.archived
-        ? window.HospitalI18n.t("routes.restaurar_ruta")
-        : window.HospitalI18n.t("routes.eliminar_ruta")
-    );
-    window.HospitalI18n.bindText(deleteDialog.querySelector('.delete-warning'), () =>
-      route.archived
-        ? window.HospitalI18n.t("routes.volvera_al_catalogo_con_su_estado_de_disponibilidad_anterior")
-        : window.HospitalI18n.t(
-            "routes.se_quitara_del_catalogo_de_rutas_los_traslados_existentes_conservaran_su_recorrido_podes_r"
-          )
-    );
+    window.HospitalI18n.bindText(byId("delete-title"), () => {
+      if (route.archived) {
+        return window.HospitalI18n.t("routes.restaurar_esta_ruta");
+      } else {
+        return window.HospitalI18n.t("routes.archivar_esta_ruta");
+      }
+    });
+    window.HospitalI18n.bindText(byId("confirm-delete"), () => {
+      if (route.archived) {
+        return window.HospitalI18n.t("routes.restaurar_ruta");
+      } else {
+        return window.HospitalI18n.t("routes.eliminar_ruta");
+      }
+    });
+    window.HospitalI18n.bindText(deleteDialog.querySelector('.delete-warning'), () => {
+      if (route.archived) {
+        return window.HospitalI18n.t("routes.volvera_al_catalogo_con_su_estado_de_disponibilidad_anterior");
+      } else {
+        return window.HospitalI18n.t(
+          "routes.se_quitara_del_catalogo_de_rutas_los_traslados_existentes_conservaran_su_recorrido_podes_r"
+        );
+      }
+    });
     dialogTrigger = document.activeElement;
     pendingDeleteId = route.id;
     window.HospitalI18n.bindText(byId("delete-description"), () => `${route.code} · ${route.name}`);
@@ -634,7 +885,9 @@
   });
   document.querySelectorAll("[data-close-delete]").forEach(button =>
     button.addEventListener("click", () => {
-      if (!busy) deleteDialog.close();
+      if (!busy) {
+        deleteDialog.close();
+      }
     })
   );
   deleteDialog.addEventListener("close", () => {
@@ -643,7 +896,9 @@
   });
   byId("confirm-delete").addEventListener("click", async () => {
     const route = routes.find(item => item.id === pendingDeleteId);
-    if (busy || !route) return;
+    if (busy || !route) {
+      return;
+    }
     setBusy(true);
     try {
       const changed = adapt(
@@ -652,15 +907,23 @@
           version: deleteVersion
         })
       );
-      routes = routes.map(item => (item.id === changed.id ? changed : item));
+      routes = routes.map(item => {
+        if (item.id === changed.id) {
+          return changed;
+        } else {
+          return item;
+        }
+      });
       renderCatalog();
       detail.scrollTop = 0;
       deleteDialog.close();
-      notify(() =>
-        route.archived
-          ? window.HospitalI18n.t("routes.ruta_restaurada")
-          : window.HospitalI18n.t("routes.ruta_archivada")
-      );
+      notify(() => {
+        if (route.archived) {
+          return window.HospitalI18n.t("routes.ruta_restaurada");
+        } else {
+          return window.HospitalI18n.t("routes.ruta_archivada");
+        }
+      });
     } catch (error) {
       api.report(error, 'routes');
     } finally {
@@ -670,26 +933,33 @@
 
   [formDialog, deleteDialog].forEach(dialog =>
     dialog.addEventListener("click", event => {
-      if (busy || event.target !== dialog) return;
+      if (busy || event.target !== dialog) {
+        return;
+      }
       const bounds = dialog.getBoundingClientRect();
       if (
         event.clientX < bounds.left ||
         event.clientX > bounds.right ||
         event.clientY < bounds.top ||
         event.clientY > bounds.bottom
-      )
+      ) {
         dialog.close();
+      }
     })
   );
 
   [formDialog, deleteDialog].forEach(dialog =>
     dialog.addEventListener('cancel', event => {
-      if (busy) event.preventDefault();
+      if (busy) {
+        event.preventDefault();
+      }
     })
   );
   async function start() {
     try {
-      if (!(await window.HospitalAuth.ready)) return;
+      if (!(await window.HospitalAuth.ready)) {
+        return;
+      }
       await reload();
       selectedId = routes[0]?.id ?? null;
       renderCatalog();

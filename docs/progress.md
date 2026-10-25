@@ -389,3 +389,5 @@ The owner stopped Phase 2 at the pilot: no rollout and no legacy palette fold. T
 Batch 2 shared-control/Settings readability work is verified: 161 UI checks, 136 dropdown checks (52 variants), 98 decision/edge checks, and source equivalence pass. Continue the management scripts; full end-of-pass regression remains due.
 
 Batch 3 clinical directories are verified: 384 UI, 43 fleet browser, 99 fleet API and 98 boundary checks pass, as does source equivalence. Continue the remaining management scripts. The fleet suite requires its own fresh/admin-only fixture, supplied by verify_project.py --fleet-browser.
+
+Batch 4 remaining management scripts are verified: 742 UI checks, live language switching, 98 boundary checks and source equivalence pass. Continue document scripts, then transfers/surveys and shared API infrastructure before PHP.
