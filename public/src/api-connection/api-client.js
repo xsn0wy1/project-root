@@ -9,24 +9,36 @@
   let csrfToken = null;
   let csrfRequest = null;
   const reported = new WeakSet();
+  const notified = new WeakSet();
 
-  function report(error, context = 'request') {
+  function report(error, context = 'request', options = {}) {
+    if (error?.name === 'AbortError' || error?.code === 'ABORT_ERR') {
+      return;
+    }
+    let alreadyReported = false;
     if (error && typeof error === 'object') {
-      if (reported.has(error)) {
-        return;
-      }
+      alreadyReported = reported.has(error);
       reported.add(error);
     }
-    console.error(`[Hospital ${context}]`, {
-      code: error?.code || 'CLIENT_ERROR',
-      status: error?.status || 0,
-      message: error?.message || String(error),
-      fields: error?.fields || {},
-      request_id: error?.requestId
-    });
-    if (error?.code === 'NETWORK_ERROR' || (error?.status >= 500 && error.status < 600)) {
-      window.dispatchEvent(new CustomEvent('hospital:requesterror', { detail: error }));
+    if (!alreadyReported) {
+      console.error(`[Hospital ${context}]`, {
+        code: error?.code || 'CLIENT_ERROR',
+        status: error?.status || 0,
+        message: error?.message || String(error),
+        fields: error?.fields || {},
+        request_id: error?.requestId
+      });
     }
+    if (options.silent || (error?.status === 401 && document.querySelector('.app-shell'))) {
+      return;
+    }
+    if (error && typeof error === 'object') {
+      if (notified.has(error)) {
+        return;
+      }
+      notified.add(error);
+    }
+    window.HospitalNotify.show(error?.message || String(error), 'error');
   }
 
   class ApiError extends Error {
@@ -61,6 +73,9 @@
 
   async function request(path, options = {}, retryCsrf = true, envelope = false) {
     await window.HospitalI18n.ready;
+    if (options.signal?.aborted) {
+      throw new DOMException('Request aborted', 'AbortError');
+    }
     const method = (options.method || 'GET').toUpperCase();
     const headers = new Headers(options.headers || {});
     headers.set('Accept', 'application/json');
@@ -78,7 +93,13 @@
         credentials: 'same-origin',
         cache: 'no-store'
       });
-    } catch (_) {
+    } catch (failure) {
+      if (failure?.name === 'AbortError') {
+        throw failure;
+      }
+      if (options.signal?.aborted) {
+        throw new DOMException('Request aborted', 'AbortError');
+      }
       const error = new ApiError(
         window.HospitalI18n.t(
           "api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente"
@@ -86,7 +107,7 @@
         0,
         'NETWORK_ERROR'
       );
-      report(error);
+      report(error, 'request', {silent: true});
       throw error;
     }
     // Optional telemetry must not turn rate limiting into a console error.
@@ -102,7 +123,10 @@
       if (typeof payload.success !== 'boolean') {
         throw new Error();
       }
-    } catch (_) {
+    } catch (failure) {
+      if (failure?.name === 'AbortError') {
+        throw failure;
+      }
       const error = new ApiError(
         window.HospitalI18n.t(
           "api_client.el_servidor_devolvio_una_respuesta_invalida_revisa_la_configuracion_de_php_y_la_api"
@@ -110,7 +134,7 @@
         response.status,
         'INVALID_RESPONSE'
       );
-      report(error);
+      report(error, 'request', {silent: true});
       throw error;
     }
     if (!response.ok || payload.success !== true) {
@@ -128,7 +152,8 @@
       if (error.status === 401) {
         window.dispatchEvent(new CustomEvent('hospital:unauthorized', { detail: error }));
       }
-      report(error);
+      // The caller knows whether this is a user action, inline error or background check.
+      report(error, 'request', {silent: true});
       throw error;
     }
     if (payload.data?.csrf_token) {
@@ -166,7 +191,8 @@
       event.preventDefault();
       report(
         new ApiError(window.HospitalI18n.validationMessage(event.target), 422, 'VALIDATION_FAILED'),
-        'validation'
+        'validation',
+        {silent: true}
       );
     },
     true

@@ -20,6 +20,7 @@ header('X-Content-Type-Options: nosniff');
   <link rel="stylesheet" href="<?= asset_url('../../../../assets/vendor/fonts/inclusive-regular.css') ?>">
   <link rel="stylesheet" href="<?= asset_url('survey-user.css') ?>">
   <script src="<?= asset_url('../../../api-connection/i18n.js') ?>" defer></script>
+  <script src="<?= asset_url('../../../api-connection/api-client.js') ?>" defer></script>
   <script src="<?= asset_url('../../../js/ui.js') ?>" defer></script>
   <script src="<?= asset_url('survey-user.js') ?>" defer></script>
   <link rel="stylesheet" href="<?= asset_url('../../../css/theme.css') ?>">

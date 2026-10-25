@@ -1,0 +1,107 @@
+{
+  "public/src/js/ui.js": {
+    "reason": "Replace visible-message scanning with the explicit stacked, dismissible six-second HospitalNotify.show component.",
+    "before_sha256": "f0655c16e771ef87d98377e0ae95b0b0e4abe24dedc151fea6c622312b181adf",
+    "after_sha256": "d303813d6e279d0f8e67d3acfbbdac756a43a4659db674b833e0558dd1f2d1dd"
+  },
+  "public/src/api-connection/api-client.js": {
+    "reason": "Keep transport console logging separate from explicit popup reports, deduplicate reports, and suppress aborts/staff 401/silent calls.",
+    "before_sha256": "6a71620196b56c94f0f5d6dae99c91f74ba9cca0f86bedcfdd0130542fc7d9a3",
+    "after_sha256": "c061072b0a91ac78ba3ecbfdefa7481cc15a1e766b785a424cefb4fcbb4c5b41"
+  },
+  "public/src/css/base.css": {
+    "reason": "Replace only old notification styles with the requested top-right stack and targeted auth-error readability; preserve unrelated CSS.",
+    "before_sha256": "7b061859534669069d3747fce95e26c13908d33c10585bb606bf2a211a0e17f4",
+    "after_sha256": "49e543ad2d446c34d78c0bd2accdd699e752b0a3b4aee3c2271fed210dbf5c73"
+  },
+  "public/src/api-connection/auth-session.js": {
+    "reason": "Mark background session/heartbeat and diagnostic reports silent without changing session behavior.",
+    "before_sha256": "ffa5bb152538309bea7816146f38b15d91b60285fdd11d7e411409ef257bfd26",
+    "after_sha256": "0da273536727336bcde6f2f300d718f03f8d23b66b617d4a43d4ce777945b72e"
+  },
+  "public/src/js/login-register/login.js": {
+    "reason": "Retain the translated server login error inline and suppress a duplicate popup.",
+    "before_sha256": "cbec0167af4e605ff9d38f02a6187d0f0d77880ad331f5aa5911e06cb7f7e8a1",
+    "after_sha256": "7bdd135c5e8abdf40da2b08c08c05af26e241ba2f014f9ccf14c89c3ca32eb47"
+  },
+  "public/src/js/login-register/register.js": {
+    "reason": "Retain registration server errors inline with input preservation and no duplicate popup.",
+    "before_sha256": "c2023bf82c72420b9474ee69c0b0c623ff6b99be916564358e5632ebec9e3c0a",
+    "after_sha256": "e8750add53c575364cfdcc46a82855a46ba8471c3a807a10f81feb583cb128b7"
+  },
+  "public/src/js/login-register/recovery.js": {
+    "reason": "Display recovery server messages and validation errors inline without duplicate popups.",
+    "before_sha256": "7a4505dd417d1ed66a2582a907539624018dc37aa197f49ac7846e6d364f9075",
+    "after_sha256": "185785a151e95a5703ea8b7aa500128674b5c1c0fd1dddbb4c0d0ac6d6c668ca"
+  },
+  "public/src/js/settings.js": {
+    "reason": "Add a success popup for confirmed Settings saves, which previously had no confirmation.",
+    "before_sha256": "25399098eaffff2dbb47a5e1d87d9958f972e2337628547ef13ba5b7edb292a3",
+    "after_sha256": "858eac5ddaa76e2e59a4540e2751651f6780f7483092d4e0b3e524a928e3783f"
+  },
+  "public/src/js/management/ambulances.js": {
+    "reason": "Report the existing local duplicate-plate validation visibly and keep automatic focus refresh silent.",
+    "before_sha256": "61394d7526ae924a33b311c77cbe78a2e2045e078a30b2baeb69de2b4c197093",
+    "after_sha256": "36c3f0328e5a58e7e5f81f9b851b3bd03c1e9ee188bbaf9f1eedce7f2affa53d"
+  },
+  "public/src/js/management/doctors.js": {
+    "reason": "Keep automatic catalog focus-refresh failure reports silent.",
+    "before_sha256": "91423da7edf2430d53ed30a93e4b2964bda773db15ad8a22e78396257e12342d",
+    "after_sha256": "69497092a477f40794b78dbc82461b219a1cb76db3f984213c1f2ee348cb5c19"
+  },
+  "public/src/js/management/personnel.js": {
+    "reason": "Keep automatic catalog focus-refresh failure reports silent.",
+    "before_sha256": "68283aae10ffc66ea0f341553ab212bc1f60df1826d42bfc048570e398b638c6",
+    "after_sha256": "c36afe3ea82f26a2cb6310c076ced12f86c6546146a417b8e7d2502eddb928bd"
+  },
+  "public/src/js/management/destinations.js": {
+    "reason": "Keep automatic catalog focus-refresh failure reports silent.",
+    "before_sha256": "aca6cb0e13bc81237807008c7e0dd5e00927412451815c0acf529b28dcdd12b8",
+    "after_sha256": "3058d21516812ada0cb30cfedd8a89f8aaaa850a183b917cf0c6a6f930cbc87b"
+  },
+  "public/src/js/traces/trace-api.js": {
+    "reason": "Forward explicit silent report options to the shared reporter without changing API calls.",
+    "before_sha256": "d9e197bf541ff4739054f6b1c234bb922e787a14309b63c47f16beb33ab8f52a",
+    "after_sha256": "b2e3cf88f36a7bed4f566684bfbb31c22f28a90897d7d49d689979635917d371"
+  },
+  "public/src/js/traces/trace.js": {
+    "reason": "Suppress transfer-list timer refresh errors while retaining user-triggered error feedback.",
+    "before_sha256": "8a9d5b26fb79a3842f89a8e8950568b67714b657b7dadeb360e88f0aa7498425",
+    "after_sha256": "70842c8c7a823c03b03bf078b2b42cc47d8f622bbdb268b7977b007a21ef90b2"
+  },
+  "public/src/js/traces/trace-view.js": {
+    "reason": "Keep detail snapshot polling and automatic base-map checks silent.",
+    "before_sha256": "c7c74d4580a19dc61cf7da64d77d010d42df1389bcfd2bf631a55a948bd739dc",
+    "after_sha256": "b46df5c15c572a7a0ba35d4625b415fbf5e365c9d2e35e1ad90a07b51143c84c"
+  },
+  "public/src/js/traces/trace-map.js": {
+    "reason": "Keep automatic fleet/snapshot polling reports silent.",
+    "before_sha256": "35d7b653be83c88e080887d9d804db919394b0f8bb15637b04f5ae28730ddda8",
+    "after_sha256": "9f7bd6997415d806554ba2c3de159c6901feeec91d17060d3c1fc8f09b904450"
+  },
+  "public/src/js/surveys/survey-view.js": {
+    "reason": "Pass explicit report options through survey/answer refreshes; keep timer/focus/locale/resize refreshes silent.",
+    "before_sha256": "dea9ba8ab451ba2ddc53bdc7de24ac95447180d887123205ca11e37259e1b6ed",
+    "after_sha256": "da8048cfe668a8354c523c04c445fd2545626a858bdde5941314a45b6480517c"
+  },
+  "public/src/js/documents/documents-viewer.js": {
+    "reason": "Normalize binary network failures into translated ApiErrors and retain abort identity for explicit reporting.",
+    "before_sha256": "a477cdde992056eab99e31292a3dc6f66b221df60e2547e4d4ad2c380deb87b4",
+    "after_sha256": "60784bf2d80def6521fbe062da7df1b38cb7a87d83724c207dc65a668ec3d2a1"
+  },
+  "public/src/views/surveys/user-view/survey-user.js": {
+    "reason": "Use the shared explicit reporter instead of a requesterror event and normalize network errors without changing participant payloads.",
+    "before_sha256": "d6b565efaadc73384114bc13f2250986a6c728dafbfcfd9d38b47997067a77a7",
+    "after_sha256": "f4159763135ff3153a641fa81a65a17d892078f0476e5cc7171fe0da3a346435"
+  },
+  "public/src/views/surveys/user-view/survey-user.php": {
+    "reason": "Load the existing API client for the shared reporter on public survey pages.",
+    "before_sha256": "aa395312820dcf2f7afe33665252f17a0452e82713e4f6e2ebcb7b513280081b",
+    "after_sha256": "1be5103cfab37d942db95bdadc65052d8dc39ab3caf9ec3c6c5b771eb2041fd2"
+  },
+  "public/src/views/error.php": {
+    "reason": "Load the existing UI component on standalone error pages without adding requests or changing error routing.",
+    "before_sha256": "024ce5a40b9affc0bd1ec2505cfda81a7f95256ef4e4726ebf9dcc0784f62bbe",
+    "after_sha256": "de0446c406578a8401cd7834c3014b72a0496c96728566a713c8f519edcadcff"
+  }
+}

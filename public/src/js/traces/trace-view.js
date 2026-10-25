@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
         onError: () => {
           $('map-preview-status').hidden = true;
-          api.report(new Error(window.HospitalI18n.t("trace_view.no_se_pudo_cargar_el_mapa_base")));
+          api.report(new Error(window.HospitalI18n.t("trace_view.no_se_pudo_cargar_el_mapa_base")), {silent: true});
         }
       });
       routeLine = L.polyline(route.coordinates, {
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       render();
     } catch (error) {
-      api.report(error);
+      api.report(error, {silent: true});
     } finally {
       refreshing = false;
     }

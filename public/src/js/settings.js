@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         });
         auth.settingsChanged(payload);
+        window.HospitalNotify.show(window.HospitalI18n.t('accounts.cambio_guardado'), 'success');
         return true;
       } catch (error) {
         api.report(error, 'settings');

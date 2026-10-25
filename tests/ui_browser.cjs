@@ -493,7 +493,7 @@ async function doctorsRoutes(page) {
         await submit.scrollIntoViewIfNeeded(); await within(page, submit, label + ' save action'); await submit.click(); await response;
         await page.waitForFunction(selector => !document.querySelector(selector + ' [type=submit]').disabled, form);
         check(await page.locator(name).inputValue() === 'Borrador ficticio conservado' && await page.locator(dialog).isVisible(), label + ' failed save retains form and input');
-        check(await page.locator('#form-error').isHidden(), label + ' failure stays console-only');
+        check(await page.locator('#form-error').isHidden() && await page.locator('.hospital-notification[data-type=error] span').textContent() === 'Offline test', label + ' failure displays the server message once');
         await page.screenshot({path: path.join(output, domain + '-failed-save-' + page.viewportSize().width + '-' + theme + '.png'), animations: 'disabled'});
       } finally { await page.unroute(route); }
       await page.locator(dialog + ' .secondary-button[data-close-form]').click();
@@ -596,7 +596,7 @@ async function patientEditors(page) {
       await submit.scrollIntoViewIfNeeded(); await within(page, submit, label + ' save action'); await submit.click(); await response;
       await page.waitForFunction(() => !document.querySelector('#patient-form [type=submit]').disabled);
       check(await page.locator(form + ' [name=name]').inputValue() === 'Borrador ficticio conservado' && await page.locator('#patient-dialog').isVisible(), label + ' failed save retains form and input');
-      check(await page.locator('#patient-dialog [role=alert]').count() === 0, label + ' failure stays console-only');
+      check(await page.locator('#patient-dialog .hospital-notification[role=alert]').count() === 1, label + ' failure displays one shared error popup');
       await captureForm('patients-failed-save-' + page.viewportSize().width + '-' + theme + '.png');
     } finally { await page.unroute(route); }
     await page.locator('#cancel-patient').click();

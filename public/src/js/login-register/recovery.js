@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const passwordForm = document.getElementById('recovery-password-form');
   const status = document.getElementById('recovery-status');
   let token;
+  function showError(error) {
+    api.report(error, 'recovery', {silent: true});
+    i18n.bindText(status, () => error.message);
+    status.classList.add('form-message', 'error');
+    status.hidden = false;
+  }
   function showMode() {
     const fragment = new URLSearchParams(location.hash.slice(1));
     const resetting = fragment.has('token');
@@ -19,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     passwordForm.hidden = !resetting;
     status.hidden = true;
     if (resetting && !/^[a-f0-9]{64}$/.test(token || '')) {
-      api.report(new api.ApiError(i18n.t('recovery.invalid_token'), 422, 'RESET_TOKEN_INVALID'), 'recovery');
+      showError(new api.ApiError(i18n.t('recovery.invalid_token'), 422, 'RESET_TOKEN_INVALID'));
     }
   }
   window.addEventListener('hashchange', showMode);
@@ -36,12 +42,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     button.disabled = true;
+    status.classList.remove('error');
     try {
-      await api.post('auth.php?action=reset-request', { email: requestForm.elements.email.value });
-      i18n.bindText(status, () => i18n.t('recovery.requested'));
+      const data = await api.post('auth.php?action=reset-request', { email: requestForm.elements.email.value });
+      i18n.bindText(status, () => data.message);
       status.hidden = false;
     } catch (error) {
-      api.report(error, 'recovery');
+      showError(error);
     } finally {
       button.disabled = false;
     }
@@ -59,14 +66,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       new TextEncoder().encode(password).length > 72 ||
       password.includes('\0')
     ) {
-      api.report(new api.ApiError(i18n.t('recovery.password_help'), 422, 'VALIDATION_FAILED'), 'recovery');
+      showError(new api.ApiError(i18n.t('recovery.password_help'), 422, 'VALIDATION_FAILED'));
       return;
     }
     if (password !== document.getElementById('recovery-confirmation').value) {
-      api.report(
-        new api.ApiError(i18n.t('recovery.password_mismatch'), 422, 'VALIDATION_FAILED'),
-        'recovery'
-      );
+      showError(new api.ApiError(i18n.t('recovery.password_mismatch'), 422, 'VALIDATION_FAILED'));
       return;
     }
     button.disabled = true;
@@ -84,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       location.replace(loginUrl);
     } catch (error) {
-      api.report(error, 'recovery');
+      showError(error);
       button.disabled = false;
     }
   });

@@ -64,109 +64,7 @@ async function heartbeatPolicy(browser) {
 }
 
 async function requestNotifications(browser) {
- const context = await browser.newContext(), page = await context.newPage();
- const endpoint = '**/api/v1/settings.php?action=notifications';
- try {
-  await login(page);
-  for (const locale of ['es-UY', 'en']) for (const appearance of ['dark', 'light']) {
-   await page.evaluate(async ({locale, appearance}) => {
-    await HospitalI18n.preview(locale);
-    HospitalTheme.preview(appearance);
-   }, {locale, appearance});
-   await page.route(endpoint, route => route.fulfill({status: 503, contentType: 'application/json',
-    body: JSON.stringify({success: false, error: {code: 'SERVICE_UNAVAILABLE', message: 'Private fixture detail'}})}));
-   await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(error => HospitalApi.report(error, 'fixture')));
-   await page.locator('#api-notification').waitFor({state: 'visible'});
-   check(await page.locator('#api-notification').textContent() === await page.evaluate(() => HospitalI18n.t('api_client.no_se_pudo_completar_la_operacion')),
-    locale + '/' + appearance + ': server failure has one translated shared notification');
-   check(await page.locator('#api-notification').count() === 1, 'repeated reporting keeps a single notification');
-   await page.screenshot({path: path.join(runtime, 'notification-' + locale + '-' + appearance + '.png')});
-   await page.setViewportSize({width: 390, height: 844});
-   const bounds = await page.locator('#api-notification').boundingBox();
-   check(bounds.x >= 0 && bounds.x + bounds.width <= 390, 'the notification fits the phone viewport');
-   await page.screenshot({path: path.join(runtime, 'notification-' + locale + '-' + appearance + '-phone.png')});
-   await page.setViewportSize({width: 1440, height: 900});
-   await page.locator('#api-notification').evaluate(element => {element.hidden = true;});
-   await page.unroute(endpoint);
-  }
-  await page.route(endpoint, route => route.abort('connectionfailed'));
-  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
-  await page.locator('#api-notification').waitFor({state: 'visible'});
-  check(await page.locator('#api-notification').textContent() === await page.evaluate(() => HospitalI18n.t('api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente')),
-   'network failure uses translated connection guidance');
-  await page.locator('#api-notification').evaluate(element => {element.hidden = true;});
-  await page.unroute(endpoint);
-  await page.route(endpoint, route => route.fulfill({status: 503, contentType: 'text/plain', body: 'Private fixture'}));
-  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
-  await page.locator('#api-notification').waitFor({state: 'visible'});
-  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {
-   const ownMessage = document.createElement('p');
-   ownMessage.id = 'own-error'; ownMessage.setAttribute('role', 'alert');
-   ownMessage.textContent = HospitalI18n.t('api_client.no_se_pudo_completar_la_operacion');
-   document.body.append(ownMessage);
-  }));
-  await page.waitForTimeout(150);
-  check(await page.locator('#own-error').isVisible() && await page.locator('#api-notification').isHidden(),
-   'the page catch handler message suppresses and hides a previous fallback');
-  await page.locator('#own-error').evaluate(element => element.remove());
-  await page.evaluate(() => document.getElementById('password-dialog').showModal());
-  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
-  await page.locator('#password-dialog #api-notification').waitFor({state: 'visible'});
-  check(await page.locator('#api-notification').evaluate(element => {
-   const bounds = element.getBoundingClientRect();
-   return document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2) === element;
-  }), 'the fallback remains visible above an open modal backdrop');
-  await page.evaluate(() => document.getElementById('password-dialog').close());
-  await page.unroute(endpoint);
-  await page.goto(base + '/src/views/management/ambulances.php');await ready(page);
-  await page.route(endpoint, route => route.fulfill({status: 500, contentType: 'text/plain', body: 'Private fixture'}));
-  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
-  await page.locator('#ambulance-toast').waitFor({state: 'visible'});
-  check(await page.locator('#api-notification').count() === 0, 'the existing page toast is reused');
-  await page.goto(base + '/src/views/documents/documents-viewer.php?id=' + r.document.id);await ready(page);
-  await page.waitForFunction(() => !document.getElementById('download-button').disabled);
-  await page.route('**/api/v1/documents.php?action=content*', route => route.abort('connectionfailed'));
-  await page.locator('#download-button').click();
-  await page.locator('#toast').waitFor({state: 'visible'});
-  check(await page.locator('#toast').textContent() === await page.evaluate(() => HospitalI18n.t('api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente')),
-   'binary document network failures also reuse the existing translated toast');
- } finally {await context.close();}
- const anonymous = await browser.newContext(), loginPage = await anonymous.newPage();
- try {
-  await loginPage.goto(base + '/');await ready(loginPage);
-  for (const status of [401, 422, 429]) {
-   await loginPage.route(endpoint, route => route.fulfill({status, contentType: 'application/json',
-    body: JSON.stringify({success: false, error: {code: 'FIXTURE', message: 'Private fixture'}})}));
-   await loginPage.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
-   await loginPage.waitForTimeout(100);
-   check(await loginPage.locator('#api-notification').count() === 0, 'HTTP ' + status + ' does not create a shared server-failure notification');
-   await loginPage.unroute(endpoint);
-  }
-  await loginPage.route('**/api/v1/auth.php?action=login', route => route.abort('connectionfailed'));
-  await loginPage.locator('[name=username]').fill('Fictional retained user');
-  await loginPage.locator('[name=password]').fill('Fictional retained password');
-  await loginPage.locator('#loginForm [type=submit]').click();
-  await loginPage.locator('#api-notification').waitFor({state: 'visible'});
-  check(await loginPage.locator('[name=username]').inputValue() === 'Fictional retained user' &&
-   await loginPage.locator('[name=password]').inputValue() === 'Fictional retained password',
-   'login network failure shows the shared message and retains both inputs');
-  await loginPage.waitForTimeout(8100);
-  check(await loginPage.locator('#api-notification').isHidden(), 'the shared notification dismisses automatically');
- } finally {await anonymous.close();}
- for (const failure of ['network', 'server']) {
-  const participant = await browser.newContext(), participantPage = await participant.newPage();
-  try {
-   await participantPage.route('**/surveys.php?action=public-get', route => {
-    if (failure === 'network') return route.abort('connectionfailed');
-    return route.fulfill({status: 503, contentType: 'text/plain', body: 'Private fixture'});
-   });
-   await participantPage.goto(base + '/src/views/surveys/user-view/survey-user.php#token=' + r.token);
-   await ready(participantPage);
-   await participantPage.locator('#api-notification').waitFor({state: 'visible'});
-   check(Boolean(await participantPage.locator('#api-notification').textContent()),
-    'public participant ' + failure + ' failure uses the same notification');
-  } finally {await participant.close();}
- }
+ await require('./notification_checks.cjs').run({browser, runtime, base, records: r, ready, check});
 }
 
 async function heartbeatRealTime() {
@@ -242,7 +140,7 @@ async function diagnosticsRateLimit(browser) {
   const diagnostic=page.waitForResponse(response=>response.url().endsWith('settings.php?action=diagnostics'));
   await page.goto(base+'/src/views/main-menu.php');await ready(page);assert.equal((await diagnostic).status(),429);await page.waitForTimeout(100);
   check(reports.length===0,'optional diagnostics 429 emits no shared-client or session console report');
-  check(await page.locator('#api-notification').count() === 0, 'optional diagnostics 429 shows no notification');
+  check(await page.locator('.hospital-notification').count() === 0, 'optional diagnostics 429 shows no notification');
   await page.route(endpoint,route=>route.fulfill({status:429,contentType:'text/plain',body:'Optional telemetry fixture'}));
   check(await page.evaluate(()=>HospitalApi.post('settings.php?action=diagnostics',{load_ms:1}))===null&&reports.length===0,'optional diagnostics also silently drops a non-JSON 429');
   await page.route('**/api/v1/settings.php?action=get',route=>route.fulfill({status:429,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'RATE_LIMITED',message:'Ordinary request fixture'}})}));

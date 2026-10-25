@@ -104,7 +104,7 @@ async function transferJourney(browser, context, page, base) {
   await page.route(failure, handler => handler.fulfill({status: 503, contentType: 'application/json', body: JSON.stringify({success: false, error: {code: 'SERVICE_UNAVAILABLE', message: 'Focused transfer failure'}})}));
   await page.locator('[type=submit]').click();
   await page.waitForFunction(() => document.getElementById('newTransferForm').getAttribute('aria-busy') === 'false');
-  check(await page.locator('#notes').inputValue() === draft.payload.notes && await page.locator('#routeTemplate').inputValue() === route.id && await page.locator('#formMessage').textContent() === '', 'failed transfer save retains route and notes with console-only errors');
+  check(await page.locator('#notes').inputValue() === draft.payload.notes && await page.locator('#routeTemplate').inputValue() === route.id && await page.locator('#formMessage').textContent() === '' && await page.locator('.hospital-notification[data-type=error] span').textContent() === 'Focused transfer failure', 'failed transfer save retains route and notes and shows the server error once');
   check(await page.locator('#patientName').isDisabled() && await page.locator('#patientSex').isDisabled(), 'equipment transfer retains disabled patient controls after failure');
   await page.unroute(failure);
   await page.locator('[type=submit]').click(); await page.waitForURL('**/trace-view.php?id=*'); await ready(page);

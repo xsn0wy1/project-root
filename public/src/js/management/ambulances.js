@@ -435,7 +435,11 @@
       window.HospitalI18n.bindValidity(form.elements.matricula, () =>
         window.HospitalI18n.t("ambulances.ya_existe_una_ambulancia_con_esa_matricula")
       );
-      console.error(window.HospitalI18n.t("ambulances.ya_existe_una_ambulancia_con_esa_matricula"));
+      report(new api.ApiError(
+        window.HospitalI18n.t('ambulances.ya_existe_una_ambulancia_con_esa_matricula'),
+        422,
+        'VALIDATION_FAILED'
+      ));
     }
     if (!form.checkValidity()) {
       return;
@@ -631,7 +635,7 @@
   }
   window.addEventListener('focus', () => {
     if (!busy && !dialog.open && !deleteDialog.open && !selectedId && !$('new-ambulance').disabled) {
-      refresh().catch(report);
+      refresh().catch(error => api.report(error, 'ambulances', {silent: true}));
     }
   });
   start();

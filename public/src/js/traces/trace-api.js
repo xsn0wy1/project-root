@@ -172,7 +172,7 @@
     fields,
     facilityLabel,
     locationFields,
-    report: error => api.report(error, 'transfers'),
+    report: (error, options = {}) => api.report(error, 'transfers', options),
     get: id => api.get(`${path('get')}&${new URLSearchParams({ id })}`),
     list: query =>
       api.request(

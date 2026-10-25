@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     button.disabled = true;
+    message.classList.remove('error');
     message.style.color = '';
     window.HospitalI18n.bindText(message, () =>
       window.HospitalI18n.t("registration.iniciando_sesion")
@@ -66,8 +67,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       location.assign(window.HospitalApi.page('src/views/main-menu.php'));
     } catch (error) {
-      window.HospitalApi.report(error, 'login');
-      window.HospitalI18n.bindText(message, () => '');
+      window.HospitalApi.report(error, 'login', {silent: true});
+      message.classList.add('form-message', 'error');
+      window.HospitalI18n.bindText(message, () => error.message);
       button.disabled = false;
     }
   });

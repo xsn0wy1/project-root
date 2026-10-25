@@ -36,16 +36,7 @@
   let submitting = false;
   const apiRoot = new URL('api/v1/', new URL('../../../../', document.currentScript.src));
   const accessToken = new URLSearchParams(location.hash.slice(1)).get('token');
-  function report(error) {
-    console.error(window.HospitalI18n.t('survey_patient.log_context'), {
-      code: error.code || 'CLIENT_ERROR',
-      status: error.status || 0,
-      message: error.message || window.HospitalI18n.t("survey_patient.no_se_pudo_completar_la_solicitud")
-    });
-    if (error.code === 'NETWORK_ERROR' || (error.status >= 500 && error.status < 600)) {
-      window.dispatchEvent(new CustomEvent('hospital:requesterror', { detail: error }));
-    }
-  }
+  const report = error => window.HospitalApi.report(error, 'survey-participant');
   async function request(path, body, csrf = false) {
     let response;
     try {
@@ -62,8 +53,14 @@
         body: JSON.stringify(body)
       });
     } catch (error) {
-      error.code = 'NETWORK_ERROR';
-      throw error;
+      if (error.name === 'AbortError') {
+        throw error;
+      }
+      throw new window.HospitalApi.ApiError(
+        window.HospitalI18n.t('api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente'),
+        0,
+        'NETWORK_ERROR'
+      );
     }
     let payload;
     try {

@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   window.addEventListener('focus', () => {
     if (!busy && !dirty && !editingId && !dialog.open) {
-      refresh().catch(report);
+      refresh().catch(error => api.report(error, 'personnel', {silent: true}));
     }
   });
   async function start() {

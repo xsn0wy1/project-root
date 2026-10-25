@@ -758,7 +758,7 @@
           if (error.status !== 404) {
             throw error;
           }
-          window.TraceApi.report(error);
+          window.TraceApi.report(error, {silent: true});
           requestedTransfer = null;
         }
       }
@@ -826,7 +826,7 @@
       }
       freshness();
     } catch (error) {
-      window.TraceApi.report(error);
+      window.TraceApi.report(error, {silent: true});
       freshness();
     } finally {
       polling = false;

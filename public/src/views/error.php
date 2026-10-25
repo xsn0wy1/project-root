@@ -60,6 +60,7 @@ function render_error_page(int $status): void
   <title><?= page_escape(Hospital\I18n::t($title)) ?></title>
   <link rel="icon" type="image/x-icon" href="<?= page_escape($mount) ?>/assets/hospital-gradient.ico">
   <link rel="stylesheet" href="<?= asset_url($mount . '/assets/vendor/fonts/inclusive-regular.css') ?>">
+  <script src="<?= asset_url($mount . '/src/js/ui.js') ?>" defer></script>
 <?php foreach (['base.css', 'login-register/log-reg.css', 'login-register/auth-interactions.css', 'theme.css', 'responsive.css'] as $style): ?>
   <link rel="stylesheet" href="<?= asset_url($mount . '/src/css/' . $style) ?>">
 <?php endforeach; ?>

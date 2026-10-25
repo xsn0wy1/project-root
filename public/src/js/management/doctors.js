@@ -861,7 +861,7 @@
   }
   window.addEventListener("focus", () => {
     if (!busy && !dialog.open && !deleteDialog.open && !selectedId && !newButton.disabled) {
-      refresh().catch(report);
+      refresh().catch(error => api.report(error, 'doctors', {silent: true}));
     }
   });
   start();

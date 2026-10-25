@@ -33,7 +33,7 @@
       })
       .catch(error => {
         if (error?.status !== 429) {
-          api.report(error, 'diagnostics');
+          api.report(error, 'diagnostics', {silent: true});
         }
       });
   }
@@ -147,7 +147,7 @@
         return apply(payload);
       })
       .catch(error => {
-        api.report(error, 'session');
+        api.report(error, 'session', {silent: true});
         if (error.status === 401) {
           expired();
         }

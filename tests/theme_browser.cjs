@@ -65,7 +65,10 @@ async function errorPages(browser, staff) {
       const geometry=await page.locator('.error-card').boundingBox();
       assert(geometry.x>=0&&geometry.x+geometry.width<= (mobile?390:1440),name+' card fits');
       assert(await page.locator('body').isVisible(),name+' server-rendered English never stays hidden');
-      assert.equal(await page.locator('script').count(),1,name+' reuses only the existing theme script');
+      assert.equal(await page.locator('script').count(),2,name+' reuses the existing theme and UI scripts only');
+      assert.deepEqual(await page.locator('script[src]').evaluateAll(nodes => nodes.map(node => new URL(node.src).pathname.split('/').pop()).sort()),
+       ['theme.js', 'ui.js'], name+' loads exactly the expected shared scripts');
+      assert(await page.evaluate(() => typeof HospitalNotify.show === 'function'), name+' shared notification component is available');
       if(!mount&&!mobile)await page.screenshot({path:path.join(output,name+'.png')});
       if(!authenticated&&!mount&&!mobile&&locale==='es-UY'&&theme==='dark'&&status===404)rendered['public/src/views/error.php']=await response.text();
       proof.cases.push(name);

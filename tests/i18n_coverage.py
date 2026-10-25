@@ -55,7 +55,10 @@ for path in files:
   assert relative in rendered,'Provide --rendered-pages from an authenticated baseline capture: '+relative
  page=Page();page.feed(rendered[relative] if path.suffix=='.php' else path.read_text())
  if path.name=='error.php':
-  assert len(page.scripts)==1 and 'theme.js' in page.scripts[0],path
+  script_names = []
+  for source in page.scripts:
+   script_names.append(source.split('?')[0].rsplit('/', 1)[-1])
+  assert sorted(script_names) == ['theme.js', 'ui.js'], path
  else:
   assert 'i18n.js' in next(src for src in page.scripts if 'theme.js' not in src),path
  for src in page.scripts+page.styles:

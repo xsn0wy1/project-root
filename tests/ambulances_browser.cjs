@@ -139,7 +139,7 @@ async function compactStatus(browser, context, id) {
             body: JSON.stringify({success: false, error: {code: 'SERVICE_UNAVAILABLE', message: 'Fallo ficticio'}})}));
         await save(page, 'create', 503);
         check(await page.locator('#ambulance-model').inputValue() === 'Entrada conservada' && !(await page.locator('#ambulance-model').isDisabled()), 'a failed request retains values and releases busy controls');
-        check(await page.locator('#form-error').evaluate(e => e.hidden) && await page.locator('#ambulance-toast').evaluate(e => e.hidden), 'save errors remain console-only');
+        check(await page.locator('#form-error').evaluate(e => e.hidden) && await page.locator('#ambulance-toast').evaluate(e => e.hidden) && await page.locator('.hospital-notification[data-type=error] span').textContent() === 'Fallo ficticio', 'save errors display the server message without a duplicate form or success message');
         await page.screenshot({path: path.join(runtime, 'retained-input.png')});
         await page.unroute(failure); await page.locator('#cancel-ambulance').click();
         await page.locator('#ambulance-search').fill(plate);

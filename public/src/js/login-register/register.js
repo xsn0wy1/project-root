@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     button.disabled = true;
+    message.classList.remove('error');
     message.style.color = '';
     window.HospitalI18n.bindText(message, () =>
       window.HospitalI18n.t("registration.registrando_solicitud")
@@ -83,8 +84,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       bar.style.width = '0%';
       window.HospitalI18n.bindText(strength, () => '');
     } catch (error) {
-      window.HospitalApi.report(error, 'register');
-      window.HospitalI18n.bindText(message, () => '');
+      window.HospitalApi.report(error, 'register', {silent: true});
+      message.classList.add('form-message', 'error');
+      window.HospitalI18n.bindText(message, () => error.message);
     } finally {
       button.disabled = false;
     }

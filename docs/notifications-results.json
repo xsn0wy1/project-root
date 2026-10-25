@@ -1,0 +1,67 @@
+{
+  "baseline_commit": "d99659f",
+  "date": "2026-10-25",
+  "passed": true,
+  "sql_api": {
+    "auth_settings_ambulances_surveys_transfers": 336,
+    "recovery": 58,
+    "fleet_repeat": 99
+  },
+  "browser_assertions": {
+    "theme_and_notification_matrix": 277,
+    "actual_background_polling": 13,
+    "i18n": 71,
+    "dropdowns": 136,
+    "transfer_survey_workflows": 93,
+    "all_page_ui": 1590,
+    "recovery": 130,
+    "fleet": 43
+  },
+  "ui_cases": 100,
+  "ui_interaction_groups": 61,
+  "notification_axes": {
+    "languages": [
+      "es-UY",
+      "en"
+    ],
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "viewports": [
+      "desktop",
+      "phone"
+    ],
+    "cases": 8
+  },
+  "screenshot_gallery_count": 32,
+  "theme_error_cases_pending": false,
+  "source_gate": {
+    "php": 91,
+    "js": 35,
+    "exact_changes": 21,
+    "unchanged_application_files": 247,
+    "protected_api_core_domain_sql_files_byte_identical": 47,
+    "translation_files_byte_identical": true,
+    "existing_css_outside_notification_scope_byte_identical": true
+  },
+  "readability_decision_checks": 98,
+  "cleanup_complete": true,
+  "private_evidence": "tests/.runtime/notifications/",
+  "normal_theme_viewport_pairs": 50,
+  "error_page_cases": 128,
+  "translation_keys": 1827,
+  "rendered_pages": 26,
+  "literal_key_references": 1111,
+  "silent_call_groups": [
+    "session/me/heartbeat and cross-tab/visibility checks",
+    "optional diagnostics",
+    "Ambulances/Doctors/Personnel/Destinations focus refresh",
+    "15-second transfer overview list polling",
+    "transfer detail snapshot and automatic basemap checks",
+    "fleet/map snapshot polling",
+    "survey and written-answer automatic refreshes",
+    "transport-only logs and explicit inline/native validation reports"
+  ],
+  "draft_autosave_present": false
+}

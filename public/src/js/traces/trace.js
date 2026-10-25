@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return load();
         }
       } catch (error) {
-        api.report(error);
+        api.report(error, {silent: quiet});
       } finally {
         if (requestRevision === revision) {
           loading = false;

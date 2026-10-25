@@ -94,7 +94,7 @@ async function reviewControls(p,label){
   const dynamic=await selectButton(p,'#dynamic-dropdown-proof');await dynamic.click();await p.locator('#'+await dynamic.getAttribute('aria-controls')).locator('[data-value=b]').click();assert.equal(await p.locator('#dynamic-dropdown-proof').inputValue(),'b');
   await p.evaluate(()=>{const s=document.querySelector('#dynamic-dropdown-proof');s.disabled=true;});await p.waitForFunction(()=>document.querySelector('#dynamic-dropdown-proof-button').disabled);
   report.journeys.push('Dynamic controls receive the same dropdown and synchronize disabled state.');
-  assert.deepEqual(report.errors,[]);console.log('PASS real patient persistence, retained input, dynamic controls and console-only failure');
+  assert.deepEqual(report.errors,[]);console.log('PASS real patient persistence, retained input, dynamic controls and failure feedback');
  }finally{fs.writeFileSync(path.join(runtime,'dropdown-report.json'),JSON.stringify(report,null,2));await browser.close();}
  console.log('TOTAL',report.controls,'dropdown checks across',report.variants.length,'page/theme/viewport variants;',report.journeys.length,'journeys');
 })().catch(e=>{console.error(e);process.exitCode=1});

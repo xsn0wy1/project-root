@@ -956,7 +956,7 @@
       }))
       .filter(entry => normalize(entry.value).includes(normalize(state.answerQuery)));
   }
-  async function renderAnswerEntries(item) {
+  async function renderAnswerEntries(item, options = {}) {
     if (!survey || !item) {
       return;
     }
@@ -974,7 +974,7 @@
       const pages = Math.max(1, Math.ceil(total / size));
       if (entryPage > pages) {
         entryPage = pages;
-        return renderAnswerEntries(item);
+        return renderAnswerEntries(item, options);
       }
       window.HospitalI18n.setHTML(
         $('written-answer-list'),
@@ -1015,7 +1015,7 @@
         paging(entryPage, pages, 'data-entry-page')
       );
     } catch (error) {
-      api.report(error, 'survey-results');
+      api.report(error, 'survey-results', options);
     }
   }
   function writtenContainer(item) {
@@ -1036,7 +1036,7 @@
       `</div>`
     );
   }
-  function renderQuestionResults() {
+  function renderQuestionResults(options = {}) {
     const item = selected();
     if (!item || types[item.type].element) {
       window.HospitalI18n.setHTML(
@@ -1112,13 +1112,13 @@
             writtenContainer(item) +
             '</details>'
         );
-        renderAnswerEntries(item);
+        renderAnswerEntries(item, options);
       }
     } else if (['rating', 'linear_scale'].includes(item.type)) {
       renderScaleResult(item, result);
     } else {
       window.HospitalI18n.setHTML($('question-results-content'), writtenContainer(item));
-      renderAnswerEntries(item);
+      renderAnswerEntries(item, options);
     }
     renderQuestionFooter();
   }
@@ -1195,7 +1195,7 @@
     );
     renderQuestionFooter();
   }
-  function setTab(tab, focus = false) {
+  function setTab(tab, focus = false, options = {}) {
     if (!['summary', 'questions', 'form'].includes(tab)) {
       return;
     }
@@ -1223,7 +1223,7 @@
       if (tab === 'form') {
         renderForm();
       } else {
-        renderQuestionResults();
+        renderQuestionResults(options);
       }
     }
   }
@@ -1274,13 +1274,13 @@
       renderHeader();
       renderInformation();
       renderActivity();
-      setTab(state.tab);
+      setTab(state.tab, false, {silent: true});
     });
 
     if (requestedId && !/^[1-9]\d{0,18}$/.test(requestedId)) {
       console.error(window.HospitalI18n.t("shared.encuestas_identificador_de_encuesta_invalido"));
     }
-    async function reload() {
+    async function reload(options = {}) {
       if (
         loading ||
         document.querySelector('dialog[open]') ||
@@ -1311,9 +1311,9 @@
           $('summary-panel').hidden = true;
           $('question-workspace').hidden = false;
         }
-        setTab(state.tab);
+        setTab(state.tab, false, options);
       } catch (error) {
-        api.report(error, 'surveys');
+        api.report(error, 'surveys', options);
       } finally {
         loading = false;
       }
@@ -1361,10 +1361,10 @@
     });
     setInterval(() => {
       if (!document.hidden) {
-        reload();
+        reload({silent: true});
       }
     }, 15000);
-    window.addEventListener('focus', reload);
+    window.addEventListener('focus', () => reload({silent: true}));
     document.querySelector('.insight-tabs').addEventListener('click', event => {
       const button = event.target.closest('[data-insight-tab]');
       if (button) {
@@ -1482,7 +1482,7 @@
           (['single_choice', 'multiple_choice'].includes(item.type) ? resultPageSize() : textPageSize()) !==
             renderedResultSize
         ) {
-          renderQuestionResults();
+          renderQuestionResults({silent: true});
         }
       }
     }).observe(document.querySelector('.insight-body'));

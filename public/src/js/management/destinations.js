@@ -635,7 +635,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   window.addEventListener('focus', () => {
     if (!busy && !dirty && !editingId && !detailDialog.open && !deleteDialog.open) {
-      refresh().catch(report);
+      refresh().catch(error => api.report(error, 'destinations', {silent: true}));
     }
   });
   async function start() {

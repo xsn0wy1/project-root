@@ -1,6 +1,6 @@
 /* Shared page utilities for text, accessible menus and request notifications.
- * API: listens for shared request failures; does not send requests.
- * DOM: staff-navigation, profile-menu, api-notification and existing page toasts.
+ * API: exposes HospitalNotify.show; does not send requests.
+ * DOM: staff-navigation, profile-menu and the shared notification stack.
  */
 (() => {
   'use strict';
@@ -27,79 +27,60 @@
         getComputedStyle(node).visibility !== 'hidden'
     );
 
-  let notification;
-  let notificationKey;
-  let notificationTimer;
-  const toastSelector = '.toast, .ambulance-toast, .patient-toast, .doctor-toast, .route-toast';
-  const messageSelector = '[role="alert"], .form-message, .form-feedback, .form-error, ' +
-    '#loginMessage, #registerMessage, #recovery-status, #view-message, #documentActionStatus, ' +
-    toastSelector;
+  let notificationStack;
 
-  function visibleMessages() {
-    const messages = new Map();
-    for (const element of document.querySelectorAll(messageSelector)) {
-      const text = element.textContent.trim();
-      if (!text || !element.checkVisibility() || element.closest('.visually-hidden, [aria-hidden="true"]')) {
-        continue;
-      }
-      if (element === notification && text === window.HospitalI18n.t(notificationKey)) {
-        continue;
-      }
-      messages.set(element, text);
+  function showNotification(text, type = 'info') {
+    if (!['error', 'success', 'info'].includes(type)) {
+      type = 'info';
     }
-    return messages;
+    if (!notificationStack) {
+      notificationStack = document.createElement('div');
+      notificationStack.className = 'hospital-notifications';
+    }
+    const parent = document.querySelector('dialog[open]') || document.body;
+    parent.append(notificationStack);
+
+    const notification = document.createElement('div');
+    notification.className = 'hospital-notification';
+    notification.dataset.type = type;
+    let role = 'status';
+    if (type === 'error') {
+      role = 'alert';
+    }
+    notification.setAttribute('role', role);
+    notification.setAttribute('aria-atomic', 'true');
+
+    const message = document.createElement('span');
+    message.textContent = String(text);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'hospital-notification-close';
+    close.textContent = '×';
+    if (window.HospitalI18n) {
+      window.HospitalI18n.bindAttr(close, 'aria-label', () => window.HospitalI18n.t('settings.cerrar'));
+    } else {
+      let closeLabel = 'Cerrar';
+      if (document.documentElement.lang === 'en') {
+        closeLabel = 'Close';
+      }
+      close.setAttribute('aria-label', closeLabel);
+    }
+    const timer = setTimeout(() => notification.remove(), 6000);
+    close.addEventListener('click', () => {
+      clearTimeout(timer);
+      notification.remove();
+    });
+    notification.append(message, close);
+    notificationStack.append(notification);
+    return notification;
   }
 
-  window.addEventListener('hospital:requesterror', event => {
-    const previousMessages = visibleMessages();
-    // The page's catch handler can display its own message before this fallback runs.
-    setTimeout(() => {
-      for (const [element, text] of visibleMessages()) {
-        if (element.matches('[role="alert"], .error, .is-error') || previousMessages.get(element) !== text) {
-          clearTimeout(notificationTimer);
-          if (notification && notification !== element) {
-            notification.hidden = true;
-          }
-          return;
-        }
-      }
-      const parent = document.querySelector('dialog[open]') || document.body;
-      let existingToast;
-      for (const element of parent.querySelectorAll(toastSelector)) {
-        if (element.parentElement.checkVisibility() && (element.hidden || element === notification)) {
-          existingToast = element;
-          break;
-        }
-      }
-      const previousNotification = notification;
-      if (existingToast) {
-        notification = existingToast;
-      } else {
-        notification = document.getElementById('api-notification');
-        if (!notification) {
-          notification = document.createElement('div');
-          notification.id = 'api-notification';
-          notification.className = 'api-notification';
-          notification.setAttribute('role', 'status');
-          notification.setAttribute('aria-live', 'polite');
-        }
-        parent.append(notification);
-      }
-      if (previousNotification && previousNotification !== notification) {
-        previousNotification.hidden = true;
-      }
-      notificationKey = 'api_client.no_se_pudo_completar_la_operacion';
-      if (event.detail.code === 'NETWORK_ERROR') {
-        notificationKey = 'api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente';
-      }
-      window.HospitalI18n.bindText(notification, () => window.HospitalI18n.t(notificationKey));
-      notification.hidden = false;
-      clearTimeout(notificationTimer);
-      notificationTimer = setTimeout(() => {
-        notification.hidden = true;
-      }, 8000);
-    }, 0);
-  });
+  document.addEventListener('close', () => {
+    if (notificationStack && !document.querySelector('dialog[open]')) {
+      document.body.append(notificationStack);
+    }
+  }, true);
+  window.HospitalNotify = Object.freeze({show: showNotification});
 
   function bindNavigation(options) {
     const shell = options.shell;

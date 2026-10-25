@@ -78,8 +78,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         cache: "no-store"
       });
     } catch (error) {
-      error.code = 'NETWORK_ERROR';
-      throw error;
+      if (error.name === 'AbortError') {
+        throw error;
+      }
+      throw new window.HospitalApi.ApiError(
+        window.HospitalI18n.t('api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente'),
+        0,
+        'NETWORK_ERROR'
+      );
     }
     if (!response.ok || response.headers.get("Content-Type")?.includes("application/json")) {
       let payload;
