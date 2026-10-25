@@ -169,7 +169,9 @@
       }
       if (payload && !publicPage) {
         setInterval(() => {
-          if (!document.hidden) {
+          if (current?.settings.automatic_logout) {
+            refresh(true);
+          } else if (!document.hidden) {
             refresh(Date.now() - lastActivity < 60000);
           }
         }, 60000);

@@ -7,7 +7,229 @@ const {chromium}=require('playwright'),r=JSON.parse(fs.readFileSync(path.join(ru
 let checks=0;const check=(v,s)=>{assert(v,s);checks++;console.log('PASS',s)};
 const ready=async p=>{await p.evaluate(async()=>{await HospitalI18n.ready;await window.HospitalAuth?.ready});await p.waitForTimeout(120)};
 const theme=p=>p.locator('html').getAttribute('data-theme');
-async function login(p,who={username:'system_admin',password:process.env.HOSPITAL_ADMIN_PASSWORD}){await p.goto(base+'/');await ready(p);await p.evaluate(async who=>await HospitalApi.post('auth.php?action=login',who),who);await p.goto(base+'/src/views/settings.php');await ready(p);await p.locator('#privacy-tab').click()}
+async function login(page, account = {username: 'system_admin', password: process.env.HOSPITAL_ADMIN_PASSWORD}, {openPrivacy = true} = {}) {
+ await page.goto(base + '/');await ready(page);
+ await page.evaluate(async account => HospitalApi.post('auth.php?action=login', account), account);
+ await page.goto(base + '/src/views/settings.php');await ready(page);
+ if (openPrivacy) await page.locator('#privacy-tab').click();
+}
+
+async function heartbeatPolicy(browser) {
+ const context = await browser.newContext(), page = await context.newPage();
+ const account = other;
+ const requests = [];
+ try {
+  await page.clock.install();
+  await login(page, account);
+  page.on('request', request => {
+   if (/auth.php\?action=(me|heartbeat)$/.test(request.url())) requests.push(request.url());
+  });
+  async function automaticLogout(enabled) {
+   await page.evaluate(async enabled => {
+    const current = await HospitalApi.get('settings.php?action=get');
+    await HospitalApi.post('settings.php?action=preferences-update', {
+     version: current.settings.version, automatic_logout: enabled
+    });
+    await HospitalAuth.refresh();
+   }, enabled);
+   requests.length = 0;
+  }
+  async function tick(action) {
+   const response = page.waitForResponse(response => response.url().endsWith('auth.php?action=' + action));
+   await page.clock.fastForward(60000);
+   check((await response).status() === 200, 'minute tick uses ' + action);
+  }
+  await automaticLogout(true);
+  await tick('heartbeat');
+  await page.evaluate(() => Object.defineProperty(document, 'hidden', {configurable: true, value: true}));
+  await tick('heartbeat');
+  check(requests.filter(url => url.endsWith('action=heartbeat')).length === 2,
+   'automatic logout keeps visible-idle and hidden-idle tabs alive');
+  await automaticLogout(false);
+  await page.clock.fastForward(60000);
+  await page.waitForTimeout(150);
+  check(requests.length === 0, 'disabled automatic logout keeps the existing hidden-tab silence');
+  await page.evaluate(() => Object.defineProperty(document, 'hidden', {configurable: true, value: false}));
+  await tick('me');
+  check(!requests.some(url => url.endsWith('action=heartbeat')), 'disabled automatic logout does not renew an idle session');
+  await page.clock.fastForward(59000);
+  await page.locator('#privacy-tab').click();
+  const heartbeat = page.waitForResponse(response => response.url().endsWith('auth.php?action=heartbeat'));
+  await page.clock.fastForward(1000);
+  check((await heartbeat).status() === 200, 'disabled automatic logout still renews after trusted recent activity');
+  await automaticLogout(true);
+  check(await page.evaluate(() => HospitalAuth.current.session.idle_timeout_seconds) === 300,
+   'automatic logout retains the server 300-second limit');
+ } finally {await context.close();}
+}
+
+async function requestNotifications(browser) {
+ const context = await browser.newContext(), page = await context.newPage();
+ const endpoint = '**/api/v1/settings.php?action=notifications';
+ try {
+  await login(page);
+  for (const locale of ['es-UY', 'en']) for (const appearance of ['dark', 'light']) {
+   await page.evaluate(async ({locale, appearance}) => {
+    await HospitalI18n.preview(locale);
+    HospitalTheme.preview(appearance);
+   }, {locale, appearance});
+   await page.route(endpoint, route => route.fulfill({status: 503, contentType: 'application/json',
+    body: JSON.stringify({success: false, error: {code: 'SERVICE_UNAVAILABLE', message: 'Private fixture detail'}})}));
+   await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(error => HospitalApi.report(error, 'fixture')));
+   await page.locator('#api-notification').waitFor({state: 'visible'});
+   check(await page.locator('#api-notification').textContent() === await page.evaluate(() => HospitalI18n.t('api_client.no_se_pudo_completar_la_operacion')),
+    locale + '/' + appearance + ': server failure has one translated shared notification');
+   check(await page.locator('#api-notification').count() === 1, 'repeated reporting keeps a single notification');
+   await page.screenshot({path: path.join(runtime, 'notification-' + locale + '-' + appearance + '.png')});
+   await page.setViewportSize({width: 390, height: 844});
+   const bounds = await page.locator('#api-notification').boundingBox();
+   check(bounds.x >= 0 && bounds.x + bounds.width <= 390, 'the notification fits the phone viewport');
+   await page.screenshot({path: path.join(runtime, 'notification-' + locale + '-' + appearance + '-phone.png')});
+   await page.setViewportSize({width: 1440, height: 900});
+   await page.locator('#api-notification').evaluate(element => {element.hidden = true;});
+   await page.unroute(endpoint);
+  }
+  await page.route(endpoint, route => route.abort('connectionfailed'));
+  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
+  await page.locator('#api-notification').waitFor({state: 'visible'});
+  check(await page.locator('#api-notification').textContent() === await page.evaluate(() => HospitalI18n.t('api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente')),
+   'network failure uses translated connection guidance');
+  await page.locator('#api-notification').evaluate(element => {element.hidden = true;});
+  await page.unroute(endpoint);
+  await page.route(endpoint, route => route.fulfill({status: 503, contentType: 'text/plain', body: 'Private fixture'}));
+  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
+  await page.locator('#api-notification').waitFor({state: 'visible'});
+  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {
+   const ownMessage = document.createElement('p');
+   ownMessage.id = 'own-error'; ownMessage.setAttribute('role', 'alert');
+   ownMessage.textContent = HospitalI18n.t('api_client.no_se_pudo_completar_la_operacion');
+   document.body.append(ownMessage);
+  }));
+  await page.waitForTimeout(150);
+  check(await page.locator('#own-error').isVisible() && await page.locator('#api-notification').isHidden(),
+   'the page catch handler message suppresses and hides a previous fallback');
+  await page.locator('#own-error').evaluate(element => element.remove());
+  await page.evaluate(() => document.getElementById('password-dialog').showModal());
+  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
+  await page.locator('#password-dialog #api-notification').waitFor({state: 'visible'});
+  check(await page.locator('#api-notification').evaluate(element => {
+   const bounds = element.getBoundingClientRect();
+   return document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2) === element;
+  }), 'the fallback remains visible above an open modal backdrop');
+  await page.evaluate(() => document.getElementById('password-dialog').close());
+  await page.unroute(endpoint);
+  await page.goto(base + '/src/views/management/ambulances.php');await ready(page);
+  await page.route(endpoint, route => route.fulfill({status: 500, contentType: 'text/plain', body: 'Private fixture'}));
+  await page.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
+  await page.locator('#ambulance-toast').waitFor({state: 'visible'});
+  check(await page.locator('#api-notification').count() === 0, 'the existing page toast is reused');
+  await page.goto(base + '/src/views/documents/documents-viewer.php?id=' + r.document.id);await ready(page);
+  await page.waitForFunction(() => !document.getElementById('download-button').disabled);
+  await page.route('**/api/v1/documents.php?action=content*', route => route.abort('connectionfailed'));
+  await page.locator('#download-button').click();
+  await page.locator('#toast').waitFor({state: 'visible'});
+  check(await page.locator('#toast').textContent() === await page.evaluate(() => HospitalI18n.t('api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente')),
+   'binary document network failures also reuse the existing translated toast');
+ } finally {await context.close();}
+ const anonymous = await browser.newContext(), loginPage = await anonymous.newPage();
+ try {
+  await loginPage.goto(base + '/');await ready(loginPage);
+  for (const status of [401, 422, 429]) {
+   await loginPage.route(endpoint, route => route.fulfill({status, contentType: 'application/json',
+    body: JSON.stringify({success: false, error: {code: 'FIXTURE', message: 'Private fixture'}})}));
+   await loginPage.evaluate(() => HospitalApi.get('settings.php?action=notifications').catch(() => {}));
+   await loginPage.waitForTimeout(100);
+   check(await loginPage.locator('#api-notification').count() === 0, 'HTTP ' + status + ' does not create a shared server-failure notification');
+   await loginPage.unroute(endpoint);
+  }
+  await loginPage.route('**/api/v1/auth.php?action=login', route => route.abort('connectionfailed'));
+  await loginPage.locator('[name=username]').fill('Fictional retained user');
+  await loginPage.locator('[name=password]').fill('Fictional retained password');
+  await loginPage.locator('#loginForm [type=submit]').click();
+  await loginPage.locator('#api-notification').waitFor({state: 'visible'});
+  check(await loginPage.locator('[name=username]').inputValue() === 'Fictional retained user' &&
+   await loginPage.locator('[name=password]').inputValue() === 'Fictional retained password',
+   'login network failure shows the shared message and retains both inputs');
+  await loginPage.waitForTimeout(8100);
+  check(await loginPage.locator('#api-notification').isHidden(), 'the shared notification dismisses automatically');
+ } finally {await anonymous.close();}
+ for (const failure of ['network', 'server']) {
+  const participant = await browser.newContext(), participantPage = await participant.newPage();
+  try {
+   await participantPage.route('**/surveys.php?action=public-get', route => {
+    if (failure === 'network') return route.abort('connectionfailed');
+    return route.fulfill({status: 503, contentType: 'text/plain', body: 'Private fixture'});
+   });
+   await participantPage.goto(base + '/src/views/surveys/user-view/survey-user.php#token=' + r.token);
+   await ready(participantPage);
+   await participantPage.locator('#api-notification').waitFor({state: 'visible'});
+   check(Boolean(await participantPage.locator('#api-notification').textContent()),
+    'public participant ' + failure + ' failure uses the same notification');
+  } finally {await participant.close();}
+ }
+}
+
+async function heartbeatRealTime() {
+ const {spawn} = require('child_process');
+ const profile = fs.mkdtempSync(path.join(runtime, 'heartbeat-chrome-'));
+ const log = fs.openSync(path.join(runtime, 'heartbeat-chrome.log'), 'w', 0o600);
+ const port = Number(process.env.HOSPITAL_HEARTBEAT_DEBUG_PORT || 8920);
+ const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
+  '--user-data-dir=' + profile, '--remote-debugging-port=' + port,
+  '--no-first-run', '--no-default-browser-check', 'about:blank'
+ ], {stdio: ['ignore', log, log]});
+ let browser;
+ try {
+  for (let attempt = 0; attempt < 100; attempt++) {
+   try {await fetch('http://127.0.0.1:' + port + '/json/version');break;}
+   catch (_) {await new Promise(resolve => setTimeout(resolve, 100));}
+  }
+  // noDefaults preserves native visibility; normal automation forces pages visible.
+  browser = await chromium.connectOverCDP('http://127.0.0.1:' + port, {noDefaults: true});
+  const accountFile = path.join(runtime, 'heartbeat.json');
+  let account = other;
+  if (fs.existsSync(accountFile)) account = JSON.parse(fs.readFileSync(accountFile));
+  const context = browser.contexts()[0], page = context.pages()[0] || await context.newPage();
+  await login(page, account, {openPrivacy: false});
+  await page.goto(base + '/src/views/main-menu.php');await ready(page);
+  check(await page.evaluate(() => HospitalAuth.current.settings.automatic_logout &&
+   HospitalAuth.current.session.idle_timeout_seconds === 300), 'real-time fixture uses automatic logout and the unchanged server limit');
+  const control = await browser.newContext(), closedPage = await control.newPage();
+  await login(closedPage, account, {openPrivacy: false});
+  await control.newPage();
+  await closedPage.close();
+  const closedAt = Date.now(), heartbeats = [];
+  page.on('response', response => {
+   if (response.url().endsWith('auth.php?action=heartbeat')) heartbeats.push({elapsed: Date.now() - closedAt, status: response.status()});
+  });
+  const cdp = await context.newCDPSession(page);
+  const {windowId} = await cdp.send('Browser.getWindowForTarget');
+  await cdp.send('Browser.setWindowBounds', {windowId, bounds: {windowState: 'minimized'}});
+  await page.waitForTimeout(1000);
+  check(await page.evaluate(() => document.hidden), 'the real Chrome page is natively hidden without a visibility mock');
+  for (let minute = 1; minute <= 6; minute++) {
+   const remaining = closedAt + minute * 60000 - Date.now();
+   if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
+   console.log('REAL TIME', minute, 'minute(s);', heartbeats.length, 'heartbeats');
+  }
+  const live = await page.evaluate(() => HospitalApi.get('auth.php?action=me'));
+  check(live.user.username === account.username && heartbeats.length >= 5 && heartbeats.every(row => row.status === 200),
+   'six real hidden minutes retain the logged-in session through successful heartbeats');
+  const reopened = await control.newPage();
+  await reopened.goto(base + '/src/views/main-menu.php');await ready(reopened);
+  check(await reopened.locator('#loginForm').isVisible() && reopened.url().includes('reason=session_expired'),
+   'six real minutes with every app tab closed require login on reopening');
+  fs.writeFileSync(path.join(runtime, 'heartbeat-real-time.json'), JSON.stringify({
+   elapsedMilliseconds: Date.now() - closedAt, nativeHidden: true, heartbeats,
+   hiddenSessionAuthenticated: true, closedSessionExpired: true, idleTimeoutSeconds: live.session.idle_timeout_seconds
+  }, null, 2));
+ } finally {
+  if (browser) await browser.close();
+  chrome.kill('SIGTERM');
+  await new Promise(resolve => {if (chrome.exitCode !== null) resolve();else {chrome.once('exit', resolve);setTimeout(resolve, 5000);}});
+  fs.closeSync(log);fs.rmSync(profile, {recursive: true, force: true});
+ }
+}
 async function diagnosticsRateLimit(browser) {
  const context=await browser.newContext(), page=await context.newPage(), reports=[];
  await login(page);
@@ -20,6 +242,7 @@ async function diagnosticsRateLimit(browser) {
   const diagnostic=page.waitForResponse(response=>response.url().endsWith('settings.php?action=diagnostics'));
   await page.goto(base+'/src/views/main-menu.php');await ready(page);assert.equal((await diagnostic).status(),429);await page.waitForTimeout(100);
   check(reports.length===0,'optional diagnostics 429 emits no shared-client or session console report');
+  check(await page.locator('#api-notification').count() === 0, 'optional diagnostics 429 shows no notification');
   await page.route(endpoint,route=>route.fulfill({status:429,contentType:'text/plain',body:'Optional telemetry fixture'}));
   check(await page.evaluate(()=>HospitalApi.post('settings.php?action=diagnostics',{load_ms:1}))===null&&reports.length===0,'optional diagnostics also silently drops a non-JSON 429');
   await page.route('**/api/v1/settings.php?action=get',route=>route.fulfill({status:429,contentType:'application/json',body:JSON.stringify({success:false,error:{code:'RATE_LIMITED',message:'Ordinary request fixture'}})}));
@@ -89,7 +312,10 @@ async function loginChoices(browser) {
  }
 }
 (async()=>{
+ if(process.argv.includes('--heartbeat-real-time')) {await heartbeatRealTime();console.log('TOTAL',checks,'real-time heartbeat checks');return;}
  const b=await chromium.launch({channel:'chrome',headless:true}),c=await b.newContext({viewport:{width:1440,height:900}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await heartbeatPolicy(b);
+ await requestNotifications(b);
  await diagnosticsRateLimit(b);
  await loginChoices(b);
  await p.goto(base+'/');await ready(p);check(await theme(p)==='dark','public first visit defaults to dark');

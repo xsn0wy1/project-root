@@ -1,4 +1,4 @@
-/* Shares JSON requests, CSRF retries and console-only error reporting.
+/* Shares JSON requests, CSRF retries and request error reporting.
  * API: auth csrf plus the existing requests supplied by each page.
  * DOM: the shared invalid-field listener; no page-specific IDs.
  */
@@ -24,6 +24,9 @@
       fields: error?.fields || {},
       request_id: error?.requestId
     });
+    if (error?.code === 'NETWORK_ERROR' || (error?.status >= 500 && error.status < 600)) {
+      window.dispatchEvent(new CustomEvent('hospital:requesterror', { detail: error }));
+    }
   }
 
   class ApiError extends Error {

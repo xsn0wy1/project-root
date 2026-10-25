@@ -12,6 +12,16 @@ const queries={ 'documents-viewer.php':records.document.id,'documents-edit.php':
 function url(file){const id=queries[path.basename(file)]; return base+'/'+file+(id?'?id='+id:'')+(file.endsWith('survey-user.php')?'#token='+records.token:'');}
 async function ready(p){await p.evaluate(async()=>{await window.HospitalI18n?.ready;await window.HospitalAuth?.ready;if(window.HospitalAuth?.current)await HospitalAuth.refresh(true);}); await p.waitForLoadState('networkidle',{timeout:8000}).catch(()=>{}); await p.evaluate(()=>document.fonts.ready); await p.addStyleTag({content:'*,*::before,*::after{animation-delay:0s!important;animation-duration:0s!important;transition:none!important}'}); await p.waitForTimeout(140);}
 async function geometry(p){return p.evaluate(()=>Object.fromEntries(['.tarjeta','.app-shell','.topbar','.sidebar','.hero-panel','.bg-panel','.patient-header','.patient-survey','.patient-layout'].map(s=>{const e=document.querySelector(s);if(!e)return [s,null];const b=e.getBoundingClientRect(),c=getComputedStyle(e);return [s,{x:b.x,y:b.y,w:b.width,h:b.height,blur:c.backdropFilter,radius:c.borderRadius}];})));}
+async function authFont(page) {
+ if (!await page.locator('.tarjeta').count()) return;
+ assert.equal(await page.locator('link[href*="assets/vendor/fonts/inclusive-regular.css"]').count(), 1,
+  'auth/error pages link the existing local Inclusive Sans stylesheet once');
+ assert(await page.evaluate(() => [...document.fonts].some(font =>
+  font.family.includes('Inclusive Sans') && font.status === 'loaded')),
+ 'Inclusive Sans is actually loaded for the auth/error card');
+ assert(await page.locator('.tarjeta').evaluate(element =>
+  getComputedStyle(element).fontFamily.includes('Inclusive Sans')), 'the card uses Inclusive Sans');
+}
 async function errorPages(browser, staff) {
  const setup = await staff.newPage();
  await setup.goto(base+'/src/views/settings.php'); await ready(setup);
@@ -41,6 +51,7 @@ async function errorPages(browser, staff) {
       const response=await page.goto(origin+mount+'/src/views/error.php?status='+status+'&lang='+locale);
       assert.equal(response.status(),status,name+' status');
       await page.evaluate(()=>document.fonts.ready);
+      await authFont(page);
       const title=status===403?'forbidden_title':status===404?'not_found_title':'server_title';
       const description=status===403?'forbidden_description':status===404?'not_found_description':'server_description';
       assert.equal(await page.locator('h1').textContent(),dictionary['error_page.'+title],name+' title');
@@ -104,6 +115,7 @@ async function errorPages(browser, staff) {
    const theme=baseline?'dark':'light';
    await p.evaluate(theme=>HospitalTheme.preview(theme),theme);await p.waitForTimeout(320);assert.equal(await p.locator('html').getAttribute('data-theme'),theme);
    shapes[name]=await geometry(p);
+   await authFont(p);
    await p.screenshot({path:path.join(runtime,(baseline?'before-':'light-')+name+'.png')});
    if(!baseline){await p.evaluate(()=>HospitalTheme.preview('dark'));await p.waitForTimeout(320);const old=JSON.parse(fs.readFileSync(path.join(runtime,'baseline.json')))[name],now=await geometry(p);for(const selector of Object.keys(old)){if(!old[selector]||!now[selector])continue;for(const k of ['x','y','w','h'])assert(Math.abs(old[selector][k]-now[selector][k])<1.1,name+' '+selector+' '+k+' changed '+JSON.stringify({old:old[selector],now:now[selector]}));assert.equal(now[selector].blur,old[selector].blur,name+' glass blur');}
     if(size==='desktop')await p.screenshot({path:path.join(runtime,'dark-'+name+'.png')});

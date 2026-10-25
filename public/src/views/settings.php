@@ -152,7 +152,7 @@ staff_page_open([
                             <div class="privacy-setting">
                                 <p data-i18n="settings.cerrar_sesion_automaticamente">Cerrar Sesión Automáticamente</p>
                                 <button type="button" class="toggle<?= $preferences['automatic_logout'] ? ' is-on' : '' ?>" role="switch" aria-checked="<?= $preferences['automatic_logout'] ? 'true' : 'false' ?>"
-                                    aria-label="Cerrar sesión automáticamente" data-i18n-aria-label="settings.cerrar_sesion_automaticamente_2" data-preference="automatic_logout" title="Activado: 5 minutos sin actividad. Desactivado: límite obligatorio del servidor (30 minutos por defecto)." data-i18n-title="settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po">
+                                    aria-label="Cerrar sesión automáticamente" data-i18n-aria-label="settings.cerrar_sesion_automaticamente_2" data-preference="automatic_logout" title="Activado: cierra la sesión unos 5 minutos después de cerrar todas las pestañas del sitio. Desactivado: 30 minutos de inactividad." data-i18n-title="settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po">
                                     <span class="toggle-knob"></span>
                                 </button>
                             </div>

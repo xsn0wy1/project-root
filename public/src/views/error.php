@@ -59,6 +59,7 @@ function render_error_page(int $status): void
   <script src="<?= asset_url($mount . '/src/api-connection/theme.js') ?>"></script>
   <title><?= page_escape(Hospital\I18n::t($title)) ?></title>
   <link rel="icon" type="image/x-icon" href="<?= page_escape($mount) ?>/assets/hospital-gradient.ico">
+  <link rel="stylesheet" href="<?= asset_url($mount . '/assets/vendor/fonts/inclusive-regular.css') ?>">
 <?php foreach (['base.css', 'login-register/log-reg.css', 'login-register/auth-interactions.css', 'theme.css', 'responsive.css'] as $style): ?>
   <link rel="stylesheet" href="<?= asset_url($mount . '/src/css/' . $style) ?>">
 <?php endforeach; ?>

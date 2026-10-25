@@ -42,25 +42,36 @@
       status: error.status || 0,
       message: error.message || window.HospitalI18n.t("survey_patient.no_se_pudo_completar_la_solicitud")
     });
+    if (error.code === 'NETWORK_ERROR' || (error.status >= 500 && error.status < 600)) {
+      window.dispatchEvent(new CustomEvent('hospital:requesterror', { detail: error }));
+    }
   }
   async function request(path, body, csrf = false) {
-    const response = await fetch(new URL(`surveys.php?action=public-${path}`, apiRoot), {
-      method: 'POST',
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Hospital-Locale': window.HospitalI18n.locale,
-        ...(csrf ? { 'X-CSRF-Token': survey.csrf_token } : {})
-      },
-      body: JSON.stringify(body)
-    });
+    let response;
+    try {
+      response = await fetch(new URL(`surveys.php?action=public-${path}`, apiRoot), {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Hospital-Locale': window.HospitalI18n.locale,
+          ...(csrf ? { 'X-CSRF-Token': survey.csrf_token } : {})
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (error) {
+      error.code = 'NETWORK_ERROR';
+      throw error;
+    }
     let payload;
     try {
       payload = await response.json();
     } catch (_) {
-      throw new Error(window.HospitalI18n.t("survey_patient.el_servidor_no_devolvio_json_valido"));
+      const error = new Error(window.HospitalI18n.t("survey_patient.el_servidor_no_devolvio_json_valido"));
+      error.status = response.status;
+      throw error;
     }
     if (!response.ok || payload.success !== true) {
       const error = new Error(

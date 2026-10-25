@@ -1,6 +1,6 @@
-/* Shared page utilities for escaping text, matching text and accessible menus.
- * API: none; these helpers only update existing page controls.
- * DOM: staff-navigation, profile-menu, and the shared sidebar/profile classes.
+/* Shared page utilities for text, accessible menus and request notifications.
+ * API: listens for shared request failures; does not send requests.
+ * DOM: staff-navigation, profile-menu, api-notification and existing page toasts.
  */
 (() => {
   'use strict';
@@ -26,6 +26,80 @@
         node.getClientRects().length &&
         getComputedStyle(node).visibility !== 'hidden'
     );
+
+  let notification;
+  let notificationKey;
+  let notificationTimer;
+  const toastSelector = '.toast, .ambulance-toast, .patient-toast, .doctor-toast, .route-toast';
+  const messageSelector = '[role="alert"], .form-message, .form-feedback, .form-error, ' +
+    '#loginMessage, #registerMessage, #recovery-status, #view-message, #documentActionStatus, ' +
+    toastSelector;
+
+  function visibleMessages() {
+    const messages = new Map();
+    for (const element of document.querySelectorAll(messageSelector)) {
+      const text = element.textContent.trim();
+      if (!text || !element.checkVisibility() || element.closest('.visually-hidden, [aria-hidden="true"]')) {
+        continue;
+      }
+      if (element === notification && text === window.HospitalI18n.t(notificationKey)) {
+        continue;
+      }
+      messages.set(element, text);
+    }
+    return messages;
+  }
+
+  window.addEventListener('hospital:requesterror', event => {
+    const previousMessages = visibleMessages();
+    // The page's catch handler can display its own message before this fallback runs.
+    setTimeout(() => {
+      for (const [element, text] of visibleMessages()) {
+        if (element.matches('[role="alert"], .error, .is-error') || previousMessages.get(element) !== text) {
+          clearTimeout(notificationTimer);
+          if (notification && notification !== element) {
+            notification.hidden = true;
+          }
+          return;
+        }
+      }
+      const parent = document.querySelector('dialog[open]') || document.body;
+      let existingToast;
+      for (const element of parent.querySelectorAll(toastSelector)) {
+        if (element.parentElement.checkVisibility() && (element.hidden || element === notification)) {
+          existingToast = element;
+          break;
+        }
+      }
+      const previousNotification = notification;
+      if (existingToast) {
+        notification = existingToast;
+      } else {
+        notification = document.getElementById('api-notification');
+        if (!notification) {
+          notification = document.createElement('div');
+          notification.id = 'api-notification';
+          notification.className = 'api-notification';
+          notification.setAttribute('role', 'status');
+          notification.setAttribute('aria-live', 'polite');
+        }
+        parent.append(notification);
+      }
+      if (previousNotification && previousNotification !== notification) {
+        previousNotification.hidden = true;
+      }
+      notificationKey = 'api_client.no_se_pudo_completar_la_operacion';
+      if (event.detail.code === 'NETWORK_ERROR') {
+        notificationKey = 'api_client.no_se_pudo_conectar_con_el_servidor_revisa_la_conexion_e_intenta_nuevamente';
+      }
+      window.HospitalI18n.bindText(notification, () => window.HospitalI18n.t(notificationKey));
+      notification.hidden = false;
+      clearTimeout(notificationTimer);
+      notificationTimer = setTimeout(() => {
+        notification.hidden = true;
+      }, 8000);
+    }, 0);
+  });
 
   function bindNavigation(options) {
     const shell = options.shell;

@@ -19,12 +19,14 @@ function auth_page_open(string $titleKey, string $title, string $src, string $as
   <meta name="referrer" content="no-referrer">
 <?php endif; ?>
   <title data-i18n="<?= page_escape($titleKey) ?>"><?= page_escape($title) ?></title>
+  <link rel="stylesheet" href="<?= asset_url($assets . 'vendor/fonts/inclusive-regular.css') ?>">
   <link rel="stylesheet" href="<?= asset_url($src . 'css/base.css') ?>">
   <link rel="stylesheet" href="<?= asset_url($src . 'css/login-register/' . $style . '.css') ?>">
   <link rel="stylesheet" href="<?= asset_url($src . 'css/login-register/auth-interactions.css') ?>">
   <link rel="icon" type="image/x-icon" href="<?= $assets ?>hospital-gradient.ico">
   <script src="<?= asset_url($src . 'api-connection/i18n.js') ?>" defer></script>
   <script src="<?= asset_url($src . 'api-connection/api-client.js') ?>" defer></script>
+  <script src="<?= asset_url($src . 'js/ui.js') ?>" defer></script>
 <?php if ($recovery): ?>
   <script src="<?= asset_url($src . 'js/login-register/recovery.js') ?>" defer></script>
 <?php else: ?>

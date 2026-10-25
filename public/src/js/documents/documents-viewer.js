@@ -70,11 +70,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 2600);
   }
   async function bytes(download = false) {
-    const response = await fetch(contentUrl(download), {
-      headers: { 'X-Hospital-Locale': window.HospitalI18n.locale },
-      credentials: "same-origin",
-      cache: "no-store"
-    });
+    let response;
+    try {
+      response = await fetch(contentUrl(download), {
+        headers: { 'X-Hospital-Locale': window.HospitalI18n.locale },
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+    } catch (error) {
+      error.code = 'NETWORK_ERROR';
+      throw error;
+    }
     if (!response.ok || response.headers.get("Content-Type")?.includes("application/json")) {
       let payload;
       try {

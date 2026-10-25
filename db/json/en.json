@@ -60,7 +60,7 @@
   "settings.notificaciones_de_seguridad_2": "Security notifications",
   "settings.cerrar_sesion_automaticamente": "Automatic Logout",
   "settings.cerrar_sesion_automaticamente_2": "Automatic logout",
-  "settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po": "On: 5 minutes of inactivity. Off: mandatory server limit (30 minutes by default).",
+  "settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po": "On: signs out about 5 minutes after closing every tab of the site. Off: 30 minutes of inactivity.",
   "settings.idioma": "Language",
   "settings.espanol": "Spanish",
   "settings.english": "English",

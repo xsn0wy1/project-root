@@ -60,7 +60,7 @@
   "settings.notificaciones_de_seguridad_2": "Notificaciones de seguridad",
   "settings.cerrar_sesion_automaticamente": "Cerrar Sesión Automáticamente",
   "settings.cerrar_sesion_automaticamente_2": "Cerrar sesión automáticamente",
-  "settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po": "Activado: 5 minutos sin actividad. Desactivado: límite obligatorio del servidor (30 minutos por defecto).",
+  "settings.activado_5_minutos_sin_actividad_desactivado_limite_obligatorio_del_servidor_30_minutos_po": "Activado: cierra la sesión unos 5 minutos después de cerrar todas las pestañas del sitio. Desactivado: 30 minutos de inactividad.",
   "settings.idioma": "Idioma",
   "settings.espanol": "Español",
   "settings.english": "English",
