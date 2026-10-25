@@ -1,3 +1,8 @@
+/* Manages the ambulance directory, details, status changes and archive dialogs.
+ * API: ambulances list/get/create/update/archive/restore (including version checks).
+ * DOM: ambulance-list, ambulance-form, ambulance-workspace and detail-panel.
+ * $ finds an element by ID; HospitalI18n.t translates labels when rendered.
+ */
 (async () => {
   'use strict';
   await window.HospitalI18n.ready;
@@ -10,18 +15,20 @@
     MANTENIMIENTO: 'maintenance',
     FUERA_SERVICIO: 'out_of_service'
   };
-  const fromApi = a => ({
-    ...a,
-    archived: a.status === 'archived',
+  const fromApi = ambulanceRecord => ({
+    ...ambulanceRecord,
+    archived: ambulanceRecord.status === 'archived',
     status:
-      a.status === 'archived'
+      ambulanceRecord.status === 'archived'
         ? 'FUERA_SERVICIO'
-        : Object.keys(statusCodes).find(key => statusCodes[key] === a.operational_status)
+        : Object.keys(statusCodes).find(key => statusCodes[key] === ambulanceRecord.operational_status)
   });
   const $ = id => document.getElementById(id);
   const list = $('ambulance-list');
   const form = $('ambulance-form');
-  if (!api || !list || !form) return;
+  if (!api || !list || !form) {
+    return;
+  }
   const workspace = $('ambulance-workspace');
   const directory = $('directory-panel');
   const detailPanel = $('detail-panel');
@@ -29,13 +36,13 @@
   const deleteDialog = $('delete-dialog');
   const filters = [...document.querySelectorAll('[data-filter]')];
   const labels = {
-    get OPERATIVA() {
+    OPERATIVA: function () {
       return window.HospitalI18n.t("ambulances.operativa");
     },
-    get MANTENIMIENTO() {
+    MANTENIMIENTO: function () {
       return window.HospitalI18n.t("ambulances.mantenimiento");
     },
-    get FUERA_SERVICIO() {
+    FUERA_SERVICIO: function () {
       return window.HospitalI18n.t("ambulances.fuera_de_servicio");
     }
   };
@@ -45,15 +52,15 @@
     FUERA_SERVICIO: 'unavailable'
   };
   const pageSize = 5;
-  let activeFilter = 'ALL',
-    currentPage = 1,
-    selectedId = null,
-    editingId = null,
-    deletingId = null;
-  let editingVersion = null,
-    deletingVersion = null,
-    busy = false,
-    toastTimer;
+  let activeFilter = 'ALL';
+  let currentPage = 1;
+  let selectedId = null;
+  let editingId = null;
+  let deletingId = null;
+  let editingVersion = null;
+  let deletingVersion = null;
+  let busy = false;
+  let toastTimer;
 
   const escapeHtml = window.HospitalUI.escapeHtml;
   const normalize = window.HospitalUI.normalize;
@@ -61,26 +68,37 @@
   const icon = (file, className = '') =>
     `<img src="../../../assets/Icons/${file}" alt="" aria-hidden="true"${className ? ` class="${className}"` : ''}>`;
   const pill = ambulance =>
-    `<span class="status-pill status-pill--${statusClasses[ambulance.status]}">${ambulance.archived ? window.HospitalI18n.t("ambulances.archivada") : labels[ambulance.status]}</span>`;
+    `<span class="status-pill status-pill--${statusClasses[ambulance.status]}">${ambulance.archived ? window.HospitalI18n.t("ambulances.archivada") : labels[ambulance.status]?.()}` +
+    `</span>`;
 
   const report = error => api.report(error, 'ambulances');
   function upsert(data) {
     const item = fromApi(data);
-    if (ambulances.some(a => a.id === item.id))
-      ambulances = ambulances.map(a => (a.id === item.id ? item : a));
-    else ambulances.unshift(item);
+    if (ambulances.some(ambulanceRecord => ambulanceRecord.id === item.id)) {
+      ambulances = ambulances.map(ambulanceRecord => {
+        if (ambulanceRecord.id === item.id) {
+          return item;
+        } else {
+          return ambulanceRecord;
+        }
+      });
+    } else {
+      ambulances.unshift(item);
+    }
     return item;
   }
   function setBusy(value) {
     busy = value;
     [...form.elements, $('close-ambulance-dialog'), ...deleteDialog.querySelectorAll('button')].forEach(
-      el => {
-        el.disabled = value;
+      controlElement => {
+        controlElement.disabled = value;
       }
     );
     $('new-ambulance').disabled = value;
     ['detail-operational-status', 'edit-from-detail', 'delete-from-detail'].forEach(id => {
-      if ($(id)) $(id).disabled = value;
+      if ($(id)) {
+        $(id).disabled = value;
+      }
     });
     window.HospitalDropdown.refresh();
   }
@@ -92,8 +110,12 @@
     try {
       const item = upsert(await api.get(`ambulances.php?action=get&id=${encodeURIComponent(id)}`));
       if (edit) {
-        if (!item.archived) openForm(item);
-      } else selectAmbulance(item.id);
+        if (!item.archived) {
+          openForm(item);
+        }
+      } else {
+        selectAmbulance(item.id);
+      }
     } catch (error) {
       report(error);
     }
@@ -121,50 +143,87 @@
       list,
       shown
         .map(
-          ambulance => `<article class="ambulance-row${selectedId === ambulance.id ? ' is-selected' : ''}">
-      <div class="ambulance-identity"><span class="ambulance-avatar">${icon('ambulance-icon.png')}</span><span><strong>${escapeHtml(ambulance.plate)}</strong><small>${window.HospitalI18n.mark("ambulances.unidad_value", { value0: String(ambulance.id).padStart(3, '0') })}</small></span></div>
-      <div class="ambulance-info">${icon('brand-icon.svg')}<span><b>${escapeHtml(ambulance.model)}</b><small>${window.HospitalI18n.mark("ambulances.modelo_del_vehiculo")}</small></span></div>
-      <div class="ambulance-info">${icon('seats-icon.svg')}<span><b>${window.HospitalI18n.mark("ambulances.value_plazas", { value0: ambulance.capacity })}</b><small>${window.HospitalI18n.mark("ambulances.capacidad_total")}</small></span></div>
+          ambulance =>
+            `<article class="ambulance-row${selectedId === ambulance.id ? ' is-selected' : ''}">
+      ` +
+            `<div class="ambulance-identity">` +
+            `<span class="ambulance-avatar">${icon('ambulance-icon.png')}</span>` +
+            `<span>` +
+            `<strong>${escapeHtml(ambulance.plate)}</strong>` +
+            `<small>${window.HospitalI18n.mark("ambulances.unidad_value", { value0: String(ambulance.id).padStart(3, '0') })}</small>` +
+            `</span>` +
+            `</div>
+      ` +
+            `<div class="ambulance-info">${icon('brand-icon.svg')}<span>` +
+            `<b>${escapeHtml(ambulance.model)}</b>` +
+            `<small>${window.HospitalI18n.mark("ambulances.modelo_del_vehiculo")}</small>` +
+            `</span>` +
+            `</div>
+      ` +
+            `<div class="ambulance-info">${icon('seats-icon.svg')}<span>` +
+            `<b>${window.HospitalI18n.mark("ambulances.value_plazas", { value0: ambulance.capacity })}</b>` +
+            `<small>${window.HospitalI18n.mark("ambulances.capacidad_total")}</small>` +
+            `</span>` +
+            `</div>
       ${pill(ambulance)}
-      <button type="button" class="row-action" data-select-id="${ambulance.id}" aria-label="${window.HospitalI18n.html("ambulances.ver_detalle_de_value", { value0: ambulance.plate })}" data-i18n-aria-label="ambulances.ver_detalle_de_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: ambulance.plate }))}" aria-controls="detail-panel" aria-expanded="${selectedId === ambulance.id}">${icon('arrow-left.svg', 'chevron-icon')}</button>
-    </article>`
+      ` +
+            (`<button type="button" class="row-action" data-select-id="${ambulance.id}" aria-label="${window.HospitalI18n.html("ambulances.ver_detalle_de_value", { value0: ambulance.plate })}"` +
+              ` data-i18n-aria-label="ambulances.ver_detalle_de_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: ambulance.plate }))}"` +
+              ` aria-controls="detail-panel" aria-expanded="${selectedId === ambulance.id}">${icon('arrow-left.svg', 'chevron-icon')}` +
+              `</button>
+    `) +
+            `</article>`
         )
         .join('')
     );
     $('ambulance-empty').hidden = matches.length > 0;
-    window.HospitalI18n.bindText($('empty-description'), () =>
-      ambulances.length
-        ? window.HospitalI18n.t("ambulances.no_se_encontraron_ambulancias_con_estos_criterios")
-        : window.HospitalI18n.t("ambulances.no_hay_ambulancias_registradas_agrega_una_para_comenzar")
-    );
+    window.HospitalI18n.bindText($('empty-description'), () => {
+      if (ambulances.length) {
+        return window.HospitalI18n.t("ambulances.no_se_encontraron_ambulancias_con_estos_criterios");
+      } else {
+        return window.HospitalI18n.t("ambulances.no_hay_ambulancias_registradas_agrega_una_para_comenzar");
+      }
+    });
     $('clear-filters').hidden = ambulances.length === 0;
-    window.HospitalI18n.bindText($('results-summary'), () =>
-      matches.length
-        ? window.HospitalI18n.t("ambulances.mostrando_value_a_value_de_value_value", {
-            value0: start + 1,
-            value1: start + shown.length,
-            value2: matches.length,
-            value3:
-              matches.length === 1
-                ? window.HospitalI18n.t("shared.ambulancia")
-                : window.HospitalI18n.t("shared.ambulancias")
-          })
-        : window.HospitalI18n.t("ambulances.mostrando_0_ambulancias")
-    );
+    window.HospitalI18n.bindText($('results-summary'), () => {
+      if (matches.length) {
+        return window.HospitalI18n.t("ambulances.mostrando_value_a_value_de_value_value", {
+          value0: start + 1,
+          value1: start + shown.length,
+          value2: matches.length,
+          value3:
+            matches.length === 1
+              ? window.HospitalI18n.t("shared.ambulancia")
+              : window.HospitalI18n.t("shared.ambulancias")
+        });
+      } else {
+        return window.HospitalI18n.t("ambulances.mostrando_0_ambulancias");
+      }
+    });
     let pages = '';
     for (let page = 1; page <= pageCount; page++) {
-      pages += `<button type="button" data-page="${page}" class="${page === currentPage ? 'is-active' : ''}" aria-label="${window.HospitalI18n.html("ambulances.pagina_value", { value0: page })}" data-i18n-aria-label="ambulances.pagina_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: page }))}"${page === currentPage ? ' aria-current="page"' : ''}>${page}</button>`;
+      pages +=
+        `<button type="button" data-page="${page}" class="${page === currentPage ? 'is-active' : ''}" aria-label="${window.HospitalI18n.html("ambulances.pagina_value", { value0: page })}"` +
+        ` data-i18n-aria-label="ambulances.pagina_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: page }))}"${page === currentPage ? ' aria-current="page"' : ''}>${page}` +
+        `</button>`;
     }
     window.HospitalI18n.setHTML(
       $('ambulance-pagination'),
-      `<button type="button" data-page="${currentPage - 1}" aria-label="${window.HospitalI18n.html("trace.pagina_anterior")}" data-i18n-aria-label="trace.pagina_anterior"${currentPage === 1 ? ' disabled' : ''}>‹</button>${pages}<button type="button" data-page="${currentPage + 1}" aria-label="${window.HospitalI18n.html("trace.pagina_siguiente")}" data-i18n-aria-label="trace.pagina_siguiente"${currentPage === pageCount ? ' disabled' : ''}>›</button>`
+      `<button type="button" data-page="${currentPage - 1}" aria-label="${window.HospitalI18n.html("trace.pagina_anterior")}"` +
+        ` data-i18n-aria-label="trace.pagina_anterior"${currentPage === 1 ? ' disabled' : ''}>‹` +
+        (`</button>${pages}` +
+          `<button type="button" data-page="${currentPage + 1}" aria-label="${window.HospitalI18n.html("trace.pagina_siguiente")}"` +
+          ` data-i18n-aria-label="trace.pagina_siguiente"${currentPage === pageCount ? ' disabled' : ''}>›`) +
+        `</button>`
     );
     filters.forEach(button => {
       const selected = button.dataset.filter === activeFilter;
       button.classList.toggle('is-active', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
-    window.HospitalI18n.bindText($('metric-total'), () => String(ambulances.filter(a => !a.archived).length));
+    window.HospitalI18n.bindText($('metric-total'), () =>
+      String(ambulances.filter(ambulanceRecord => !ambulanceRecord.archived).length)
+    );
     [
       ['operational', 'OPERATIVA'],
       ['maintenance', 'MANTENIMIENTO'],
@@ -184,12 +243,16 @@
     detailPanel.setAttribute('aria-hidden', 'true');
     directory.inert = false;
     render();
-    if (restoreFocus) (list.querySelector(`[data-select-id="${previousId}"]`) || $('new-ambulance')).focus();
+    if (restoreFocus) {
+      (list.querySelector(`[data-select-id="${previousId}"]`) || $('new-ambulance')).focus();
+    }
   }
 
   function selectAmbulance(id) {
     const ambulance = ambulances.find(item => item.id === id);
-    if (!ambulance) return;
+    if (!ambulance) {
+      return;
+    }
     selectedId = id;
     $('edit-from-detail').hidden = ambulance.archived;
     window.HospitalI18n.setHTML(
@@ -201,15 +264,51 @@
     );
     window.HospitalI18n.setHTML(
       $('detail-content'),
-      `<div class="detail-hero"><span class="ambulance-avatar">${icon('ambulance-icon.png')}</span><div class="detail-hero-text"><strong>${escapeHtml(ambulance.plate)}</strong><p>${escapeHtml(ambulance.model)}</p><p>${window.HospitalI18n.mark("ambulances.unidad_value", { value0: String(ambulance.id).padStart(3, '0') })}</p></div>${pill(ambulance)}</div>
-      <div class="detail-grid"><section class="detail-card"><h3>${window.HospitalI18n.mark("routes.informacion_general")}</h3><dl>
-        <dt>${icon('id-badge.svg')}${window.HospitalI18n.mark("ambulances.matricula")}</dt><dd>${escapeHtml(ambulance.plate)}</dd>
-        <dt>${icon('brand-icon.svg')}${window.HospitalI18n.mark("ambulances.modelo")}</dt><dd>${escapeHtml(ambulance.model)}</dd>
-        <dt>${icon('seats-icon.svg')}${window.HospitalI18n.mark("ambulances.capacidad")}</dt><dd>${window.HospitalI18n.mark("ambulances.value_plazas", { value0: ambulance.capacity })}</dd>
-        <dt>${icon('information-icon.svg')}${window.HospitalI18n.mark("ambulances.estado_operativo")}</dt><dd>${ambulance.archived ? labels[ambulance.status] : `<span class="detail-status-control"><select id="detail-operational-status" aria-label="${window.HospitalI18n.html("ambulances.estado_operativo")}" data-i18n-aria-label="ambulances.estado_operativo">${Object.keys(statusCodes).map(status => `<option value="${status}"${status === ambulance.status ? ' selected' : ''}>${labels[status]}</option>`).join('')}</select></span>`}</dd>
-      </dl></section></div>`
+      `<div class="detail-hero">` +
+        `<span class="ambulance-avatar">${icon('ambulance-icon.png')}</span>` +
+        `<div class="detail-hero-text">` +
+        `<strong>${escapeHtml(ambulance.plate)}</strong>` +
+        `<p>${escapeHtml(ambulance.model)}</p>` +
+        `<p>${window.HospitalI18n.mark("ambulances.unidad_value", { value0: String(ambulance.id).padStart(3, '0') })}</p>` +
+        `</div>${pill(ambulance)}</div>
+      ` +
+        `<div class="detail-grid">` +
+        `<section class="detail-card">` +
+        `<h3>${window.HospitalI18n.mark("routes.informacion_general")}</h3>` +
+        `<dl>
+        ` +
+        `<dt>${icon('id-badge.svg')}${window.HospitalI18n.mark("ambulances.matricula")}</dt>` +
+        `<dd>${escapeHtml(ambulance.plate)}</dd>
+        ` +
+        `<dt>${icon('brand-icon.svg')}${window.HospitalI18n.mark("ambulances.modelo")}</dt>` +
+        `<dd>${escapeHtml(ambulance.model)}</dd>
+        ` +
+        `<dt>${icon('seats-icon.svg')}${window.HospitalI18n.mark("ambulances.capacidad")}</dt>` +
+        `<dd>${window.HospitalI18n.mark("ambulances.value_plazas", { value0: ambulance.capacity })}</dd>
+        ` +
+        `<dt>${icon('information-icon.svg')}${window.HospitalI18n.mark("ambulances.estado_operativo")}</dt>` +
+        `<dd>${
+          ambulance.archived
+            ? labels[ambulance.status]?.()
+            : `<span class="detail-status-control">` +
+              (`<select id="detail-operational-status" aria-label="${window.HospitalI18n.html("ambulances.estado_operativo")}"` +
+                ` data-i18n-aria-label="ambulances.estado_operativo">${Object.keys(statusCodes)
+                  .map(
+                    status =>
+                      `<option value="${status}"${status === ambulance.status ? ' selected' : ''}>${labels[status]?.()}</option>`
+                  )
+                  .join('')}` +
+                `</select>`) +
+              `</span>`
+        }</dd>
+      ` +
+        `</dl>` +
+        `</section>` +
+        `</div>`
     );
-    if ($('detail-operational-status')) window.HospitalDropdown.enhance($('detail-operational-status'));
+    if ($('detail-operational-status')) {
+      window.HospitalDropdown.enhance($('detail-operational-status'));
+    }
     detailPanel.inert = false;
     detailPanel.setAttribute('aria-hidden', 'false');
     workspace.classList.add('has-selection');
@@ -219,19 +318,25 @@
   }
 
   $('detail-content').addEventListener('change', async event => {
-    if (event.target.id !== 'detail-operational-status' || busy) return;
+    if (event.target.id !== 'detail-operational-status' || busy) {
+      return;
+    }
     const ambulance = ambulances.find(item => item.id === selectedId);
-    if (!ambulance || ambulance.archived) return;
+    if (!ambulance || ambulance.archived) {
+      return;
+    }
     setBusy(true);
     try {
-      const saved = upsert(await api.post('ambulances.php?action=update', {
-        id: ambulance.id,
-        version: ambulance.version,
-        plate: ambulance.plate,
-        model: ambulance.model,
-        capacity: ambulance.capacity,
-        operational_status: statusCodes[event.target.value]
-      }));
+      const saved = upsert(
+        await api.post('ambulances.php?action=update', {
+          id: ambulance.id,
+          version: ambulance.version,
+          plate: ambulance.plate,
+          model: ambulance.model,
+          capacity: ambulance.capacity,
+          operational_status: statusCodes[event.target.value]
+        })
+      );
       selectAmbulance(saved.id);
       toast(() => window.HospitalI18n.t("ambulances.ambulancia_value_actualizada", { value0: saved.plate }));
     } catch (error) {
@@ -255,23 +360,29 @@
     clearError();
     editingId = ambulance?.id ?? null;
     editingVersion = ambulance?.version ?? null;
-    window.HospitalI18n.bindText($('ambulance-form-title'), () =>
-      ambulance
-        ? window.HospitalI18n.t("ambulances.editar_ambulancia")
-        : window.HospitalI18n.t("ambulances.nueva_ambulancia")
-    );
-    window.HospitalI18n.bindText($('form-subtitle'), () =>
-      ambulance
-        ? window.HospitalI18n.t("ambulances.actualiza_los_datos_de_la_unidad_value", {
-            value0: ambulance.plate
-          })
-        : window.HospitalI18n.t("ambulances.completa_los_datos_del_vehiculo")
-    );
-    window.HospitalI18n.bindText($('save-label'), () =>
-      ambulance
-        ? window.HospitalI18n.t("trace_view.guardar_cambios")
-        : window.HospitalI18n.t("ambulances.guardar_ambulancia")
-    );
+    window.HospitalI18n.bindText($('ambulance-form-title'), () => {
+      if (ambulance) {
+        return window.HospitalI18n.t("ambulances.editar_ambulancia");
+      } else {
+        return window.HospitalI18n.t("ambulances.nueva_ambulancia");
+      }
+    });
+    window.HospitalI18n.bindText($('form-subtitle'), () => {
+      if (ambulance) {
+        return window.HospitalI18n.t("ambulances.actualiza_los_datos_de_la_unidad_value", {
+          value0: ambulance.plate
+        });
+      } else {
+        return window.HospitalI18n.t("ambulances.completa_los_datos_del_vehiculo");
+      }
+    });
+    window.HospitalI18n.bindText($('save-label'), () => {
+      if (ambulance) {
+        return window.HospitalI18n.t("trace_view.guardar_cambios");
+      } else {
+        return window.HospitalI18n.t("ambulances.guardar_ambulancia");
+      }
+    });
     if (ambulance) {
       form.elements.matricula.value = ambulance.plate;
       form.elements.modelo.value = ambulance.model;
@@ -295,7 +406,9 @@
   form.addEventListener('change', clearError);
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     clearError();
     const ambulance = {
       plate: plateKey(form.elements.matricula.value.trim()),
@@ -303,25 +416,30 @@
       capacity: Number(form.elements.capacidad.value),
       status: form.elements.estado_operativo.value
     };
-    if (!ambulance.model)
+    if (!ambulance.model) {
       window.HospitalI18n.bindValidity(form.elements.modelo, () =>
         window.HospitalI18n.t("ambulances.ingresa_el_modelo_del_vehiculo")
       );
-    if (!/^[A-Z0-9]+$/.test(ambulance.plate))
+    }
+    if (!/^[A-Z0-9]+$/.test(ambulance.plate)) {
       window.HospitalI18n.bindValidity(form.elements.matricula, () =>
         window.HospitalI18n.t("ambulances.ingresa_una_matricula_valida")
       );
-    if (!Number.isInteger(ambulance.capacity) || ambulance.capacity < 1 || ambulance.capacity > 99)
+    }
+    if (!Number.isInteger(ambulance.capacity) || ambulance.capacity < 1 || ambulance.capacity > 99) {
       window.HospitalI18n.bindValidity(form.elements.capacidad, () =>
         window.HospitalI18n.t("ambulances.ingresa_una_capacidad_de_1_a_99_plazas")
       );
+    }
     if (ambulances.some(item => item.id !== editingId && plateKey(item.plate) === ambulance.plate)) {
       window.HospitalI18n.bindValidity(form.elements.matricula, () =>
         window.HospitalI18n.t("ambulances.ya_existe_una_ambulancia_con_esa_matricula")
       );
       console.error(window.HospitalI18n.t("ambulances.ya_existe_una_ambulancia_con_esa_matricula"));
     }
-    if (!form.checkValidity()) return;
+    if (!form.checkValidity()) {
+      return;
+    }
     const wasEditing = editingId !== null;
     const payload = {
       plate: ambulance.plate,
@@ -329,7 +447,9 @@
       capacity: ambulance.capacity,
       operational_status: statusCodes[ambulance.status]
     };
-    if (wasEditing) Object.assign(payload, { id: editingId, version: editingVersion });
+    if (wasEditing) {
+      Object.assign(payload, { id: editingId, version: editingVersion });
+    }
     setBusy(true);
     try {
       const saved = upsert(
@@ -340,11 +460,13 @@
       currentPage = Math.floor(matchingAmbulances().findIndex(item => item.id === saved.id) / pageSize) + 1;
       dialog.close();
       render();
-      toast(() =>
-        wasEditing
-          ? window.HospitalI18n.t("ambulances.ambulancia_value_actualizada", { value0: saved.plate })
-          : window.HospitalI18n.t("ambulances.ambulancia_value_agregada", { value0: saved.plate })
-      );
+      toast(() => {
+        if (wasEditing) {
+          return window.HospitalI18n.t("ambulances.ambulancia_value_actualizada", { value0: saved.plate });
+        } else {
+          return window.HospitalI18n.t("ambulances.ambulancia_value_agregada", { value0: saved.plate });
+        }
+      });
     } catch (error) {
       report(error);
     } finally {
@@ -362,30 +484,38 @@
   $('edit-from-detail').addEventListener('click', () => openCurrent(selectedId, true));
   $('delete-from-detail').addEventListener('click', () => {
     const ambulance = ambulances.find(item => item.id === selectedId);
-    if (!ambulance) return;
+    if (!ambulance) {
+      return;
+    }
     deletingId = ambulance.id;
     deletingVersion = ambulance.version;
-    window.HospitalI18n.bindText($('delete-title'), () =>
-      ambulance.archived
-        ? window.HospitalI18n.t("ambulances.restaurar_esta_ambulancia")
-        : window.HospitalI18n.t("ambulances.eliminar_esta_ambulancia")
-    );
-    window.HospitalI18n.bindText($('confirm-delete'), () =>
-      ambulance.archived
-        ? window.HospitalI18n.t("ambulances.restaurar_ambulancia")
-        : window.HospitalI18n.t("ambulances.eliminar_ambulancia")
-    );
-    window.HospitalI18n.bindText($('delete-description'), () =>
-      ambulance.archived
-        ? window.HospitalI18n.t(
-            "ambulances.la_unidad_value_volvera_al_listado_con_su_estado_operativo_anterior_deseas_continuar",
-            { value0: ambulance.plate }
-          )
-        : window.HospitalI18n.t(
-            "ambulances.se_archivara_la_unidad_value_value_se_conservara_su_historial_y_podras_restaurarla_desde_f",
-            { value0: ambulance.plate, value1: ambulance.model }
-          )
-    );
+    window.HospitalI18n.bindText($('delete-title'), () => {
+      if (ambulance.archived) {
+        return window.HospitalI18n.t("ambulances.restaurar_esta_ambulancia");
+      } else {
+        return window.HospitalI18n.t("ambulances.eliminar_esta_ambulancia");
+      }
+    });
+    window.HospitalI18n.bindText($('confirm-delete'), () => {
+      if (ambulance.archived) {
+        return window.HospitalI18n.t("ambulances.restaurar_ambulancia");
+      } else {
+        return window.HospitalI18n.t("ambulances.eliminar_ambulancia");
+      }
+    });
+    window.HospitalI18n.bindText($('delete-description'), () => {
+      if (ambulance.archived) {
+        return window.HospitalI18n.t(
+          "ambulances.la_unidad_value_volvera_al_listado_con_su_estado_operativo_anterior_deseas_continuar",
+          { value0: ambulance.plate }
+        );
+      } else {
+        return window.HospitalI18n.t(
+          "ambulances.se_archivara_la_unidad_value_value_se_conservara_su_historial_y_podras_restaurarla_desde_f",
+          { value0: ambulance.plate, value1: ambulance.model }
+        );
+      }
+    });
     deleteDialog.showModal();
   });
   document
@@ -396,8 +526,12 @@
   });
   $('confirm-delete').addEventListener('click', async () => {
     const ambulance = ambulances.find(item => item.id === deletingId);
-    if (!ambulance) return;
-    if (busy) return;
+    if (!ambulance) {
+      return;
+    }
+    if (busy) {
+      return;
+    }
     setBusy(true);
     try {
       upsert(
@@ -426,15 +560,20 @@
   });
   list.addEventListener('click', event => {
     const button = event.target.closest('[data-select-id]');
-    if (button) openCurrent(button.dataset.selectId);
+    if (button) {
+      openCurrent(button.dataset.selectId);
+    }
   });
   $('close-detail').addEventListener('click', () => closeDetail(true));
   workspace.addEventListener('click', event => {
-    if (event.target === workspace && selectedId !== null) closeDetail(true);
+    if (event.target === workspace && selectedId !== null) {
+      closeDetail(true);
+    }
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && selectedId !== null && !dialog.open && !deleteDialog.open)
+    if (event.key === 'Escape' && selectedId !== null && !dialog.open && !deleteDialog.open) {
       closeDetail(true);
+    }
   });
   $('ambulance-search').addEventListener('input', () => {
     currentPage = 1;
@@ -462,7 +601,9 @@
   });
   [dialog, deleteDialog].forEach(modal =>
     modal.addEventListener('cancel', event => {
-      if (busy) event.preventDefault();
+      if (busy) {
+        event.preventDefault();
+      }
     })
   );
   async function start() {
@@ -474,7 +615,9 @@
     );
     try {
       const session = await window.HospitalAuth.ready;
-      if (!session) return;
+      if (!session) {
+        return;
+      }
       if (!session.user.roles.includes('dispatcher')) {
         location.replace(api.page('src/views/management/management.php'));
         return;
@@ -487,12 +630,15 @@
     }
   }
   window.addEventListener('focus', () => {
-    if (!busy && !dialog.open && !deleteDialog.open && !selectedId && !$('new-ambulance').disabled)
+    if (!busy && !dialog.open && !deleteDialog.open && !selectedId && !$('new-ambulance').disabled) {
       refresh().catch(report);
+    }
   });
   start();
   window.addEventListener('hospital:localechange', () => {
     render();
-    if (selectedId) selectAmbulance(selectedId);
+    if (selectedId) {
+      selectAmbulance(selectedId);
+    }
   });
 })();

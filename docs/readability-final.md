@@ -20,3 +20,11 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Added purpose/API/DOM headers; expanded guards and multi-declarations, named the text-normalization stages, and replaced cryptic option/choice/event names. Navigation option defaults now use explicit statements with the same undefined-only fallback.
 - Retained short class/attribute ternaries, simple callbacks, two-field destructuring and optional element access where clearer. No new application helpers or UI markup changes.
 - PASS: 161 Settings/navigation UI checks, 136 dropdown checks across 52 variants/two persistence journeys, 98 existing boundary/lazy-read checks; source equivalence: 91 PHP / 35 JS / four exact JS files.
+
+## Batch 3 — clinical directories
+
+- Files: ambulances.js, patients.js and doctors.js; added purpose/API/DOM headers.
+- Replaced private lazy translation getters with functions and kept translation at lookup time; expanded guards/declarations, named records and catalog/pagination stages, and removed an identity-only doctor code wrapper.
+- Split long templates into concatenated literals; a development-only AST comparison proves identical raw/cooked template text and expression order. Native collection operations and short attribute choices remain where clearer.
+- PASS: 384 UI checks / 12 desktop-phone/theme cases / 19 interaction groups; 43 fleet browser checks; 99 fleet API checks in its own fresh database; 98 existing boundary checks. Source equivalence: 91 PHP / 35 JS / three exact files.
+- An initial fleet run used the shared visual fixture, whose extra administrator roles violate that suite's assumptions. The existing isolated module runner supplied the correct fixture and passed; no application change was needed.

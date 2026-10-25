@@ -1,0 +1,17 @@
+{
+  "public/src/js/management/ambulances.js": {
+    "after_sha256": "61394d7526ae924a33b311c77cbe78a2e2045e078a30b2baeb69de2b4c197093",
+    "before_sha256": "07dbbff7424028e3aeccffe9f6ad131da99253f9eec393d23a7bd92103149a29",
+    "reason": "Readability only: explicit guards/branches and declarations; descriptive clinical record names and catalog/pagination stages; private lazy translation getters become functions with call sites updated; identity doctor code wrapper removed; long templates split with identical raw/cooked text and evaluation order."
+  },
+  "public/src/js/management/doctors.js": {
+    "after_sha256": "91423da7edf2430d53ed30a93e4b2964bda773db15ad8a22e78396257e12342d",
+    "before_sha256": "0dd103c9af21a1a8575c90f0628504c0b7d3fad00ff0ad323bd5ba7614ff9b79",
+    "reason": "Readability only: explicit guards/branches and declarations; descriptive clinical record names and catalog/pagination stages; private lazy translation getters become functions with call sites updated; identity doctor code wrapper removed; long templates split with identical raw/cooked text and evaluation order."
+  },
+  "public/src/js/management/patients.js": {
+    "after_sha256": "11779c088cc64037f803e9e85f78ca571803b7c52c28185eefb818e689a5ff1c",
+    "before_sha256": "967d442401c5dff61408cb1e7e42eecac9e94adcd7c738717c14f31ead8a9339",
+    "reason": "Readability only: explicit guards/branches and declarations; descriptive clinical record names and catalog/pagination stages; private lazy translation getters become functions with call sites updated; identity doctor code wrapper removed; long templates split with identical raw/cooked text and evaluation order."
+  }
+}
