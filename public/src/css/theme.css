@@ -1,5 +1,7 @@
-/* Shared appearance layer. Original styles own layout, blur, motion and dark mode.
-   Each section is limited to pages that load its corresponding original sheet. */
+/* The shared shell (main-menu.css) and Settings use variables from base.css.
+ * Other pages keep their light overrides here; each section is page-scoped.
+ * Original sheets still own layout, blur, motion and dark-mode styling.
+ */
 html[data-theme="light"] {
   --light-canvas: #f3f5fa;
   --light-text: #20283d;

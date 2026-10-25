@@ -380,3 +380,8 @@ Removed 39/97 scoped theme rules (40.2%), 67 authored scoped declarations and tw
 Verified 144 cases (16 resting + 128 open/hover/focus), both languages/themes at desktop 1440 and phone 390: zero non-custom computed-style differences and zero RGBA pixel differences, without interface masks or channel tolerance; no console/script/asset errors. The two CSS copies share live HTML/API/assets and equal fictional session display data. The existing style gate supports an explicit custom-property exclusion and remains strict by default. Source equivalence passes 91 PHP token streams, 35 JS ASTs and four exact intentional CSS declarations; all motion declarations are unchanged.
 
 Disposable SQL/browser fixtures, servers, storage and credentials were cleaned up without changing normal configuration. Paused after the pilot. The management rollout has not begun. The full 636-state matrix, existing theme/i18n/dropdown suites, full metrics script and legacy-palette fold are due once at the end of Phase 2; no screenshot gallery or submission archive was created.
+
+
+## Final readability pass — in progress (2026-10-24)
+
+The owner stopped Phase 2 at the pilot: no rollout and no legacy palette fold. The new authorized pass rewrites advanced/dense syntax into readable JS first and PHP second, keeping concise constructs when they are clearer or safer. CSS declarations, HTML, payloads, SQL, keys and behavior stay unchanged. See `docs/readability-final.md` for batches and the final required regression. Batch 1 (authentication scripts and CSS header notes) passes 130 recovery + 61 theme/login browser checks and source equivalence; later batches and the full regression remain required.

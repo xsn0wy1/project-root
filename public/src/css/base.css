@@ -1,4 +1,7 @@
-/* Shared theme values. Keep legacy --light-* references until the rollout ends. */
+/* The shared shell (main-menu.css) and Settings use the variables below.
+ * Other pages retain their light overrides in theme.css.
+ * Phase 2 stops at this pilot; keep the --light-* palette in place.
+ */
 :root {
   --tint: 255, 255, 255;
   --panel: 16, 23, 50;

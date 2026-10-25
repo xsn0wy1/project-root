@@ -1,0 +1,27 @@
+{
+  "public/src/js/login-register/login.js": {
+    "before_sha256": "0cc5cb7dff0be28375c507b17e0ecd8ed0b7cfd5ac8ef3476085ad6c5dabd977",
+    "after_sha256": "cbec0167af4e605ff9d38f02a6187d0f0d77880ad331f5aa5911e06cb7f7e8a1",
+    "reason": "Batch 1: clearer authentication branches/guards and 4-line page headers; CSS changes are the requested theme-scope comments only."
+  },
+  "public/src/js/login-register/register.js": {
+    "before_sha256": "cf7246e29f82ccf0b65f0bfcc0af4717da97d6e9ea11f1ccdc31735df5995efc",
+    "after_sha256": "c2023bf82c72420b9474ee69c0b0c623ff6b99be916564358e5632ebec9e3c0a",
+    "reason": "Batch 1: clearer authentication branches/guards and 4-line page headers; CSS changes are the requested theme-scope comments only."
+  },
+  "public/src/js/login-register/recovery.js": {
+    "before_sha256": "3b2a8a2e7d2671b44ee0001e7268231d9ba1d007087da087e4e20f8939139a28",
+    "after_sha256": "7a4505dd417d1ed66a2582a907539624018dc37aa197f49ac7846e6d364f9075",
+    "reason": "Batch 1: clearer authentication branches/guards and 4-line page headers; CSS changes are the requested theme-scope comments only."
+  },
+  "public/src/css/base.css": {
+    "before_sha256": "c1f97afa1005c5a96496826f0bd2d735f9449706123ccf0add043e179936f390",
+    "after_sha256": "b631ddf927d16b2ba5fa84fb77e56e3c15ec35847ed0a3a291a33c2400210256",
+    "reason": "Batch 1: clearer authentication branches/guards and 4-line page headers; CSS changes are the requested theme-scope comments only."
+  },
+  "public/src/css/theme.css": {
+    "before_sha256": "7f61bd6d2066389f626243ed083b51ee125d9cc8a3f005b816bf598cd1941465",
+    "after_sha256": "672227c699bdee16c8fe5a0863a1744c7d471c8c0dacfd2482a9aff31579638e",
+    "reason": "Batch 1: clearer authentication branches/guards and 4-line page headers; CSS changes are the requested theme-scope comments only."
+  }
+}

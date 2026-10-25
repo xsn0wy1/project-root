@@ -1,10 +1,15 @@
+/* Handles staff sign-in, password visibility and the optional login theme choice.
+ * API: auth.php?action=login and settings.php?action=preferences-update.
+ * DOM: loginForm, loginMessage, loginContraseña, loginEyeIcon, toggleLoginPasswordBtn.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
   let loginTheme = null;
   document.querySelectorAll('[data-public-theme]').forEach(button => {
     button.addEventListener('click', () => {
-      if (button.dataset.publicTheme !== window.HospitalTheme.current)
+      if (button.dataset.publicTheme !== window.HospitalTheme.current) {
         loginTheme = button.dataset.publicTheme;
+      }
     });
   });
   await window.HospitalI18n.ready;
@@ -15,23 +20,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   const password = document.getElementById('loginContraseña');
   const eye = document.getElementById('loginEyeIcon');
   document.getElementById('toggleLoginPasswordBtn')?.addEventListener('click', () => {
-    password.type = password.type === 'password' ? 'text' : 'password';
-    eye.src = window.HospitalApi.page(
-      `assets/Icons/${password.type === 'password' ? 'eye.svg' : 'eye-closed.svg'}`
-    );
+    if (password.type === 'password') {
+      password.type = 'text';
+    } else {
+      password.type = 'password';
+    }
+    let eyeIcon = 'eye-closed.svg';
+    if (password.type === 'password') {
+      eyeIcon = 'eye.svg';
+    }
+    eye.src = window.HospitalApi.page('assets/Icons/' + eyeIcon);
   });
-  if (new URLSearchParams(location.search).get('reason') === 'session_expired')
+  if (new URLSearchParams(location.search).get('reason') === 'session_expired') {
     console.info('[Hospital auth]', window.HospitalI18n.t('auth.session_ended'));
+  }
   form?.addEventListener('submit', async event => {
     event.preventDefault();
-    if (!form.checkValidity()) return;
+    if (!form.checkValidity()) {
+      return;
+    }
     const button = form.querySelector('[type="submit"]');
-    if (button.disabled) return;
+    if (button.disabled) {
+      return;
+    }
     button.disabled = true;
     message.style.color = '';
-    window.HospitalI18n.bindText(message, () => window.HospitalI18n.t("registration.iniciando_sesion"));
+    window.HospitalI18n.bindText(message, () =>
+      window.HospitalI18n.t("registration.iniciando_sesion")
+    );
     try {
-      const session = await window.HospitalApi.post('auth.php?action=login', Object.fromEntries(new FormData(form)));
+      const session = await window.HospitalApi.post(
+        'auth.php?action=login',
+        Object.fromEntries(new FormData(form))
+      );
       password.value = '';
       if (loginTheme) {
         try {

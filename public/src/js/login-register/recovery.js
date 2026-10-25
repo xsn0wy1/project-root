@@ -1,8 +1,12 @@
+/* Requests recovery email or replaces a password using the URL fragment token.
+ * API: auth.php?action=reset-request and auth.php?action=reset-password.
+ * DOM: recovery-request-form, recovery-password-form, recovery-status and password inputs.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
   await window.HospitalI18n.ready;
-  const api = window.HospitalApi,
-    i18n = window.HospitalI18n;
+  const api = window.HospitalApi;
+  const i18n = window.HospitalI18n;
   const requestForm = document.getElementById('recovery-request-form');
   const passwordForm = document.getElementById('recovery-password-form');
   const status = document.getElementById('recovery-status');
@@ -24,9 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   requestForm.addEventListener('submit', async event => {
     event.preventDefault();
     const button = requestForm.querySelector('[type="submit"]');
-    if (button.disabled) return;
+    if (button.disabled) {
+      return;
+    }
     status.hidden = true;
-    if (!requestForm.checkValidity()) return;
+    if (!requestForm.checkValidity()) {
+      return;
+    }
     button.disabled = true;
     try {
       await api.post('auth.php?action=reset-request', { email: requestForm.elements.email.value });
@@ -42,7 +50,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   passwordForm.addEventListener('submit', async event => {
     event.preventDefault();
     const button = passwordForm.querySelector('[type="submit"]');
-    if (button.disabled || !passwordForm.checkValidity()) return;
+    if (button.disabled || !passwordForm.checkValidity()) {
+      return;
+    }
     const password = document.getElementById('recovery-password').value;
     if (
       Array.from(password).length < 12 ||
@@ -68,7 +78,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       url.hash = '';
       history.replaceState(history.state, '', url);
       api.clearToken();
-      location.replace(api.page('index.php') + (i18n.locale === 'en' ? '?lang=en' : ''));
+      let loginUrl = api.page('index.php');
+      if (i18n.locale === 'en') {
+        loginUrl += '?lang=en';
+      }
+      location.replace(loginUrl);
     } catch (error) {
       api.report(error, 'recovery');
       button.disabled = false;
