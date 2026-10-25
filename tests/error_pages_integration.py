@@ -125,7 +125,10 @@ def normal_html(before, after, mount):
 
 def apache_checks():
     apache = Path(PHP).with_name('httpd')
-    for port, mount in [(8895, ''), (8896, '/hospital')]:
+    apache_port = int(os.environ.get('HOSPITAL_ERROR_APACHE_PORT', '8895'))
+    for port, mount in [(apache_port, ''), (apache_port + 1, '/hospital')]:
+        with socket.socket() as probe:
+            probe.bind(('127.0.0.1', port))
         name = 'mounted' if mount else 'root'
         conf = OUTPUT/f'apache-{name}.conf'
         lines = ['ServerRoot "/Applications/XAMPP/xamppfiles"', f'Listen 127.0.0.1:{port}',

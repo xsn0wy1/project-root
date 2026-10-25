@@ -60,11 +60,19 @@ async function ready(page) {
     await page.evaluate(async () => {await window.HospitalI18n?.ready; await window.HospitalAuth?.ready;});
     await page.waitForLoadState('networkidle', {timeout: 2000}).catch(() => {});
     await page.evaluate(() => document.fonts.ready);
+    if (await page.locator('#documentForm,#newTransferForm').count()) {
+        await page.waitForFunction(() => [...document.querySelectorAll('#documentForm,#newTransferForm')]
+            .every(form => form.getAttribute('aria-busy') === 'false'));
+    }
     await page.waitForTimeout(250);
     if (fullStyles && pendingApi.has(page)) {
         const deadline = Date.now() + 30000;
         while (pendingApi.get(page).size) {
-            assert(Date.now() < deadline, 'Pending API requests did not settle');
+            assert(Date.now() < deadline, 'Pending API requests did not settle: ' +
+                [...pendingApi.get(page)].map(request => {
+                    const url = new URL(request.url());
+                    return url.pathname + '?action=' + url.searchParams.get('action');
+                }).join(', '));
             await page.waitForTimeout(50);
         }
         await page.waitForTimeout(100);
