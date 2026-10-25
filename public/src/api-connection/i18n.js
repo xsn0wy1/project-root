@@ -1,4 +1,8 @@
-/* Shared interface translations. SQL owns staff preferences; record text is never translated. */
+/* Translates shared interface text while retaining record values, focus and scroll.
+ * API: public translations for Spanish/English; staff locale is confirmed by auth-session.
+ * DOM: data-i18n bindings and language selects; t translates a key.
+ * locale retains its existing live property interface.
+ */
 (() => {
   'use strict';
   function selectLocaleValue(select) {
@@ -14,17 +18,31 @@
   const root = new URL('../../', document.currentScript.src);
   const dictionaries = { es: {}, en: {} };
   const bindings = new Map();
-  let locale = document.documentElement.lang === 'en' ? 'en' : 'es-UY',
-    pendingLocale = null,
-    confirmedLocale = 'es-UY',
-    readyDone = false;
-  const normalize = value => (value === 'en' ? 'en' : 'es-UY');
+  let localeValue;
+  if (document.documentElement.lang === 'en') {
+    localeValue = 'en';
+  } else {
+    localeValue = 'es-UY';
+  }
+  let locale = localeValue;
+  let pendingLocale = null;
+  let confirmedLocale = 'es-UY';
+  let readyDone = false;
+  const normalize = value => {
+    if (value === 'en') {
+      return 'en';
+    } else {
+      return 'es-UY';
+    }
+  };
   const publicPage =
     location.pathname === root.pathname ||
     location.pathname === new URL('index.php', root).pathname ||
     location.pathname.includes('/register-restore/') ||
     location.pathname.endsWith('/surveys/user-view/survey-user.php');
-  if (publicPage) locale = normalize(new URL(location.href).searchParams.get('lang'));
+  if (publicPage) {
+    locale = normalize(new URL(location.href).searchParams.get('lang'));
+  }
   function reveal() {
     clearTimeout(revealTimeout);
     document.documentElement.classList.add('i18n-ready');
@@ -38,18 +56,36 @@
   function lookup(key, params = {}) {
     let value = dictionaries[locale === 'en' ? 'en' : 'es'][key] ?? dictionaries.es[key];
     if (value && typeof value === 'object') {
-      const form = Number(params.count) === 1 ? 'one' : 'other';
+      let formValue;
+      if (Number(params.count) === 1) {
+        formValue = 'one';
+      } else {
+        formValue = 'other';
+      }
+      const form = formValue;
       value = value[form] ?? dictionaries.es[key]?.[form];
     }
-    if (typeof value !== 'string' && typeof dictionaries.es[key] === 'string') value = dictionaries.es[key];
-    return typeof value === 'string' ? value : null;
+    if (typeof value !== 'string' && typeof dictionaries.es[key] === 'string') {
+      value = dictionaries.es[key];
+    }
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      return null;
+    }
   }
   function t(key, params = {}) {
     const value = lookup(key, params);
-    if (value === null) return '';
-    return value.replace(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g, (match, name) =>
-      Object.hasOwn(params, name) ? String(params[name] ?? '') : match
-    );
+    if (value === null) {
+      return '';
+    }
+    return value.replace(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g, (match, name) => {
+      if (Object.hasOwn(params, name)) {
+        return String(params[name] ?? '');
+      } else {
+        return match;
+      }
+    });
   }
   // Only explicitly bound copy is translated; interpolated record values remain data.
   function mark(key, params = {}) {
@@ -67,7 +103,9 @@
     }
   }
   function translate(node = document) {
-    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE) return;
+    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE) {
+      return;
+    }
     const elements = [
       ...(node.matches?.(
         '[data-i18n], [data-i18n-title], [data-i18n-placeholder], [data-i18n-alt], [data-i18n-aria-label], [data-i18n-aria-description], [data-i18n-caption]'
@@ -78,23 +116,33 @@
         '[data-i18n], [data-i18n-title], [data-i18n-placeholder], [data-i18n-alt], [data-i18n-aria-label], [data-i18n-aria-description], [data-i18n-caption]'
       )
     ];
-    for (const el of elements) {
-      const key = el.getAttribute('data-i18n');
-      if (key && lookup(key, paramsFor(el)) !== null) {
-        const value = t(key, paramsFor(el));
-        if (el.textContent !== value) el.textContent = value;
+    for (const element of elements) {
+      const key = element.getAttribute('data-i18n');
+      if (key && lookup(key, paramsFor(element)) !== null) {
+        const value = t(key, paramsFor(element));
+        if (element.textContent !== value) {
+          element.textContent = value;
+        }
       }
       for (const name of ['title', 'placeholder', 'alt', 'aria-label', 'aria-description', 'caption']) {
-        const attrKey = el.getAttribute('data-i18n-' + name);
-        if (attrKey && lookup(attrKey, paramsFor(el, name)) !== null)
-          el.setAttribute(name === 'caption' ? 'data-caption' : name, t(attrKey, paramsFor(el, name)));
+        const attrKey = element.getAttribute('data-i18n-' + name);
+        if (attrKey && lookup(attrKey, paramsFor(element, name)) !== null) {
+          element.setAttribute(
+            name === 'caption' ? 'data-caption' : name,
+            t(attrKey, paramsFor(element, name))
+          );
+        }
       }
     }
     publicLinks(node);
-    if (readyDone && node === document) reveal();
+    if (readyDone && node === document) {
+      reveal();
+    }
   }
   function binding(node, name, getter) {
-    if (!node) return '';
+    if (!node) {
+      return '';
+    }
     if (!node.nodeType && node !== document) {
       const value = getter();
       node[name] = value;
@@ -103,19 +151,30 @@
     if (name === 'textContent') {
       node.removeAttribute?.('data-i18n');
       node.removeAttribute?.('data-i18n-params');
-    } else node.removeAttribute?.('data-i18n-' + name);
+    } else {
+      node.removeAttribute?.('data-i18n-' + name);
+    }
     let fields = bindings.get(node);
-    if (!fields) bindings.set(node, (fields = new Map()));
+    if (!fields) {
+      bindings.set(node, (fields = new Map()));
+    }
     fields.set(name, getter);
     const value = String(getter() ?? '');
     if (name === 'textContent' || (name === 'title' && node.nodeType === Node.DOCUMENT_NODE)) {
-      if (node[name] !== value) node[name] = value;
-    } else if (name === '$validity') node.setCustomValidity(value);
-    else if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+      if (node[name] !== value) {
+        node[name] = value;
+      }
+    } else if (name === '$validity') {
+      node.setCustomValidity(value);
+    } else if (node.getAttribute(name) !== value) {
+      node.setAttribute(name, value);
+    }
     return value;
   }
   function publicLinks(node = document) {
-    if (!publicPage) return;
+    if (!publicPage) {
+      return;
+    }
     for (const link of [
       ...(node.matches?.('a[href]') ? [node] : []),
       ...(node.querySelectorAll?.('a[href]') || [])
@@ -125,11 +184,17 @@
         url.origin !== location.origin ||
         (url.hash && url.pathname === location.pathname) ||
         !/(?:index\.php|register-restore\/[^/]+\.php)$/.test(url.pathname)
-      )
+      ) {
         continue;
-      if (locale === 'en') url.searchParams.set('lang', 'en');
-      else url.searchParams.delete('lang');
-      if (link.href !== url.href) link.href = url.href;
+      }
+      if (locale === 'en') {
+        url.searchParams.set('lang', 'en');
+      } else {
+        url.searchParams.delete('lang');
+      }
+      if (link.href !== url.href) {
+        link.href = url.href;
+      }
     }
   }
   function apply(value) {
@@ -137,9 +202,11 @@
     const changed = next !== locale;
     locale = next;
     document.documentElement.lang = locale === 'en' ? 'en' : 'es-UY';
-    if (!readyDone) return locale;
-    const active = document.activeElement,
-      activeId = active?.id;
+    if (!readyDone) {
+      return locale;
+    }
+    const active = document.activeElement;
+    const activeId = active?.id;
     const scopeId = active?.parentElement?.closest('[id]')?.id;
     const stableAttributes = [
       'name',
@@ -154,34 +221,54 @@
       'data-answer-rating',
       'data-answer-choice'
     ];
-    const focusAttributes = stableAttributes
-      .filter(name => active?.hasAttribute(name))
-      .map(name => `[${name}="${CSS.escape(active.getAttribute(name))}"]`)
-      .join('');
-    const focusSelector = focusAttributes
-      ? `${active.tagName.toLowerCase()}${focusAttributes}${active.matches('input[type=radio],input[type=checkbox]') ? `[value="${CSS.escape(active.value)}"]` : ''}`
-      : null;
-    const selection =
-      typeof active?.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
+    const focusedAttributes = stableAttributes.filter(name => active?.hasAttribute(name));
+    const attributeSelectors = focusedAttributes.map(
+      name => `[${name}="${CSS.escape(active.getAttribute(name))}"]`
+    );
+    const focusAttributes = attributeSelectors.join('');
+    let focusSelectorValue;
+    if (focusAttributes) {
+      focusSelectorValue = `${active.tagName.toLowerCase()}${focusAttributes}${active.matches('input[type=radio],input[type=checkbox]') ? `[value="${CSS.escape(active.value)}"]` : ''}`;
+    } else {
+      focusSelectorValue = null;
+    }
+    const focusSelector = focusSelectorValue;
+    let selectionValue;
+    if (typeof active?.selectionStart === 'number') {
+      selectionValue = [active.selectionStart, active.selectionEnd];
+    } else {
+      selectionValue = null;
+    }
+    const selection = selectionValue;
     const scroll = [...document.querySelectorAll('*')]
-      .filter(el => el.scrollTop || el.scrollLeft)
-      .map(el => [el, el.scrollTop, el.scrollLeft]);
+      .filter(element => element.scrollTop || element.scrollLeft)
+      .map(element => [element, element.scrollTop, element.scrollLeft]);
     const pageScroll = [window.scrollX, window.scrollY];
     translate();
-    if (changed) window.dispatchEvent(new CustomEvent('hospital:localechange', { detail: { locale } }));
+    if (changed) {
+      window.dispatchEvent(new CustomEvent('hospital:localechange', { detail: { locale } }));
+    }
     for (const [node, fields] of bindings) {
       if (!node.isConnected && node !== document) {
         bindings.delete(node);
         continue;
       }
-      for (const [name, getter] of fields) binding(node, name, getter);
+      for (const [name, getter] of fields) {
+        binding(node, name, getter);
+      }
     }
     document.querySelectorAll('[data-language-select], #settings-language').forEach(select => {
       select.value = selectLocaleValue(select);
       select.lang = document.documentElement.lang;
     });
     if (active && !active.isConnected) {
-      const scope = scopeId ? document.getElementById(scopeId) : document;
+      let scopeValue;
+      if (scopeId) {
+        scopeValue = document.getElementById(scopeId);
+      } else {
+        scopeValue = document;
+      }
+      const scope = scopeValue;
       let replacement;
       if (activeId) {
         replacement = document.getElementById(activeId);
@@ -197,13 +284,14 @@
         selection &&
         replacement?.setSelectionRange &&
         !['number', 'date', 'time', 'datetime-local'].includes(replacement.type)
-      )
+      ) {
         replacement.setSelectionRange(...selection);
+      }
     }
-    scroll.forEach(([el, top, left]) => {
-      if (el.isConnected) {
-        el.scrollTop = top;
-        el.scrollLeft = left;
+    scroll.forEach(([element, top, left]) => {
+      if (element.isConnected) {
+        element.scrollTop = top;
+        element.scrollLeft = left;
       }
     });
     window.scrollTo(...pageScroll);
@@ -211,7 +299,9 @@
   }
   function accountLocale(value) {
     confirmedLocale = normalize(value);
-    if (!publicPage) apply(pendingLocale?.locale || confirmedLocale);
+    if (!publicPage) {
+      apply(pendingLocale?.locale || confirmedLocale);
+    }
   }
   // Identity of the pending choice prevents older queued acknowledgements from replacing it.
   function preview(value) {
@@ -228,14 +318,19 @@
   function setPublicLocale(value) {
     const url = new URL(location.href);
     const next = normalize(value);
-    if (next === 'en') url.searchParams.set('lang', 'en');
-    else url.searchParams.delete('lang');
+    if (next === 'en') {
+      url.searchParams.set('lang', 'en');
+    } else {
+      url.searchParams.delete('lang');
+    }
     history.replaceState(history.state, '', url);
     apply(next);
   }
   function validationMessage(input) {
     const validity = input.validity;
-    if (validity.customError) return input.validationMessage;
+    if (validity.customError) {
+      return input.validationMessage;
+    }
     let key;
     if (validity.valueMissing) {
       key = 'validation.required';
@@ -271,10 +366,13 @@
           credentials: 'same-origin',
           cache: 'no-cache'
         });
-        if (!response.ok) throw new Error('I18N_ASSET_UNAVAILABLE');
+        if (!response.ok) {
+          throw new Error('I18N_ASSET_UNAVAILABLE');
+        }
         const dictionary = await response.json();
-        if (!dictionary || typeof dictionary !== 'object' || Array.isArray(dictionary))
+        if (!dictionary || typeof dictionary !== 'object' || Array.isArray(dictionary)) {
           throw new Error('I18N_ASSET_INVALID');
+        }
         dictionaries[language] = dictionary;
       } catch (_) {
         console.error('[Hospital i18n]', { code: 'I18N_ASSET_UNAVAILABLE', language });
@@ -290,11 +388,20 @@
     t,
     mark,
     escape,
-    resolve: value => (typeof value === "function" ? value() : value),
-    category: item =>
-      dictionaries.es["catalog.document_categories." + item?.code] === item?.name
-        ? t("catalog.document_categories." + item.code)
-        : item?.name || "",
+    resolve: value => {
+      if (typeof value === "function") {
+        return value();
+      } else {
+        return value;
+      }
+    },
+    category: item => {
+      if (dictionaries.es["catalog.document_categories." + item?.code] === item?.name) {
+        return t("catalog.document_categories." + item.code);
+      } else {
+        return item?.name || "";
+      }
+    },
     role: code => t("account_role_code." + code) || code,
     html: (key, params) => escape(t(key, params)),
     translate,
@@ -320,7 +427,13 @@
       return html;
     },
     option(getter, value, defaultSelected = false, selected = false) {
-      const option = value === undefined ? new Option() : new Option('', value, defaultSelected, selected);
+      let optionValue;
+      if (value === undefined) {
+        optionValue = new Option();
+      } else {
+        optionValue = new Option('', value, defaultSelected, selected);
+      }
+      const option = optionValue;
       binding(option, 'textContent', getter);
       return option;
     },
@@ -340,11 +453,20 @@
   });
   const observer = new MutationObserver(records => {
     for (const record of records) {
-      for (const node of record.addedNodes) if (node.nodeType === Node.ELEMENT_NODE) translate(node);
-      for (const node of record.removedNodes)
-        if (!node.isConnected)
-          for (const bound of bindings.keys())
-            if (bound === node || node.contains?.(bound)) bindings.delete(bound);
+      for (const node of record.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          translate(node);
+        }
+      }
+      for (const node of record.removedNodes) {
+        if (!node.isConnected) {
+          for (const bound of bindings.keys()) {
+            if (bound === node || node.contains?.(bound)) {
+              bindings.delete(bound);
+            }
+          }
+        }
+      }
     }
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });

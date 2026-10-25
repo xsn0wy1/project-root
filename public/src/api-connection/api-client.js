@@ -1,3 +1,7 @@
+/* Shares JSON requests, CSRF retries and console-only error reporting.
+ * API: auth csrf plus the existing requests supplied by each page.
+ * DOM: the shared invalid-field listener; no page-specific IDs.
+ */
 (() => {
   'use strict';
   const appRoot = new URL('../../', document.currentScript.src);
@@ -8,7 +12,9 @@
 
   function report(error, context = 'request') {
     if (error && typeof error === 'object') {
-      if (reported.has(error)) return;
+      if (reported.has(error)) {
+        return;
+      }
       reported.add(error);
     }
     console.error(`[Hospital ${context}]`, {
@@ -31,8 +37,12 @@
   }
 
   async function token(force = false) {
-    if (force) csrfToken = null;
-    if (csrfToken) return csrfToken;
+    if (force) {
+      csrfToken = null;
+    }
+    if (csrfToken) {
+      return csrfToken;
+    }
     if (!csrfRequest) {
       csrfRequest = request('auth.php?action=csrf')
         .then(data => {
@@ -53,7 +63,9 @@
     headers.set('Accept', 'application/json');
     headers.set('X-Hospital-Locale', window.HospitalI18n.locale);
     const write = !['GET', 'HEAD'].includes(method);
-    if (write) headers.set('X-CSRF-Token', await token());
+    if (write) {
+      headers.set('X-CSRF-Token', await token());
+    }
     let response;
     try {
       response = await fetch(new URL(path, apiRoot), {
@@ -75,12 +87,18 @@
       throw error;
     }
     // Optional telemetry must not turn rate limiting into a console error.
-    if (response.status === 429 && path === 'settings.php?action=diagnostics') return null;
+    if (response.status === 429 && path === 'settings.php?action=diagnostics') {
+      return null;
+    }
     let payload;
     try {
-      if (!response.headers.get('Content-Type')?.includes('application/json')) throw new Error();
+      if (!response.headers.get('Content-Type')?.includes('application/json')) {
+        throw new Error();
+      }
       payload = await response.json();
-      if (typeof payload.success !== 'boolean') throw new Error();
+      if (typeof payload.success !== 'boolean') {
+        throw new Error();
+      }
     } catch (_) {
       const error = new ApiError(
         window.HospitalI18n.t(
@@ -104,13 +122,20 @@
         await token(true);
         return request(path, options, false, envelope);
       }
-      if (error.status === 401)
+      if (error.status === 401) {
         window.dispatchEvent(new CustomEvent('hospital:unauthorized', { detail: error }));
+      }
       report(error);
       throw error;
     }
-    if (payload.data?.csrf_token) csrfToken = payload.data.csrf_token;
-    return envelope ? payload : payload.data;
+    if (payload.data?.csrf_token) {
+      csrfToken = payload.data.csrf_token;
+    }
+    if (envelope) {
+      return payload;
+    } else {
+      return payload.data;
+    }
   }
 
   window.HospitalApi = Object.freeze({

@@ -678,7 +678,11 @@ async function accountSecurity(browser, admin) {
     check(await page.locator('#current-password').inputValue() === password && await page.locator('#new-password').inputValue() === replacement,'failed password save retains current and replacement values');
     await page.unroute(changeUrl); await page.locator('#password-form [type=submit]').click(); await page.waitForURL('**/index.php');
     check((await page.request.get(base+'/api/v1/auth.php?action=me')).status() === 401,'successful own password change ends the old session');
-    check((await page.request.post(base+'/api/v1/auth.php?action=login',{data:{username,password},headers:{'X-CSRF-Token':(await api(page,'auth.php?action=csrf')).csrf_token}})).status() === 401,'old password no longer signs in');
+    // Join login-page startup and its shared CSRF request after the old session ends.
+    await ready(page);
+    const anonymousCsrf = await page.evaluate(() => HospitalApi.token(true));
+    const oldPasswordLogin = await page.request.post(base+'/api/v1/auth.php?action=login',{data:{username,password},headers:{'X-CSRF-Token':anonymousCsrf}});
+    check(oldPasswordLogin.status() === 401,'old password no longer signs in (HTTP '+oldPasswordLogin.status()+')');
     await api(page,'auth.php?action=login',{username,password:replacement}); await visit(page,'src/views/settings.php');
     await page.locator('.user-control').click();await page.locator('[data-sessions]').click();
     const current=(await api(page,'auth.php?action=sessions')).find(row=>row.is_current);

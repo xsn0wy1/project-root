@@ -1,4 +1,8 @@
-/* Appearance only: SQL owns staff preferences; the cache contains one theme string. */
+/* Applies cached/account themes and updates shared theme controls.
+ * API: none; auth-session supplies account preferences.
+ * DOM: html[data-theme], data-theme-choice controls and theme-color meta.
+ * current retains its existing live property interface.
+ */
 (() => {
   'use strict';
   const root = new URL('../../', document.currentScript.src);
@@ -9,13 +13,21 @@
     location.pathname.includes('/register-restore/') ||
     location.pathname.endsWith('/surveys/user-view/survey-user.php');
   const cacheKey = `hospital-theme:${root.pathname}`;
-  const normalize = value => (value === 'light' ? 'light' : 'dark');
-  let current = normalize(document.documentElement.dataset.theme),
-    confirmed = 'dark',
-    pending = null,
-    account = null;
+  const normalize = value => {
+    if (value === 'light') {
+      return 'light';
+    } else {
+      return 'dark';
+    }
+  };
+  let current = normalize(document.documentElement.dataset.theme);
+  let confirmed = 'dark';
+  let pending = null;
+  let account = null;
   try {
-    if (publicPage) current = normalize(localStorage.getItem(cacheKey));
+    if (publicPage) {
+      current = normalize(localStorage.getItem(cacheKey));
+    }
   } catch (_) {
     /* Appearance works without browser storage. */
   }
@@ -37,13 +49,14 @@
     });
   }
   function apply(value) {
-    const next = normalize(value),
-      changed = next !== current;
+    const next = normalize(value);
+    const changed = next !== current;
     current = next;
     document.documentElement.dataset.theme = current;
     controls();
-    if (changed)
+    if (changed) {
       window.dispatchEvent(new CustomEvent('hospital:themechange', { detail: { theme: current } }));
+    }
     return current;
   }
   function accountTheme(value, userId) {
@@ -69,7 +82,9 @@
     }
   }
   function setPublicTheme(value) {
-    if (!publicPage) return current;
+    if (!publicPage) {
+      return current;
+    }
     const next = apply(value);
     remember(next);
     return next;
@@ -87,9 +102,13 @@
   document.addEventListener('DOMContentLoaded', controls, { once: true });
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-public-theme]');
-    if (button && !button.disabled) setPublicTheme(button.dataset.publicTheme);
+    if (button && !button.disabled) {
+      setPublicTheme(button.dataset.publicTheme);
+    }
   });
   window.addEventListener('storage', event => {
-    if (publicPage && event.key === cacheKey) apply(event.newValue);
+    if (publicPage && event.key === cacheKey) {
+      apply(event.newValue);
+    }
   });
 })();

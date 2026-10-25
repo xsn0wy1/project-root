@@ -56,3 +56,11 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Expanded guards/declarations, named question/invitation/rating/comparator values and pipeline stages; made coupled state writes explicit with the original setter order. Private type/category data uses lazy label functions; the template function still returns fresh translated objects, with every caller updated.
 - Kept the single translated section-symbol getter to maintain a uniform string symbol field without dispatch logic. Other live/read-only interfaces, short attribute choices, optional-call failure boundaries and exact template text/order remain.
 - PASS: 93 workflow, 103 survey UI / 16 desktop-phone/theme cases, 71 bilingual and 98 boundary checks; source equivalence: 91 PHP / 35 JS / six exact files. The formatting guard rejected a removed optional-call boundary; the private formatter now restores required parentheses and checks exact AST equality before writing.
+
+## Batch 8 — shared API infrastructure
+
+- Files: api-client.js, auth-session.js, i18n.js, theme.js and universal-search.js; added purpose/API/DOM headers.
+- Expanded guards/choices/declarations, named DOM elements and focus/search stages, and replaced 57 private search getters with functions. The three existing eager search translations remain cached in their original order.
+- Kept public live session/locale/theme getters, Promise retry chains, null-safe access and concise predicates/value fallbacks; CSRF, diagnostics, locale readiness and timeout behavior are unchanged.
+- PASS: 71 i18n checks (including CPU ×6 first paint), 61 theme/session, 136 dropdown, 93 workflow and 98 boundary checks; all-page UI reached 1,584 passing checks before a stale-CSRF test setup failure. Its strict 401 password assertion passes in the focused 62-check rerun after joining page startup/shared CSRF. No application fix or weakened status assertion.
+- Source equivalence: 91 PHP / 35 JS / five exact files. The full UI suite is repeated in the final regression; PHP application work has not started at this checkpoint.

@@ -397,3 +397,5 @@ Batch 5 document scripts are verified: 184 UI, 182 document browser, 46 document
 Batch 6 transfer/map scripts are verified: 93 workflow checks, transfer/map UI journeys, 71 runtime language checks, 98 boundary checks and source equivalence pass. Public live map accessors remain intentionally. Continue survey scripts and participant page, then shared API infrastructure and PHP.
 
 Batch 7 survey/participant scripts are verified: 93 workflow, 103 UI, 71 language, 98 boundary and source-equivalence checks pass. Continue the five shared API-infrastructure scripts, then PHP. Translation coverage needs the complete authenticated rendered-page capture from the final matrix.
+
+Batch 8 shared API infrastructure is verified: i18n/theme/dropdown/workflow/boundary/source gates pass. All-page UI passed 1,584 checks before its direct negative-login probe raced anonymous CSRF startup; tests/ui_browser.cjs now awaits readiness and uses the shared CSRF request, and the focused 62-check security rerun passes with the strict 401 assertion. Repeat full UI at final regression. Continue PHP core/CLI, auth/settings/mail, catalogs, and document/transfer/survey modules.
