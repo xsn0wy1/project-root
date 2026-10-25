@@ -1,3 +1,8 @@
+/* Lists/transitions transfer views and creates transfers with retained drafts.
+ * API: transfers list/catalogs/patients/create-token/create/draft through TraceApi.
+ * DOM: transferGrid, transferList, newTransferForm and pageNumbers.
+ * $ finds an element by ID; TraceApi translates labels when rendered.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
   function cardStatusClass(item) {
@@ -13,24 +18,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
 
-  const api = window.TraceApi,
-    $ = id => document.getElementById(id);
+  const api = window.TraceApi;
+  const $ = id => document.getElementById(id);
   if ($('transferGrid')) {
     window.addEventListener('hospital:localechange', () => render());
-    const grid = $('transferGrid'),
-      list = $('transferList'),
-      template = $('transferCardTemplate'),
-      pagination = document.querySelector('.pagination');
-    let filter = 'active',
-      page = 1,
-      total = 0,
-      items = [],
-      loading = false,
-      loaded = false,
-      revision = 0,
-      type = 'all',
-      sort = 'recent',
-      timer;
+    const grid = $('transferGrid');
+    const list = $('transferList');
+    const template = $('transferCardTemplate');
+    const pagination = document.querySelector('.pagination');
+    let filter = 'active';
+    let page = 1;
+    let total = 0;
+    let items = [];
+    let loading = false;
+    let loaded = false;
+    let revision = 0;
+    let type = 'all';
+    let sort = 'recent';
+    let timer;
     const isList = () => filter === 'all';
     function makeCard(item) {
       const card = template.content.firstElementChild.cloneNode(true);
@@ -47,17 +52,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.HospitalI18n.bindText(status, () =>
         (item.is_delayed
           ? window.HospitalI18n.t("trace_map.demorado_2")
-          : api.labels[item.status]
+          : api.labels[item.status]?.()
         ).toUpperCase()
       );
 
       status.className = 'status-label ' + cardStatusClass(item);
       const values = card.querySelectorAll('.info-value p');
-      [item.crew.driver?.name ?? '—', item.crew.companion?.name ?? '—', api.cargo[item.cargo_type]].forEach(
-        (text, i) => {
-          window.HospitalI18n.bindText(values[i], () => text);
-        }
-      );
+      [
+        item.crew.driver?.name ?? '—',
+        item.crew.companion?.name ?? '—',
+        api.cargo[item.cargo_type]?.()
+      ].forEach((text, valueIndex) => {
+        window.HospitalI18n.bindText(values[valueIndex], () => text);
+      });
       const stops = card.querySelectorAll('.route-text > div');
       window.HospitalI18n.bindText(stops[0].querySelector('strong'), () => item.origin.name);
       window.HospitalI18n.bindText(stops[0].querySelector('p'), () =>
@@ -71,8 +78,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return card;
     }
     function makeListRow(item) {
-      const card = makeCard(item),
-        row = document.createElement('article');
+      const card = makeCard(item);
+      const row = document.createElement('article');
       row.className = 'transfer-list-row ' + ['blue-card', 'green-card', 'purple-card'][Number(item.id) % 3];
       const identity = document.createElement('div');
       identity.className = 'list-row-identity';
@@ -87,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       typeBadge.className = 'list-type-badge';
       window.HospitalI18n.bindText(
         typeBadge,
-        () => window.HospitalI18n.t('trace.cargo_prefix') + api.cargo[item.cargo_type]
+        () => window.HospitalI18n.t('trace.cargo_prefix') + api.cargo[item.cargo_type]?.()
       );
       badges.append(typeBadge);
       copy.append(badges);
@@ -107,8 +114,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return row;
     }
     function render() {
-      const all = isList(),
-        scroll = list.scrollTop;
+      const all = isList();
+      const scroll = list.scrollTop;
       grid.hidden = all;
       $('allTransfers').hidden = !all;
       document.querySelector('.content-card').classList.toggle('all-view-active', all);
@@ -143,29 +150,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       $('previousPage').disabled = loading || page <= 1;
       $('nextPage').disabled = loading || page >= pages;
       $('pageNumbers').replaceChildren();
-      if (!all)
+      if (!all) {
         for (
-          let n = Math.max(1, Math.min(page - 1, pages - 2));
-          n <= Math.min(pages, Math.max(3, page + 1));
-          n++
+          let pageNumber = Math.max(1, Math.min(page - 1, pages - 2));
+          pageNumber <= Math.min(pages, Math.max(3, page + 1));
+          pageNumber++
         ) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'page-button' + (n === page ? ' active' : '');
-          window.HospitalI18n.bindText(b, () => n);
-          b.dataset.page = n;
-          window.HospitalI18n.bindAttr(b, "aria-label", () =>
-            window.HospitalI18n.t("trace.ir_a_la_pagina_value", { value0: n })
+          const controlButton = document.createElement('button');
+          controlButton.type = 'button';
+          controlButton.className = 'page-button' + (pageNumber === page ? ' active' : '');
+          window.HospitalI18n.bindText(controlButton, () => pageNumber);
+          controlButton.dataset.page = pageNumber;
+          window.HospitalI18n.bindAttr(controlButton, "aria-label", () =>
+            window.HospitalI18n.t("trace.ir_a_la_pagina_value", { value0: pageNumber })
           );
-          b.disabled = loading;
-          if (n === page) b.setAttribute('aria-current', 'page');
-          $('pageNumbers').append(b);
+          controlButton.disabled = loading;
+          if (pageNumber === page) {
+            controlButton.setAttribute('aria-current', 'page');
+          }
+          $('pageNumbers').append(controlButton);
         }
+      }
     }
     async function load(append = false, quiet = false) {
-      if (append && (loading || items.length >= total)) return;
-      const r = ++revision,
-        requested = append ? page + 1 : page;
+      if (append && (loading || items.length >= total)) {
+        return;
+      }
+      const requestRevision = ++revision;
+      let requestedValue;
+      if (append) {
+        requestedValue = page + 1;
+      } else {
+        requestedValue = page;
+      }
+      const requested = requestedValue;
       let success = false;
       loading = true;
       if (!append && !quiet) {
@@ -183,7 +201,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           type: isList() ? type : 'all',
           sort
         });
-        if (r !== revision) return;
+        if (requestRevision !== revision) {
+          return;
+        }
         total = result.meta.total;
         page = requested;
         items = append
@@ -202,19 +222,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       } catch (error) {
         api.report(error);
       } finally {
-        if (r === revision) {
+        if (requestRevision === revision) {
           loading = false;
           render();
-          if (success && isList() && items.length < total && list.scrollHeight <= list.clientHeight + 100)
+          if (success && isList() && items.length < total && list.scrollHeight <= list.clientHeight + 100) {
             requestAnimationFrame(() => load(true));
+          }
         }
       }
     }
     document.querySelectorAll('.filter-button').forEach(button =>
       button.addEventListener('click', () => {
-        document.querySelectorAll('.filter-button').forEach(b => {
-          b.classList.toggle('active', b === button);
-          b.setAttribute('aria-selected', String(b === button));
+        document.querySelectorAll('.filter-button').forEach(controlButton => {
+          controlButton.classList.toggle('active', controlButton === button);
+          controlButton.setAttribute('aria-selected', String(controlButton === button));
         });
         filter = button.dataset.filter;
         page = 1;
@@ -230,9 +251,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.querySelectorAll('[data-type]').forEach(button =>
       button.addEventListener('click', () => {
-        document.querySelectorAll('[data-type]').forEach(b => {
-          b.classList.toggle('active', b === button);
-          b.setAttribute('aria-pressed', String(b === button));
+        document.querySelectorAll('[data-type]').forEach(controlButton => {
+          controlButton.classList.toggle('active', controlButton === button);
+          controlButton.setAttribute('aria-pressed', String(controlButton === button));
         });
         type = { all: 'all', paciente: 'patient', equipo: 'equipment', biologico: 'biological' }[
           button.dataset.type
@@ -243,9 +264,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     document.querySelectorAll('[data-sort]').forEach(button =>
       button.addEventListener('click', () => {
-        document.querySelectorAll('[data-sort]').forEach(b => {
-          b.classList.toggle('active', b === button);
-          b.setAttribute('aria-pressed', String(b === button));
+        document.querySelectorAll('[data-sort]').forEach(controlButton => {
+          controlButton.classList.toggle('active', controlButton === button);
+          controlButton.setAttribute('aria-pressed', String(controlButton === button));
         });
         sort = button.dataset.sort === 'oldest' ? 'oldest' : 'recent';
         page = 1;
@@ -265,57 +286,81 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     $('pageNumbers').addEventListener('click', event => {
-      const b = event.target.closest('[data-page]');
-      if (b && !loading) {
-        page = Number(b.dataset.page);
+      const controlButton = event.target.closest('[data-page]');
+      if (controlButton && !loading) {
+        page = Number(controlButton.dataset.page);
         load();
       }
     });
     document.querySelector('.transfer-views').addEventListener('click', event => {
-      const b = event.target.closest('[data-open-transfer]');
-      if (b) location.assign(`trace-view.php?id=${encodeURIComponent(b.dataset.openTransfer)}`);
+      const controlButton = event.target.closest('[data-open-transfer]');
+      if (controlButton) {
+        location.assign(`trace-view.php?id=${encodeURIComponent(controlButton.dataset.openTransfer)}`);
+      }
     });
     list.addEventListener('scroll', () => {
-      if (isList() && list.scrollTop + list.clientHeight >= list.scrollHeight - 180) load(true);
+      if (isList() && list.scrollTop + list.clientHeight >= list.scrollHeight - 180) {
+        load(true);
+      }
     });
     document
       .querySelector('.primary-action')
       .addEventListener('click', () => location.assign('trace-new.php'));
-    if (await window.HospitalAuth.ready) await load();
+    if (await window.HospitalAuth.ready) {
+      await load();
+    }
     const refresh = setInterval(() => {
-      if (!document.hidden && !isList() && !loading) load(false, true);
+      if (!document.hidden && !isList() && !loading) {
+        load(false, true);
+      }
     }, 15000);
     window.addEventListener('pagehide', () => clearInterval(refresh));
   }
   const form = $('newTransferForm');
-  if (!form) return;
+  if (!form) {
+    return;
+  }
   form.querySelectorAll('select').forEach(control => window.HospitalDropdown.enhance(control));
   const closeDropdowns = () => window.HospitalDropdown.closeAll();
   const syncDropdowns = () => window.HospitalDropdown.refresh();
-  let catalog,
-    patient = null,
-    patientChoices = [],
-    patientRevision = 0,
-    patientTimer,
-    draftVersion = 0,
-    token,
-    busy = true,
-    submitted = false;
-  const crewLabel = item => `${item.full_name} · #${item.id}`,
-    facilityLabel = api.facilityLabel,
-    patientLabel = item => `${item.full_name} · ${item.national_id}`;
+  let catalog;
+  let patient = null;
+  let patientChoices = [];
+  let patientRevision = 0;
+  let patientTimer;
+  let draftVersion = 0;
+  let token;
+  let busy = true;
+  let submitted = false;
+  const crewLabel = item => `${item.full_name} · #${item.id}`;
+  const facilityLabel = api.facilityLabel;
+  const patientLabel = item => `${item.full_name} · ${item.national_id}`;
   function applyRoute(fill = true) {
     const route = catalog?.routes.find(item => item.id === $('routeTemplate').value);
     for (const key of ['origin', 'destination']) {
       $(key).readOnly = Boolean(route);
-      if (route && fill) $(key).value = route[`${key}_address`] || route[`${key}_name`];
+      if (route && fill) {
+        $(key).value = route[`${key}_address`] || route[`${key}_name`];
+      }
     }
-    if (fill) $('routeVersion').value = route ? String(route.version) : '';
-    window.HospitalI18n.bindText($('route-itinerary'), () =>
-      route ? [route.origin_name, ...route.stops.map(s => s.name), route.destination_name].join(' → ') : ''
-    );
+    if (fill) {
+      $('routeVersion').value = route ? String(route.version) : '';
+    }
+    window.HospitalI18n.bindText($('route-itinerary'), () => {
+      if (route) {
+        return [
+          route.origin_name,
+          ...route.stops.map(stopRecord => stopRecord.name),
+          route.destination_name
+        ].join(' → ');
+      } else {
+        return '';
+      }
+    });
     $('route-itinerary').hidden = !route;
-    if (!$('routeTemplate').value) $('routeVersion').value = '';
+    if (!$('routeTemplate').value) {
+      $('routeVersion').value = '';
+    }
   }
   $('routeTemplate').addEventListener('change', () => applyRoute());
   const findCrew = (value, duty) =>
@@ -328,11 +373,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const name of ['driver', 'companion', 'patientName']) {
       const control = $(name);
       window.HospitalI18n.bindValidity(control, () => {
-        const matched = name === 'patientName'
-          ? patient && patientLabel(patient) === control.value
-          : findCrew(control.value, name);
-        return !control.disabled && control.value && !matched
-          ? window.HospitalI18n.t("trace_new.choose_from_list") : '';
+        let matchedValue;
+        if (name === 'patientName') {
+          matchedValue = patient && patientLabel(patient) === control.value;
+        } else {
+          matchedValue = findCrew(control.value, name);
+        }
+        const matched = matchedValue;
+        if (!control.disabled && control.value && !matched) {
+          return window.HospitalI18n.t("trace_new.choose_from_list");
+        } else {
+          return '';
+        }
       });
     }
   }
@@ -371,11 +423,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
     $('formMessage').classList.toggle('error', invalid.length > 0);
-    window.HospitalI18n.bindText($('formMessage'), () => invalid.length
-      ? window.HospitalI18n.t("trace_new.invalid_fields", {
-          value0: invalid.map(control => fieldLabel(control) + (control.validity.customError
-            ? ': ' + window.HospitalI18n.t("trace_new.choose_from_list") : '')).join('; ')
-        }) : '');
+    window.HospitalI18n.bindText($('formMessage'), () => {
+      if (invalid.length) {
+        return window.HospitalI18n.t("trace_new.invalid_fields", {
+          value0: invalid
+            .map(
+              control =>
+                fieldLabel(control) +
+                (control.validity.customError
+                  ? ': ' + window.HospitalI18n.t("trace_new.choose_from_list")
+                  : '')
+            )
+            .join('; ')
+        });
+      } else {
+        return '';
+      }
+    });
     if (focus && invalid.length) {
       closeDropdowns();
       const first = $(invalid[0].dataset.hospitalButton) || invalid[0];
@@ -384,15 +448,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     return invalid.length === 0;
   }
-  for (const type of ['input', 'change']) form.addEventListener(type, () => {
-    if (submitted && !busy) validateForm();
-  });
+  for (const type of ['input', 'change']) {
+    form.addEventListener(type, () => {
+      if (submitted && !busy) {
+        validateForm();
+      }
+    });
+  }
   window.addEventListener('hospital:localechange', () => {
-    if (submitted && !busy) validateForm();
+    if (submitted && !busy) {
+      validateForm();
+    }
   });
   function setBusy(value) {
     busy = value;
-    if (value) closeDropdowns();
+    if (value) {
+      closeDropdowns();
+    }
     form.querySelectorAll('input,select,textarea,button').forEach(control => {
       control.disabled = value;
     });
@@ -404,11 +476,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     patient = item;
     $('patientCedula').value = item?.national_id ?? '';
     $('patientAge').value = item?.age ?? '';
-    window.HospitalI18n.bindAttr($('patientAge'), "title", () =>
-      item?.age_is_estimate
-        ? window.HospitalI18n.t("trace.edad_estimada_registrada_el_value", { value0: item.age_recorded_on })
-        : ''
-    );
+    window.HospitalI18n.bindAttr($('patientAge'), "title", () => {
+      if (item?.age_is_estimate) {
+        return window.HospitalI18n.t("trace.edad_estimada_registrada_el_value", {
+          value0: item.age_recorded_on
+        });
+      } else {
+        return '';
+      }
+    });
     $('patientSex').value =
       { female: 'femenino', male: 'masculino', other: 'otro', unspecified: 'no-indica' }[item?.sex] ?? '';
     syncDropdowns();
@@ -416,8 +492,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function patientRequirement() {
     const needed = $('transferType').value === 'patient';
     $('patientName').required = needed;
-    for (const name of ['patientName', 'patientCedula', 'patientAge', 'patientSex'])
+    for (const name of ['patientName', 'patientCedula', 'patientAge', 'patientSex']) {
       $(name).disabled = !needed || busy || name === 'patientSex';
+    }
     if (!needed) {
       $('patientName').value = '';
       showPatient(null);
@@ -429,7 +506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('transferType').addEventListener('change', patientRequirement);
   $('patientName').addEventListener('input', () => {
     clearTimeout(patientTimer);
-    const r = ++patientRevision;
+    const requestRevision = ++patientRevision;
     showPatient(patientChoices.find(item => patientLabel(item) === $('patientName').value) ?? null);
     if (patient || $('patientName').value.trim().length < 2) {
       $('patient-options').replaceChildren();
@@ -438,13 +515,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     patientTimer = setTimeout(async () => {
       try {
         const found = await api.patients($('patientName').value.trim());
-        if (r !== patientRevision) return;
+        if (requestRevision !== patientRevision) {
+          return;
+        }
         patientChoices = found;
         $('patient-options').replaceChildren(
           ...found.map(item => window.HospitalI18n.option(() => patientLabel(item), patientLabel(item)))
         );
         showPatient(found.find(item => patientLabel(item) === $('patientName').value) ?? null);
-        if (submitted && !busy) validateForm();
+        if (submitted && !busy) {
+          validateForm();
+        }
       } catch (error) {
         api.report(error);
       }
@@ -454,10 +535,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     showPatient(patientChoices.find(item => patientLabel(item) === $('patientName').value) ?? patient)
   );
   async function saveDraft(clear = false) {
-    if (busy) return false;
+    if (busy) {
+      return false;
+    }
     const payload = {};
-    for (const control of form.querySelectorAll('input,select,textarea'))
-      if (control.name) payload[control.name] = control.type === 'checkbox' ? control.checked : control.value;
+    for (const control of form.querySelectorAll('input,select,textarea')) {
+      if (control.name) {
+        payload[control.name] = control.type === 'checkbox' ? control.checked : control.value;
+      }
+    }
     payload.patientId = patient?.id ?? '';
     payload.createToken = token;
     setBusy(true);
@@ -467,9 +553,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
       draftVersion = result.version;
       $('formMessage').classList.remove('error');
-      window.HospitalI18n.bindText($('formMessage'), () =>
-        clear ? '' : window.HospitalI18n.t("trace.borrador_guardado")
-      );
+      window.HospitalI18n.bindText($('formMessage'), () => {
+        if (clear) {
+          return '';
+        } else {
+          return window.HospitalI18n.t("trace.borrador_guardado");
+        }
+      });
       return true;
     } catch (error) {
       api.report(error);
@@ -482,15 +572,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   $('saveDraft').addEventListener('click', () => saveDraft());
   $('cancelTransfer').addEventListener('click', async () => {
-    if (await saveDraft(true)) location.assign('trace.php');
+    if (await saveDraft(true)) {
+      location.assign('trace.php');
+    }
   });
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     submitted = true;
-    if (!validateForm(true)) return;
-    const driver = findCrew($('driver').value, 'driver'),
-      companion = $('companion').value ? findCrew($('companion').value, 'companion') : null;
+    if (!validateForm(true)) {
+      return;
+    }
+    const driver = findCrew($('driver').value, 'driver');
+    let companionValue;
+    if ($('companion').value) {
+      companionValue = findCrew($('companion').value, 'companion');
+    } else {
+      companionValue = null;
+    }
+    const companion = companionValue;
     const body = {
       route_template_id: $('routeTemplate').value || null,
       ambulance_id: $('ambulance').value,
@@ -511,11 +613,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       with_family: 'withFamily',
       interdepartmental: 'interdepartmental',
       critical_patient: 'criticalPatient'
-    }))
+    })) {
       body[field] = form.elements[name].checked;
-    if ($('routeTemplate').value && $('routeVersion').value)
+    }
+    if ($('routeTemplate').value && $('routeVersion').value) {
       body.route_version = Number($('routeVersion').value);
-    if (draftVersion) body.draft_version = draftVersion;
+    }
+    if (draftVersion) {
+      body.draft_version = draftVersion;
+    }
     setBusy(true);
     window.HospitalI18n.bindText($('formMessage'), () => window.HospitalI18n.t("trace.guardando_traslado"));
     try {
@@ -530,7 +636,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   setBusy(true);
   try {
-    if (!(await window.HospitalAuth.ready)) return;
+    if (!(await window.HospitalAuth.ready)) {
+      return;
+    }
     try {
       localStorage.removeItem('hospitalNewTransferDraft');
     } catch (_) {}
@@ -570,21 +678,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('startDate').value = now.date;
     $('startTime').value = now.time;
     const savedRoute = result[1].payload?.routeTemplate;
-    if (savedRoute && !catalog.routes.some(r => r.id === savedRoute))
+    if (savedRoute && !catalog.routes.some(routeRecord => routeRecord.id === savedRoute)) {
       $('routeTemplate').add(
         window.HospitalI18n.option(
           () => window.HospitalI18n.t("trace.ruta_del_borrador_no_disponible"),
           savedRoute
         )
       );
+    }
     for (const [name, value] of Object.entries(result[1].payload || {})) {
       const control = form.elements.namedItem(name);
-      if (!control) continue;
-      if (control.type === 'checkbox') control.checked = value === true;
-      else control.value = value;
+      if (!control) {
+        continue;
+      }
+      if (control.type === 'checkbox') {
+        control.checked = value === true;
+      } else {
+        control.value = value;
+      }
     }
     applyRoute(false);
-    if (/^[a-f0-9]{64}$/.test(result[1].payload?.createToken ?? '')) token = result[1].payload.createToken;
+    if (/^[a-f0-9]{64}$/.test(result[1].payload?.createToken ?? '')) {
+      token = result[1].payload.createToken;
+    }
     if (result[1].payload?.patientId && $('patientCedula').value) {
       patientChoices = await api.patients($('patientCedula').value);
       showPatient(patientChoices.find(item => item.id === result[1].payload.patientId) ?? null);

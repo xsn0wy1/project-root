@@ -1,8 +1,7 @@
-/*
- * Montevideo fleet dashboard. No build step or paid map API is required.
- * Set the carto-basemap-key meta tag (or TRACE_MAP_CONFIG.cartoApiKey) for CARTO
- * Dark Matter. OpenStreetMap is the keyless default and the tile-error fallback.
- * Positions come only from the authenticated shared server simulation.
+/* Displays fictional shared fleet positions, filters, details and map controls.
+ * API: transfers get and tracking snapshot through TraceApi; never real GPS.
+ * DOM: map-stage, transfer-list, transfer-search and detail-dialog.
+ * $ finds an element by ID; configured CARTO tiles fall back to OpenStreetMap.
  */
 (async () => {
   'use strict';
@@ -14,53 +13,41 @@
   const CENTER = [-34.8833, -56.1667];
   const INITIAL_ZOOM = 12.5;
   const STATUS = Object.freeze({
-    get 'in_progress'() {
-      return {
-        className: 'status-progress',
-        get label() {
-          return window.HospitalI18n.t("trace_map.en_curso_2");
-        }
-      };
+    'in_progress': {
+      className: 'status-progress',
+      label: function () {
+        return window.HospitalI18n.t("trace_map.en_curso_2");
+      }
     },
-    get scheduled() {
-      return {
-        className: 'status-scheduled',
-        get label() {
-          return window.HospitalI18n.t("trace_map.programado_2");
-        }
-      };
+    scheduled: {
+      className: 'status-scheduled',
+      label: function () {
+        return window.HospitalI18n.t("trace_map.programado_2");
+      }
     },
-    get delayed() {
-      return {
-        className: 'status-delayed',
-        get label() {
-          return window.HospitalI18n.t("trace_map.demorado_2");
-        }
-      };
+    delayed: {
+      className: 'status-delayed',
+      label: function () {
+        return window.HospitalI18n.t("trace_map.demorado_2");
+      }
     },
-    get 'arrived'() {
-      return {
-        className: 'status-progress',
-        get label() {
-          return window.HospitalI18n.t("trace_view.en_destino");
-        }
-      };
+    'arrived': {
+      className: 'status-progress',
+      label: function () {
+        return window.HospitalI18n.t("trace_view.en_destino");
+      }
     },
-    get completed() {
-      return {
-        className: 'status-scheduled',
-        get label() {
-          return window.HospitalI18n.t("trace_view.finalizado");
-        }
-      };
+    completed: {
+      className: 'status-scheduled',
+      label: function () {
+        return window.HospitalI18n.t("trace_view.finalizado");
+      }
     },
-    get cancelled() {
-      return {
-        className: 'status-scheduled',
-        get label() {
-          return window.HospitalI18n.t("trace_api.cancelado");
-        }
-      };
+    cancelled: {
+      className: 'status-scheduled',
+      label: function () {
+        return window.HospitalI18n.t("trace_api.cancelado");
+      }
     }
   });
 
@@ -71,11 +58,11 @@
     requestedTransfer = null;
   }
   const filterStatuses = ['in_progress', 'scheduled', 'delayed'];
-  let loaded = false,
-    polling = false,
-    stopped = false,
-    lastSnapshot,
-    historical = false;
+  let loaded = false;
+  let polling = false;
+  let stopped = false;
+  let lastSnapshot;
+  let historical = false;
 
   const $ = id => document.getElementById(id);
   const elements = {
@@ -127,17 +114,17 @@
           "'": '&#39;'
         })[char]
     );
-  const normalize = value =>
-    String(value)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim();
+  const normalize = value => {
+    const normalizedText = String(value).normalize('NFD');
+    const replacedText = normalizedText.replace(/[\u0300-\u036f]/g, '');
+    const lowercaseText = replacedText.toLowerCase();
+    const replacedText2 = lowercaseText.replace(/[^a-z0-9]+/g, ' ');
+    return replacedText2.trim();
+  };
   const icon = (name, className = 'icon') =>
     `<span class="${className}" style="--icon-image:url('${ICON_ROOT}${name}')" aria-hidden="true"></span>`;
   const badge = transfer =>
-    `<span class="status-badge ${STATUS[transfer.status].className}">${escapeHTML(STATUS[transfer.status].label)}</span>`;
+    `<span class="status-badge ${STATUS[transfer.status].className}">${escapeHTML(STATUS[transfer.status].label())}</span>`;
   const vehicleBadge = transfer =>
     `<span class="vehicle-badge" style="--route-color:${transfer.color}">${icon('steering-wheel.svg')}</span>`;
 
@@ -160,25 +147,52 @@
       elements.list,
       visible
         .map(
-          transfer => `
-      <button class="transfer-card" type="button" data-transfer-id="${transfer.id}"
-        aria-pressed="${transfer.id === state.selectedId}" style="--route-color:${transfer.color}"
-        aria-label="${escapeHTML(window.HospitalI18n.t("trace_map.value_ambulancia_value_value_destino_value_llegada_estimada_value", { value0: transfer.name, value1: transfer.ambulance, value2: STATUS[transfer.status].label, value3: transfer.destination, value4: transfer.eta }))}">
-        <span class="transfer-card-top">
+          transfer =>
+            `
+      ` +
+            `<button class="transfer-card" type="button" data-transfer-id="${transfer.id}"
+        aria-pressed="${transfer.id === state.selectedId}"` +
+            ` style="--route-color:${transfer.color}"
+        aria-label="${escapeHTML(window.HospitalI18n.t("trace_map.value_ambulancia_value_value_destino_value_llegada_estimada_value", { value0: transfer.name, value1: transfer.ambulance, value2: STATUS[transfer.status].label(), value3: transfer.destination, value4: transfer.eta }))}">
+        ` +
+            `<span class="transfer-card-top">
           ${vehicleBadge(transfer)}
-          <span class="transfer-card-copy">
-            <span class="transfer-card-title"><strong>${escapeHTML(transfer.name)}</strong>${badge(transfer)}</span>
-            <span class="ambulance-name">${window.HospitalI18n.mark("trace.ambulancia_value", { value0: escapeHTML(transfer.ambulance) })}</span>
-          </span>
-        </span>
-        <span class="card-destination"><span aria-hidden="true">→</span><span>${escapeHTML(transfer.destination)}</span></span>
-        <span class="transfer-card-footer"><span>${icon('time-icon.svg')}${window.HospitalI18n.mark("trace_map.llegada_estimada")}</span><time datetime="${transfer.eta}">${transfer.eta}</time></span>
-      </button>`
+          ` +
+            `<span class="transfer-card-copy">
+            ` +
+            `<span class="transfer-card-title">` +
+            `<strong>${escapeHTML(transfer.name)}` +
+            `</strong>${badge(transfer)}` +
+            `</span>
+            ` +
+            `<span class="ambulance-name">${window.HospitalI18n.mark("trace.ambulancia_value", { value0: escapeHTML(transfer.ambulance) })}` +
+            `</span>
+          ` +
+            `</span>
+        ` +
+            `</span>
+        ` +
+            `<span class="card-destination">` +
+            `<span aria-hidden="true">→` +
+            `</span>` +
+            `<span>${escapeHTML(transfer.destination)}` +
+            `</span>` +
+            `</span>
+        ` +
+            `<span class="transfer-card-footer">` +
+            `<span>${icon('time-icon.svg')}${window.HospitalI18n.mark("trace_map.llegada_estimada")}` +
+            `</span>` +
+            `<time datetime="${transfer.eta}">${transfer.eta}` +
+            `</time>` +
+            `</span>
+      ` +
+            `</button>`
         )
         .join('')
     );
-    if (focusedId)
+    if (focusedId) {
       elements.list.querySelector(`[data-transfer-id="${focusedId}"]`)?.focus({ preventScroll: true });
+    }
     $('empty-state').hidden = !loaded || visible.length > 0;
     window.HospitalI18n.bindText($('visible-count'), () => visible.length);
     window.HospitalI18n.bindText(
@@ -194,12 +208,23 @@
       visible.length
         ? visible
             .map(
-              transfer => `
-      <button class="legend-row" type="button" data-transfer-id="${transfer.id}" style="--route-color:${transfer.color}"
-        aria-label="${window.HospitalI18n.html("trace_map.seleccionar_value", { value0: escapeHTML(transfer.name) })}" data-i18n-aria-label="trace_map.seleccionar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: escapeHTML(transfer.name) }))}">
-        <span class="legend-line" aria-hidden="true"></span><span>${window.HospitalI18n.mark("trace_map.traslado_value", { value0: transfer.id })}</span>
-        <small>${STATUS[transfer.status].label}</small>
-      </button>`
+              transfer =>
+                `
+      ` +
+                `<button class="legend-row" type="button" data-transfer-id="${transfer.id}" style="--route-color:${transfer.color}"
+` +
+                `        aria-label="${window.HospitalI18n.html("trace_map.seleccionar_value", { value0: escapeHTML(transfer.name) })}"` +
+                ` data-i18n-aria-label="trace_map.seleccionar_value" data-i18n-aria-label-params="${window.HospitalI18n.escape(JSON.stringify({ value0: escapeHTML(transfer.name) }))}">
+        ` +
+                `<span class="legend-line" aria-hidden="true">` +
+                `</span>` +
+                `<span>${window.HospitalI18n.mark("trace_map.traslado_value", { value0: transfer.id })}` +
+                `</span>
+        ` +
+                `<small>${STATUS[transfer.status].label()}` +
+                `</small>
+      ` +
+                `</button>`
             )
             .join('')
         : `<p class="legend-empty">${window.HospitalI18n.mark("trace_map.sin_rutas_visibles")}</p>`
@@ -233,13 +258,20 @@
   }
 
   function setLayerVisible(layer, visible) {
-    if (!map || !layer) return;
-    if (visible && !map.hasLayer(layer)) layer.addTo(map);
-    else if (!visible && map.hasLayer(layer)) map.removeLayer(layer);
+    if (!map || !layer) {
+      return;
+    }
+    if (visible && !map.hasLayer(layer)) {
+      layer.addTo(map);
+    } else if (!visible && map.hasLayer(layer)) {
+      map.removeLayer(layer);
+    }
   }
 
   function renderMapLayers(visible) {
-    if (!map) return;
+    if (!map) {
+      return;
+    }
     const visibleIds = new Set(visible.map(item => item.id));
     routeLayers.forEach((layers, id) => {
       const isVisible = visibleIds.has(id);
@@ -273,24 +305,55 @@
     } else if (map && reopenPopup && popupVisible) {
       const selected = transfers.find(item => item.id === state.selectedId);
       showTransferPopup(selected);
-      if (selectionChanged) panToTransfer(selected);
+      if (selectionChanged) {
+        panToTransfer(selected);
+      }
     }
   }
 
   function popupContent(transfer) {
-    return `<div class="popup-inner" style="--route-color:${transfer.color}">
-      <div class="popup-heading">${vehicleBadge(transfer)}<div class="popup-identity">
-        <div class="popup-title"><strong>${escapeHTML(transfer.name)}</strong>${badge(transfer)}</div>
-        <p>${window.HospitalI18n.mark("trace.ambulancia_value", { value0: escapeHTML(transfer.ambulance) })}</p>
-      </div></div>
-      <div class="popup-route">${escapeHTML(transfer.origin)} <span aria-hidden="true">→</span> ${escapeHTML(transfer.destination)}</div>
-      <div class="popup-eta">${icon('time-icon.svg')}<span>${window.HospitalI18n.mark("trace_map.llegada_estimada")}</span><time datetime="${transfer.eta}">${transfer.eta}</time></div>
-      <button class="details-button" type="button" data-detail-id="${transfer.id}">${window.HospitalI18n.mark("trace.ver_detalles")}<span aria-hidden="true">↗</span></button>
-    </div>`;
+    return (
+      `<div class="popup-inner" style="--route-color:${transfer.color}">
+      ` +
+      `<div class="popup-heading">${vehicleBadge(transfer)}` +
+      `<div class="popup-identity">
+        ` +
+      `<div class="popup-title">` +
+      `<strong>${escapeHTML(transfer.name)}` +
+      `</strong>${badge(transfer)}` +
+      `</div>
+        ` +
+      `<p>${window.HospitalI18n.mark("trace.ambulancia_value", { value0: escapeHTML(transfer.ambulance) })}` +
+      `</p>
+      ` +
+      `</div>` +
+      `</div>
+      ` +
+      `<div class="popup-route">${escapeHTML(transfer.origin)} ` +
+      `<span aria-hidden="true">→` +
+      `</span> ${escapeHTML(transfer.destination)}` +
+      `</div>
+      ` +
+      `<div class="popup-eta">${icon('time-icon.svg')}` +
+      `<span>${window.HospitalI18n.mark("trace_map.llegada_estimada")}` +
+      `</span>` +
+      `<time datetime="${transfer.eta}">${transfer.eta}` +
+      `</time>` +
+      `</div>
+      ` +
+      `<button class="details-button" type="button" data-detail-id="${transfer.id}">${window.HospitalI18n.mark("trace.ver_detalles")}` +
+      `<span aria-hidden="true">↗` +
+      `</span>` +
+      `</button>
+    ` +
+      `</div>`
+    );
   }
 
   function showTransferPopup(transfer) {
-    if (!map || !transfer) return;
+    if (!map || !transfer) {
+      return;
+    }
     popupVisible = true;
     popup.setLatLng(transfer.currentPosition).setContent(popupContent(transfer)).openOn(map);
   }
@@ -298,7 +361,9 @@
   // Pan the ambulance into the unobstructed map region rather than underneath
   // the transfer panel. Popup position remains geographically anchored.
   function panToTransfer(transfer) {
-    if (!map || !transfer) return;
+    if (!map || !transfer) {
+      return;
+    }
     const size = map.getSize();
     const point = map.latLngToContainerPoint(transfer.currentPosition);
     const panelShown = !elements.panel.hidden;
@@ -307,40 +372,68 @@
     const popupElement = popup?.getElement();
     const popupWidth = popupElement?.offsetWidth || 292;
     const popupHeight = popupElement?.offsetHeight || 210;
-    const popupGap = popupElement ? parseFloat(getComputedStyle(popupElement).marginBottom) + 5 : 33;
+    let popupGapValue;
+    if (popupElement) {
+      popupGapValue = parseFloat(getComputedStyle(popupElement).marginBottom) + 5;
+    } else {
+      popupGapValue = 33;
+    }
+    const popupGap = popupGapValue;
     const controls = elements.stage.querySelector('.map-controls');
     const horizontalControls = controls.offsetWidth > controls.offsetHeight;
-    const topInset = horizontalControls ? controls.offsetTop + controls.offsetHeight + 8 : 12;
-    const left =
-      !compactScreen.matches && panelShown
-        ? panelBounds.left - stageBounds.left + panelBounds.width + 16
-        : 12;
+    let topInsetValue;
+    if (horizontalControls) {
+      topInsetValue = controls.offsetTop + controls.offsetHeight + 8;
+    } else {
+      topInsetValue = 12;
+    }
+    const topInset = topInsetValue;
+    let leftValue;
+    if (!compactScreen.matches && panelShown) {
+      leftValue = panelBounds.left - stageBounds.left + panelBounds.width + 16;
+    } else {
+      leftValue = 12;
+    }
+    const left = leftValue;
     let right = size.x - 12;
     const legend = elements.stage.querySelector('.route-legend');
-    if (legend.offsetWidth && legend.offsetLeft - 16 - left >= popupWidth + 16)
+    if (legend.offsetWidth && legend.offsetLeft - 16 - left >= popupWidth + 16) {
       right = legend.offsetLeft - 16;
+    }
     const x = Math.max(popupWidth / 2 + 12, Math.min(size.x - popupWidth / 2 - 12, (left + right) / 2));
-    const bottomInset =
-      compactScreen.matches && panelShown ? size.y - (panelBounds.top - stageBounds.top) + 12 : 25;
+    let bottomInsetValue;
+    if (compactScreen.matches && panelShown) {
+      bottomInsetValue = size.y - (panelBounds.top - stageBounds.top) + 12;
+    } else {
+      bottomInsetValue = 25;
+    }
+    const bottomInset = bottomInsetValue;
     const y = Math.min(size.y - bottomInset, Math.max(topInset + popupHeight + popupGap, size.y * .64));
     map.panBy([point.x - x, point.y - y], { animate: !reduceMotion, duration: .55 });
   }
 
   function selectTransfer(id, { pan = true, scroll = false } = {}) {
     const transfer = getVisibleTransfers().find(item => item.id === String(id));
-    if (!transfer) return;
-    if (compactScreen.matches && !elements.panel.hidden) setPanelVisible(false, { pan: false });
+    if (!transfer) {
+      return;
+    }
+    if (compactScreen.matches && !elements.panel.hidden) {
+      setPanelVisible(false, { pan: false });
+    }
     state.selectedId = transfer.id;
     renderAll();
     showTransferPopup(transfer);
-    if (pan) panToTransfer(transfer);
+    if (pan) {
+      panToTransfer(transfer);
+    }
     if (scroll) {
       const card = elements.list.querySelector(`[data-transfer-id="${transfer.id}"]`);
-      if (card)
+      if (card) {
         elements.list.scrollTo({
           top: card.offsetTop - elements.list.offsetTop - 8,
           behavior: reduceMotion ? 'instant' : 'smooth'
         });
+      }
     }
   }
 
@@ -379,7 +472,9 @@
   }
 
   function initializeMap() {
-    if (compactScreen.matches) setPanelVisible(false, { pan: false });
+    if (compactScreen.matches) {
+      setPanelVisible(false, { pan: false });
+    }
     if (!window.L) {
       elements.loading.hidden = true;
       console.error(
@@ -464,10 +559,13 @@
       cancelAnimationFrame(animationFrame);
       animationFrame = requestAnimationFrame(() => {
         map.invalidateSize({ pan: false });
-        if (compactScreen.matches && popupVisible && !elements.panel.hidden)
+        if (compactScreen.matches && popupVisible && !elements.panel.hidden) {
           setPanelVisible(false, { pan: false });
+        }
         const selected = transfers.find(item => item.id === state.selectedId);
-        if (selected && popupVisible) panToTransfer(selected);
+        if (selected && popupVisible) {
+          panToTransfer(selected);
+        }
       });
     }).observe(elements.stage);
     renderAll({ reopenPopup: true });
@@ -476,13 +574,16 @@
     transfers.forEach(ensureLayers);
   }
 
-  function distanceBetween(a, b) {
+  function distanceBetween(startPoint, endPoint) {
     const radians = degrees => (degrees * Math.PI) / 180;
-    const dLat = radians(b[0] - a[0]);
-    const dLng = radians(b[1] - a[1]);
-    const h =
-      Math.sin(dLat / 2) ** 2 + Math.cos(radians(a[0])) * Math.cos(radians(b[0])) * Math.sin(dLng / 2) ** 2;
-    return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+    const latitudeDifference = radians(endPoint[0] - startPoint[0]);
+    const longitudeDifference = radians(endPoint[1] - startPoint[1]);
+    const haversineValue =
+      Math.sin(latitudeDifference / 2) ** 2 +
+      Math.cos(radians(startPoint[0])) *
+        Math.cos(radians(endPoint[0])) *
+        Math.sin(longitudeDifference / 2) ** 2;
+    return 6371000 * 2 * Math.atan2(Math.sqrt(haversineValue), Math.sqrt(1 - haversineValue));
   }
 
   function routeDistance(transfer) {
@@ -492,7 +593,9 @@
   }
 
   function ensureLayers(transfer) {
-    if (!map) return;
+    if (!map) {
+      return;
+    }
     const key = JSON.stringify([transfer.coordinates, transfer.origin, transfer.destination]);
     const old = routeLayers.get(transfer.id);
     if (old?.key === key) {
@@ -500,7 +603,9 @@
       old.vehicle.getElement()?.setAttribute('data-position-id', transfer.positionId ?? '');
       return;
     }
-    if (old) [old.route, old.stops, old.vehicle].forEach(layer => map.removeLayer(layer));
+    if (old) {
+      [old.route, old.stops, old.vehicle].forEach(layer => map.removeLayer(layer));
+    }
     const halo = L.polyline(transfer.coordinates, {
       color: transfer.color,
       weight: 10,
@@ -576,20 +681,30 @@
   }
 
   function freshness() {
-    const simulation = lastSnapshot?.simulation,
-      label = document.querySelector('.live-indicator');
+    const simulation = lastSnapshot?.simulation;
+    const label = document.querySelector('.live-indicator');
     if (historical) {
       const sample = transfers[0]?.sampledAt;
       window.HospitalI18n.bindText(label.lastChild, () =>
         window.HospitalI18n.t("trace_map.historico_simulado")
       );
       window.HospitalI18n.bindText($('panel-update'), () => window.TraceApi.time(sample));
-      window.HospitalI18n.bindAttr($('panel-update'), "title", () =>
-        sample ? window.TraceApi.dateTime(sample) : ''
-      );
+      window.HospitalI18n.bindAttr($('panel-update'), "title", () => {
+        if (sample) {
+          return window.TraceApi.dateTime(sample);
+        } else {
+          return '';
+        }
+      });
       return;
     }
-    const heartbeat = simulation?.heartbeat_at ? Date.parse(simulation.heartbeat_at) : 0;
+    let heartbeatValue;
+    if (simulation?.heartbeat_at) {
+      heartbeatValue = Date.parse(simulation.heartbeat_at);
+    } else {
+      heartbeatValue = 0;
+    }
+    const heartbeat = heartbeatValue;
     const stale = !heartbeat || Date.now() - heartbeat > 15000;
     window.HospitalI18n.bindText(label.lastChild, () => {
       if (simulation?.status === 'stopped') {
@@ -606,25 +721,33 @@
         }
       }
     });
-    window.HospitalI18n.bindText($('panel-update'), () =>
-      stale
-        ? window.HospitalI18n.t("trace_map.sin_actualizacion")
-        : window.TraceApi.time(simulation.heartbeat_at)
-    );
+    window.HospitalI18n.bindText($('panel-update'), () => {
+      if (stale) {
+        return window.HospitalI18n.t("trace_map.sin_actualizacion");
+      } else {
+        return window.TraceApi.time(simulation.heartbeat_at);
+      }
+    });
     label.classList.toggle('stale', stale);
-    window.HospitalI18n.bindAttr($('panel-update'), "title", () =>
-      simulation?.heartbeat_at
-        ? window.HospitalI18n.t("trace_map.ultima_actualizacion_value", {
-            value0: window.TraceApi.dateTime(simulation.heartbeat_at)
-          })
-        : ''
-    );
+    window.HospitalI18n.bindAttr($('panel-update'), "title", () => {
+      if (simulation?.heartbeat_at) {
+        return window.HospitalI18n.t("trace_map.ultima_actualizacion_value", {
+          value0: window.TraceApi.dateTime(simulation.heartbeat_at)
+        });
+      } else {
+        return '';
+      }
+    });
   }
   async function poll() {
-    if (polling || stopped) return;
+    if (polling || stopped) {
+      return;
+    }
     polling = true;
     try {
-      if (!(await window.HospitalAuth.ready)) return;
+      if (!(await window.HospitalAuth.ready)) {
+        return;
+      }
       const result = await window.TraceApi.fleet();
       if (requestedTransfer && !result.transfers.some(item => item.id === requestedTransfer)) {
         try {
@@ -632,20 +755,32 @@
           result.transfers = selected.transfers;
           historical = selected.transfers.some(item => ['completed', 'cancelled'].includes(item.status));
         } catch (error) {
-          if (error.status !== 404) throw error;
+          if (error.status !== 404) {
+            throw error;
+          }
           window.TraceApi.report(error);
           requestedTransfer = null;
         }
       }
       lastSnapshot = result;
       const next = result.transfers
-          .filter(item => item.geometry.length >= 2)
-          .map(window.TraceMapShared.adapt),
-        ids = new Set(next.map(item => item.id));
-      const signature = item =>
-        item
-          ? JSON.stringify([item.name, item.ambulance, item.origin, item.destination, item.status, item.eta])
-          : '';
+        .filter(item => item.geometry.length >= 2)
+        .map(window.TraceMapShared.adapt);
+      const ids = new Set(next.map(item => item.id));
+      const signature = item => {
+        if (item) {
+          return JSON.stringify([
+            item.name,
+            item.ambulance,
+            item.origin,
+            item.destination,
+            item.status,
+            item.eta
+          ]);
+        } else {
+          return '';
+        }
+      };
       const previous = signature(transfers.find(item => item.id === state.selectedId));
       routeLayers.forEach((layers, id) => {
         if (!ids.has(id)) {
@@ -669,16 +804,25 @@
         }
       });
       $('filter-toggle').disabled = historical;
-      if (first && ids.has(requestedTransfer)) state.selectedId = requestedTransfer;
+      if (first && ids.has(requestedTransfer)) {
+        state.selectedId = requestedTransfer;
+      }
       const changed = previous !== signature(transfers.find(item => item.id === state.selectedId));
       renderAll({ reopenPopup: popupVisible && (first || changed) });
       const selected = transfers.find(item => item.id === state.selectedId);
-      if (selected && popupVisible && map?.hasLayer(popup)) popup.setLatLng(selected.currentPosition);
-      if (first) panToTransfer(transfers.find(item => item.id === state.selectedId));
+      if (selected && popupVisible && map?.hasLayer(popup)) {
+        popup.setLatLng(selected.currentPosition);
+      }
+      if (first) {
+        panToTransfer(transfers.find(item => item.id === state.selectedId));
+      }
       if (elements.dialog.open) {
         const target = elements.dialogContent.querySelector('[data-focus-route]');
-        if (!target || !ids.has(target.dataset.focusRoute)) elements.dialog.close();
-        else if (changed) openDetails(target.dataset.focusRoute, lastDialogTrigger);
+        if (!target || !ids.has(target.dataset.focusRoute)) {
+          elements.dialog.close();
+        } else if (changed) {
+          openDetails(target.dataset.focusRoute, lastDialogTrigger);
+        }
       }
       freshness();
     } catch (error) {
@@ -691,7 +835,9 @@
 
   function openDetails(id, trigger) {
     const transfer = transfers.find(item => item.id === String(id));
-    if (!transfer) return;
+    if (!transfer) {
+      return;
+    }
     lastDialogTrigger = trigger || document.activeElement;
     elements.dialog.style.setProperty('--route-color', transfer.color);
     const distance = (routeDistance(transfer) / 1000).toLocaleString(window.HospitalI18n.locale, {
@@ -700,19 +846,67 @@
     window.HospitalI18n.setHTML(
       elements.dialogContent,
       `
-      <div style="--route-color:${transfer.color}">${vehicleBadge(transfer)}</div>
-      <h2 id="detail-title"><a href="trace-view.php?id=${encodeURIComponent(transfer.id)}" style="color:inherit;text-decoration:none">${escapeHTML(transfer.name)}</a></h2>
-      <p class="detail-subtitle">${window.HospitalI18n.mark("trace_map.ambulancia_value_value", { value0: escapeHTML(transfer.ambulance), value1: badge(transfer) })}</p>
-      <div class="detail-route" style="--route-color:${transfer.color}">
-        <div class="detail-stop"><small>${window.HospitalI18n.mark("trace_view.origen")}</small><strong>${escapeHTML(transfer.origin)}</strong></div>
-        <div class="detail-stop"><small>${window.HospitalI18n.mark("trace_view.destino")}</small><strong>${escapeHTML(transfer.destination)}</strong></div>
-      </div>
-      <dl class="detail-stats"><div><dt>${window.HospitalI18n.mark("trace_map.llegada_estimada")}</dt><dd><time datetime="${transfer.eta}">${transfer.eta}</time></dd></div>
-        <div><dt>${window.HospitalI18n.mark("trace_map.distancia_de_la_ruta")}</dt><dd>${distance} <small>${window.HospitalI18n.mark("trace_map.km")}</small></dd></div></dl>
-      <p class="detail-demo-note">${window.HospitalI18n.mark("trace_map.datos_de_demostracion_las_posiciones_y_los_horarios_son_simulados_la_distancia_es_aproxima")}</p>
-      <button class="details-button" type="button" data-focus-route="${transfer.id}">${window.HospitalI18n.mark("trace_map.centrar_en_el_mapa")}<span aria-hidden="true">↗</span></button>`
+      ` +
+        `<div style="--route-color:${transfer.color}">${vehicleBadge(transfer)}` +
+        `</div>
+      ` +
+        `<h2 id="detail-title">` +
+        `<a href="trace-view.php?id=${encodeURIComponent(transfer.id)}" style="color:inherit;text-decoration:none">${escapeHTML(transfer.name)}` +
+        `</a>` +
+        `</h2>
+      ` +
+        `<p class="detail-subtitle">${window.HospitalI18n.mark("trace_map.ambulancia_value_value", { value0: escapeHTML(transfer.ambulance), value1: badge(transfer) })}` +
+        `</p>
+      ` +
+        `<div class="detail-route" style="--route-color:${transfer.color}">
+        ` +
+        `<div class="detail-stop">` +
+        `<small>${window.HospitalI18n.mark("trace_view.origen")}` +
+        `</small>` +
+        `<strong>${escapeHTML(transfer.origin)}` +
+        `</strong>` +
+        `</div>
+        ` +
+        `<div class="detail-stop">` +
+        `<small>${window.HospitalI18n.mark("trace_view.destino")}` +
+        `</small>` +
+        `<strong>${escapeHTML(transfer.destination)}` +
+        `</strong>` +
+        `</div>
+      ` +
+        `</div>
+      ` +
+        `<dl class="detail-stats">` +
+        `<div>` +
+        `<dt>${window.HospitalI18n.mark("trace_map.llegada_estimada")}` +
+        `</dt>` +
+        `<dd>` +
+        `<time datetime="${transfer.eta}">${transfer.eta}` +
+        `</time>` +
+        `</dd>` +
+        `</div>
+        ` +
+        `<div>` +
+        `<dt>${window.HospitalI18n.mark("trace_map.distancia_de_la_ruta")}` +
+        `</dt>` +
+        `<dd>${distance} ` +
+        `<small>${window.HospitalI18n.mark("trace_map.km")}` +
+        `</small>` +
+        `</dd>` +
+        `</div>` +
+        `</dl>
+      ` +
+        `<p class="detail-demo-note">${window.HospitalI18n.mark("trace_map.datos_de_demostracion_las_posiciones_y_los_horarios_son_simulados_la_distancia_es_aproxima")}` +
+        `</p>
+      ` +
+        `<button class="details-button" type="button" data-focus-route="${transfer.id}">${window.HospitalI18n.mark("trace_map.centrar_en_el_mapa")}` +
+        `<span aria-hidden="true">↗` +
+        `</span>` +
+        `</button>`
     );
-    if (!elements.dialog.open) elements.dialog.showModal();
+    if (!elements.dialog.open) {
+      elements.dialog.showModal();
+    }
   }
 
   function resetFilters() {
@@ -728,23 +922,33 @@
   function setPanelVisible(visible, { pan = true } = {}) {
     elements.panel.hidden = !visible;
     $('list-toggle').setAttribute('aria-expanded', String(visible));
-    const label = visible
-      ? window.HospitalI18n.t("trace_map.ocultar_lista_de_traslados")
-      : window.HospitalI18n.t("trace_map.mostrar_lista_de_traslados");
-    window.HospitalI18n.bindAttr($('list-toggle'), "aria-label", () =>
-      visible
-        ? window.HospitalI18n.t("trace_map.ocultar_lista_de_traslados")
-        : window.HospitalI18n.t("trace_map.mostrar_lista_de_traslados")
-    );
-    window.HospitalI18n.bindAttr($('list-toggle'), "title", () =>
-      visible
-        ? window.HospitalI18n.t("trace_map.ocultar_lista_de_traslados")
-        : window.HospitalI18n.t("trace_map.mostrar_lista_de_traslados")
-    );
+    let labelValue;
+    if (visible) {
+      labelValue = window.HospitalI18n.t("trace_map.ocultar_lista_de_traslados");
+    } else {
+      labelValue = window.HospitalI18n.t("trace_map.mostrar_lista_de_traslados");
+    }
+    const label = labelValue;
+    window.HospitalI18n.bindAttr($('list-toggle'), "aria-label", () => {
+      if (visible) {
+        return window.HospitalI18n.t("trace_map.ocultar_lista_de_traslados");
+      } else {
+        return window.HospitalI18n.t("trace_map.mostrar_lista_de_traslados");
+      }
+    });
+    window.HospitalI18n.bindAttr($('list-toggle'), "title", () => {
+      if (visible) {
+        return window.HospitalI18n.t("trace_map.ocultar_lista_de_traslados");
+      } else {
+        return window.HospitalI18n.t("trace_map.mostrar_lista_de_traslados");
+      }
+    });
     if (map && compactScreen.matches) {
-      if (visible) map.closePopup();
-      else if (pan && state.selectedId && !popupVisible)
+      if (visible) {
+        map.closePopup();
+      } else if (pan && state.selectedId && !popupVisible) {
         showTransferPopup(transfers.find(item => item.id === state.selectedId));
+      }
     }
     if (pan && map && popupVisible && state.selectedId) {
       panToTransfer(transfers.find(item => item.id === state.selectedId));
@@ -757,31 +961,43 @@
   ];
 
   function setSearchExpanded(expanded, { focus = true } = {}) {
-    if (expanded) closePopovers();
+    if (expanded) {
+      closePopovers();
+    }
     $('map-search').classList.toggle('search-active', expanded);
     $('search-toggle').setAttribute('aria-expanded', String(expanded));
-    window.HospitalI18n.bindAttr($('search-toggle'), "aria-label", () =>
-      expanded
-        ? window.HospitalI18n.t("universal_search.cerrar_busqueda")
-        : window.HospitalI18n.t("main_menu.abrir_busqueda")
-    );
+    window.HospitalI18n.bindAttr($('search-toggle'), "aria-label", () => {
+      if (expanded) {
+        return window.HospitalI18n.t("universal_search.cerrar_busqueda");
+      } else {
+        return window.HospitalI18n.t("main_menu.abrir_busqueda");
+      }
+    });
     elements.search.setAttribute('aria-hidden', String(!expanded));
     elements.search.tabIndex = expanded ? 0 : -1;
     elements.search.hidden = !expanded;
-    if (expanded && focus) elements.search.focus({ preventScroll: true });
+    if (expanded && focus) {
+      elements.search.focus({ preventScroll: true });
+    }
     if (!expanded) {
-      if (focus) $('search-toggle').focus({ preventScroll: true });
+      if (focus) {
+        $('search-toggle').focus({ preventScroll: true });
+      }
     }
   }
 
   function updateNavigationIndicator() {
     const active = document.querySelector('.sidebar-nav .nav-item.active');
-    if (active) $('sidebar-links').style.setProperty('--indicator-top', `${active.offsetTop}px`);
+    if (active) {
+      $('sidebar-links').style.setProperty('--indicator-top', `${active.offsetTop}px`);
+    }
   }
 
   function closePopovers(except = null) {
     popovers.forEach(({ button, panel }) => {
-      if (panel === except) return;
+      if (panel === except) {
+        return;
+      }
       panel.hidden = true;
       button.setAttribute('aria-expanded', 'false');
     });
@@ -797,15 +1013,21 @@
     });
     elements.list.addEventListener('click', event => {
       const card = event.target.closest('[data-transfer-id]');
-      if (card) selectTransfer(card.dataset.transferId);
+      if (card) {
+        selectTransfer(card.dataset.transferId);
+      }
     });
     elements.legend.addEventListener('click', event => {
       const row = event.target.closest('[data-transfer-id]');
-      if (row) selectTransfer(row.dataset.transferId, { scroll: true });
+      if (row) {
+        selectTransfer(row.dataset.transferId, { scroll: true });
+      }
     });
     elements.stage.addEventListener('click', event => {
       const button = event.target.closest('[data-detail-id]');
-      if (button) openDetails(button.dataset.detailId, button);
+      if (button) {
+        openDetails(button.dataset.detailId, button);
+      }
     });
     $('filter-panel').addEventListener('submit', event => event.preventDefault());
     $('filter-panel').addEventListener('change', () => {
@@ -830,7 +1052,9 @@
     popovers.forEach(({ button, panel }) => {
       button.addEventListener('click', () => {
         const opening = panel.hidden;
-        if (opening) setSearchExpanded(false, { focus: false });
+        if (opening) {
+          setSearchExpanded(false, { focus: false });
+        }
         closePopovers(panel);
         panel.hidden = !opening;
         button.setAttribute('aria-expanded', String(opening));
@@ -839,12 +1063,17 @@
     document.addEventListener('click', event => {
       if (
         !popovers.some(({ button, panel }) => button.contains(event.target) || panel.contains(event.target))
-      )
+      ) {
         closePopovers();
-      if (!$('map-search').contains(event.target)) setSearchExpanded(false, { focus: false });
+      }
+      if (!$('map-search').contains(event.target)) {
+        setSearchExpanded(false, { focus: false });
+      }
     });
     document.addEventListener('keydown', event => {
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented) {
+        return;
+      }
       const typing =
         event.target instanceof HTMLElement &&
         (event.target.matches('input, textarea, select') || event.target.isContentEditable);
@@ -853,18 +1082,23 @@
         setSearchExpanded(true);
       }
       if (event.key === 'Escape') {
-        if ($('map-search').classList.contains('search-active') && !elements.dialog.open)
+        if ($('map-search').classList.contains('search-active') && !elements.dialog.open) {
           setSearchExpanded(false);
+        }
         const opened = popovers.find(({ panel }) => !panel.hidden);
         closePopovers();
-        if (opened) opened.button.focus();
-        if (elements.stage.classList.contains('expanded-map')) exitExpandedMap();
+        if (opened) {
+          opened.button.focus();
+        }
+        if (elements.stage.classList.contains('expanded-map')) {
+          exitExpandedMap();
+        }
       }
     });
     $('zoom-in').addEventListener('click', () => map?.zoomIn(.5));
     $('zoom-out').addEventListener('click', () => map?.zoomOut(.5));
     $('locate').addEventListener('click', () => {
-      const item = transfers.find(t => t.id === state.selectedId);
+      const item = transfers.find(transferRecord => transferRecord.id === state.selectedId);
       if (item) {
         showTransferPopup(item);
         panToTransfer(item);
@@ -883,17 +1117,29 @@
       renderMapLayers(getVisibleTransfers());
     });
     $('fit-fleet').addEventListener('click', () => {
-      if (!map) return;
+      if (!map) {
+        return;
+      }
       const points = getVisibleTransfers().flatMap(item => item.coordinates);
       if (!points.length) {
         toast(() => window.HospitalI18n.t("trace_map.no_hay_rutas_visibles_para_centrar"));
         return;
       }
       map.closePopup();
-      const leftPadding =
-        !compactScreen.matches && !elements.panel.hidden ? elements.panel.offsetWidth + 45 : 35;
-      const bottomPadding =
-        compactScreen.matches && !elements.panel.hidden ? elements.sidebar.offsetHeight + 35 : 55;
+      let leftPaddingValue;
+      if (!compactScreen.matches && !elements.panel.hidden) {
+        leftPaddingValue = elements.panel.offsetWidth + 45;
+      } else {
+        leftPaddingValue = 35;
+      }
+      const leftPadding = leftPaddingValue;
+      let bottomPaddingValue;
+      if (compactScreen.matches && !elements.panel.hidden) {
+        bottomPaddingValue = elements.sidebar.offsetHeight + 35;
+      } else {
+        bottomPaddingValue = 55;
+      }
+      const bottomPadding = bottomPaddingValue;
       map.fitBounds(L.latLngBounds(points), {
         paddingTopLeft: [leftPadding, 55],
         paddingBottomRight: [80, bottomPadding],
@@ -903,7 +1149,9 @@
       closePopovers();
     });
     $('reset-view').addEventListener('click', () => {
-      if (!map) return;
+      if (!map) {
+        return;
+      }
       map.closePopup();
       map.setView(CENTER, INITIAL_ZOOM, { animate: !reduceMotion });
       toast(() => window.HospitalI18n.t("trace_map.vista_de_montevideo_restablecida"));
@@ -912,11 +1160,13 @@
     document.addEventListener('fullscreenchange', () => {
       const active = document.fullscreenElement === elements.stage;
       $('fullscreen-toggle').setAttribute('aria-pressed', String(active));
-      window.HospitalI18n.bindAttr($('fullscreen-toggle'), "aria-label", () =>
-        active
-          ? window.HospitalI18n.t("trace_map.salir_de_pantalla_completa")
-          : window.HospitalI18n.t("trace_map.pantalla_completa")
-      );
+      window.HospitalI18n.bindAttr($('fullscreen-toggle'), "aria-label", () => {
+        if (active) {
+          return window.HospitalI18n.t("trace_map.salir_de_pantalla_completa");
+        } else {
+          return window.HospitalI18n.t("trace_map.pantalla_completa");
+        }
+      });
       map?.invalidateSize();
     });
     $('close-details').addEventListener('click', () => elements.dialog.close());
@@ -932,12 +1182,15 @@
           event.clientX > bounds.right ||
           event.clientY < bounds.top ||
           event.clientY > bounds.bottom
-        )
+        ) {
           elements.dialog.close();
+        }
       }
     });
     elements.dialog.addEventListener('close', () => {
-      if (lastDialogTrigger?.isConnected) lastDialogTrigger.focus({ preventScroll: true });
+      if (lastDialogTrigger?.isConnected) {
+        lastDialogTrigger.focus({ preventScroll: true });
+      }
     });
     window.addEventListener('pagehide', () => {
       stopped = true;
@@ -950,7 +1203,9 @@
         poll();
         simulationTimer = setInterval(() => {
           freshness();
-          if (!document.hidden) poll();
+          if (!document.hidden) {
+            poll();
+          }
         }, 3000);
       }
     });
@@ -975,8 +1230,9 @@
       return;
     }
     try {
-      if (!elements.stage.requestFullscreen)
+      if (!elements.stage.requestFullscreen) {
         throw new Error(window.HospitalI18n.t("trace_map.fullscreen_api_unavailable"));
+      }
       await elements.stage.requestFullscreen();
     } catch {
       // Safari/iOS and embedded previews can deny native fullscreen. This local
@@ -1006,7 +1262,9 @@
   poll();
   simulationTimer = setInterval(() => {
     freshness();
-    if (!document.hidden) poll();
+    if (!document.hidden) {
+      poll();
+    }
   }, 3000);
   window.addEventListener('hospital:localechange', () => {
     renderAll();

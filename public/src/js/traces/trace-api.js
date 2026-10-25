@@ -1,85 +1,96 @@
+/* Shares transfer requests, date/location fields and lazily translated labels.
+ * API: transfers list/get/catalogs/patients/create-token/create/update/status/draft;
+ * tracking snapshot, including cursor-based fleet loading.
+ * DOM: none; the existing TraceApi object is used by the transfer pages.
+ */
 (() => {
   'use strict';
-  const api = window.HospitalApi,
-    path = name => `transfers.php?action=${name}`;
+  const api = window.HospitalApi;
+  const path = name => `transfers.php?action=${name}`;
   const labels = {
-    get scheduled() {
+    scheduled: function () {
       return window.HospitalI18n.t("trace_map.programado_2");
     },
-    get in_progress() {
+    in_progress: function () {
       return window.HospitalI18n.t("trace_map.en_curso_2");
     },
-    get arrived() {
+    arrived: function () {
       return window.HospitalI18n.t("trace_view.en_destino");
     },
-    get completed() {
+    completed: function () {
       return window.HospitalI18n.t("trace_view.finalizado");
     },
-    get cancelled() {
+    cancelled: function () {
       return window.HospitalI18n.t("trace_api.cancelado");
     }
   };
   const cargo = {
-    get patient() {
+    patient: function () {
       return window.HospitalI18n.t("trace_view.paciente");
     },
-    get biological() {
+    biological: function () {
       return window.HospitalI18n.t("trace_new.biologico");
     },
-    get equipment() {
+    equipment: function () {
       return window.HospitalI18n.t("trace.equipo");
     }
   };
   const priority = {
-    get low() {
+    low: function () {
       return window.HospitalI18n.t("trace_view.baja");
     },
-    get normal() {
+    normal: function () {
       return window.HospitalI18n.t("trace_view.normal");
     },
-    get high() {
+    high: function () {
       return window.HospitalI18n.t("trace_view.alta");
     },
-    get critical() {
+    critical: function () {
       return window.HospitalI18n.t("trace_view.critica");
     }
   };
   const reason = {
-    get consulta() {
+    consulta: function () {
       return window.HospitalI18n.t("trace_new.consulta_medica");
     },
-    get estudio() {
+    estudio: function () {
       return window.HospitalI18n.t("trace_new.estudio_o_tratamiento");
     },
-    get alta() {
+    alta: function () {
       return window.HospitalI18n.t("trace_new.alta_medica");
     },
-    get emergencia() {
+    emergencia: function () {
       return window.HospitalI18n.t("trace_new.emergencia");
     },
-    get insumos() {
+    insumos: function () {
       return window.HospitalI18n.t("trace_new.traslado_de_insumos");
     }
   };
-  const dateTime = value =>
-    value
-      ? new Intl.DateTimeFormat(window.HospitalI18n.locale, {
-          timeZone: 'America/Montevideo',
-          dateStyle: 'short',
-          timeStyle: 'short',
-          hour12: false
-        }).format(new Date(value))
-      : '—';
-  const time = value =>
-    value
-      ? new Intl.DateTimeFormat(window.HospitalI18n.locale, {
-          timeZone: 'America/Montevideo',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
-        }).format(new Date(value))
-      : '—';
+  const dateTime = value => {
+    if (value) {
+      return new Intl.DateTimeFormat(window.HospitalI18n.locale, {
+        timeZone: 'America/Montevideo',
+        dateStyle: 'short',
+        timeStyle: 'short',
+        hour12: false
+      }).format(new Date(value));
+    } else {
+      return '—';
+    }
+  };
+  const time = value => {
+    if (value) {
+      return new Intl.DateTimeFormat(window.HospitalI18n.locale, {
+        timeZone: 'America/Montevideo',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).format(new Date(value));
+    } else {
+      return '—';
+    }
+  };
   function localParts(value) {
     const parts = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'America/Montevideo',
@@ -90,20 +101,35 @@
       minute: '2-digit',
       hourCycle: 'h23'
     }).formatToParts(new Date(value));
-    const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
-    return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` };
+    const dateParts = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return {
+      date: `${dateParts.year}-${dateParts.month}-${dateParts.day}`,
+      time: `${dateParts.hour}:${dateParts.minute}`
+    };
   }
   const facilityLabel = item => [item.name, item.address, item.locality].filter(Boolean).join(' · ');
   function findFacility(text, facilities) {
-    const exact = facilities.find(f => facilityLabel(f) === text);
-    if (exact) return exact;
-    const names = facilities.filter(f => f.name === text);
-    return names.length === 1 ? names[0] : null;
+    const exact = facilities.find(facilityRecord => facilityLabel(facilityRecord) === text);
+    if (exact) {
+      return exact;
+    }
+    const names = facilities.filter(facilityRecord => facilityRecord.name === text);
+    if (names.length === 1) {
+      return names[0];
+    } else {
+      return null;
+    }
   }
   function locationFields(prefix, text, facilities, previous = null) {
     text = text.trim();
     const keep = previous && (text === facilityLabel(previous) || text === previous.name);
-    const item = keep ? previous : findFacility(text, facilities);
+    let itemValue;
+    if (keep) {
+      itemValue = previous;
+    } else {
+      itemValue = findFacility(text, facilities);
+    }
+    const item = itemValue;
     return {
       [`${prefix}_facility_id`]: item?.id ?? null,
       [`${prefix}_name`]: item?.name ?? text,
@@ -111,7 +137,7 @@
     };
   }
   function fields(item) {
-    const p = localParts(item.scheduled_at);
+    const dateParts = localParts(item.scheduled_at);
     return {
       route_template_id: item.route_template_id,
       ambulance_id: item.ambulance.id,
@@ -124,7 +150,7 @@
       origin_address: item.origin.address,
       destination_name: item.destination.name,
       destination_address: item.destination.address,
-      scheduled_at: `${p.date}T${p.time}:00-03:00`,
+      scheduled_at: `${dateParts.date}T${dateParts.time}:00-03:00`,
       cargo_type: item.cargo_type,
       priority: item.priority,
       reason: item.reason,
@@ -156,7 +182,7 @@
         true
       ),
     catalogs: () => api.get(path('catalogs')),
-    patients: q => api.post(path('patients'), { q }),
+    patients: query => api.post(path('patients'), { q: query }),
     token: () => api.get(path('create-token')),
     create: body => api.post(path('create'), body),
     update: body => api.post(path('update'), body),
@@ -165,9 +191,9 @@
     saveDraft: body => api.post(path('draft'), body),
     snapshot: query => api.get(`tracking.php?action=snapshot&${new URLSearchParams(query || {})}`),
     async fleet() {
-      let cursor = null,
-        items = [],
-        result;
+      let cursor = null;
+      let items = [];
+      let result;
       do {
         result = await this.snapshot(cursor ? { after_id: cursor } : {});
         items.push(...result.transfers);

@@ -42,3 +42,10 @@ Each batch records exact intentional source hashes, runs the existing source-equ
 - Expanded guards, choices and declarations; named file-extension stages, query arguments and rotated image dimensions. QR/canvas assignments are explicit and retain the original setter order.
 - Kept native FormData serialization, two-field entry destructuring, short URL/attribute choices and QR x/y coordinates where clearer; request keys and binary handling are unchanged. Template splitting proves identical text/expression order.
 - PASS: 184 UI checks / 16 desktop-phone/theme cases; 182 document browser checks across eight root/mount/language/theme/viewport cases; 46 document-link SQL/API checks; 98 boundary checks. Source equivalence: 91 PHP / 35 JS / four exact files.
+
+## Batch 6 — transfers and maps
+
+- Files: trace-api.js, trace.js, trace-view.js, trace-map.js and trace-map-shared.js; added purpose/API/DOM headers.
+- Expanded guards, choices, declarations and callback defaults; named date parts, facilities, controls, request revisions, stops, points and haversine terms. Converted translation maps and every consumer to lazy function calls; private STATUS entries are ordinary data with label functions.
+- The STATUS objects have no identity comparisons, writes or exported consumers. Kept the public live name/snapshot getters and MediaQuery-style width getter because their property contracts are clearer and safer; kept x/y coordinates and short attribute choices.
+- PASS: 93 root/mounted transfer/survey workflow checks, transfer/map UI journeys, 71 runtime bilingual checks, 98 boundary checks; source equivalence: 91 PHP / 35 JS / five exact files. Template text/evaluation order, API keys, stale-request guards and simulation behavior are preserved.

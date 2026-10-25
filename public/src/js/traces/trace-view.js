@@ -1,3 +1,8 @@
+/* Displays a transfer, its route/history, editing and lifecycle dialogs.
+ * API: transfers get/catalogs/patients/update/status and tracking snapshot.
+ * DOM: transfer-detail, edit-form, status-form and cancel-form.
+ * $ finds an element by ID; TraceApi translates status/priority/reason labels.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
   function timelineClass(index) {
@@ -13,10 +18,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await window.HospitalI18n.ready;
   await window.HospitalAuth.ready;
 
-  const api = window.TraceApi,
-    $ = id => document.getElementById(id),
-    detail = $('transfer-detail'),
-    editForm = $('edit-form');
+  const api = window.TraceApi;
+  const $ = id => document.getElementById(id);
+  const detail = $('transfer-detail');
+  const editForm = $('edit-form');
   const id = new URLSearchParams(location.search).get('id');
   const nextStates = {
     scheduled: ['in_progress'],
@@ -25,31 +30,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     completed: [],
     cancelled: []
   };
-  const crewLabel = item => `${item.full_name} · #${item.id}`,
-    vehicleLabel = item => `${item.code} · ${item.plate}`,
-    patientLabel = item => `${item.full_name} · ${item.national_id}`;
-  let transfer,
-    editBase,
-    statusBase,
-    cancelBase,
-    catalog,
-    patientChoices = [],
-    patientTimer,
-    patientRevision = 0,
-    busy = false,
-    refreshing = false,
-    pollTimer;
-  let routeMap, routeLine, routeStops, routeMarker, routeGeometry, mapFrame;
+  const crewLabel = item => `${item.full_name} · #${item.id}`;
+  const vehicleLabel = item => `${item.code} · ${item.plate}`;
+  const patientLabel = item => `${item.full_name} · ${item.national_id}`;
+  let transfer;
+  let editBase;
+  let statusBase;
+  let cancelBase;
+  let catalog;
+  let patientChoices = [];
+  let patientTimer;
+  let patientRevision = 0;
+  let busy = false;
+  let refreshing = false;
+  let pollTimer;
+  let routeMap;
+  let routeLine;
+  let routeStops;
+  let routeMarker;
+  let routeGeometry;
+  let mapFrame;
   const triggers = new Map();
   function field(name, value) {
-    detail.querySelectorAll(`[data-field="${name}"]`).forEach(el => {
-      window.HospitalI18n.bindText(el, () => value ?? '—');
+    detail.querySelectorAll(`[data-field="${name}"]`).forEach(fieldElement => {
+      window.HospitalI18n.bindText(fieldElement, () => value ?? '—');
     });
   }
   function render() {
     detail.dataset.transferId = transfer.id;
     detail.dataset.status = transfer.status.replace('_', '-');
-    detail.dataset.priority = api.priority[transfer.priority];
+    detail.dataset.priority = api.priority[transfer.priority]?.();
     window.HospitalI18n.bindText($('transfer-title'), () =>
       window.HospitalI18n.t("trace.traslado_value", { value0: transfer.id })
     );
@@ -58,10 +68,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       { value0: transfer.id }
     );
     window.HospitalI18n.bindTitle(() => document.documentElement.dataset.documentTitle);
-    detail.querySelectorAll('[data-status-label]').forEach(el => {
-      window.HospitalI18n.bindText(el, () =>
-        transfer.is_delayed ? window.HospitalI18n.t("trace_map.demorado_2") : api.labels[transfer.status]
-      );
+    detail.querySelectorAll('[data-status-label]').forEach(fieldElement => {
+      window.HospitalI18n.bindText(fieldElement, () => {
+        if (transfer.is_delayed) {
+          return window.HospitalI18n.t("trace_map.demorado_2");
+        } else {
+          return api.labels[transfer.status]?.();
+        }
+      });
     });
     window.HospitalI18n.bindText(detail.querySelector('.created-at'), () =>
       window.HospitalI18n.t("trace_view.creado_el_value", { value0: api.dateTime(transfer.created_at) })
@@ -70,7 +84,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       api.dateTime(transfer.started_at ?? transfer.scheduled_at)
     );
     $('transfer-start-time').dateTime = transfer.started_at ?? transfer.scheduled_at;
-    const doctor = transfer.crew.companion?.responsibility === 'doctor' ? transfer.crew.companion.name : null;
+    let doctorValue;
+    if (transfer.crew.companion?.responsibility === 'doctor') {
+      doctorValue = transfer.crew.companion.name;
+    } else {
+      doctorValue = null;
+    }
+    const doctor = doctorValue;
     const values = {
       ambulance: transfer.ambulance.code,
       plate: transfer.ambulance.plate,
@@ -90,9 +110,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       patientNotes: transfer.critical_patient
         ? window.HospitalI18n.t("trace_new.paciente_en_estado_critico")
         : null,
-      reason: api.reason[transfer.reason],
-      cargo: api.cargo[transfer.cargo_type],
-      priority: api.priority[transfer.priority],
+      reason: api.reason[transfer.reason]?.(),
+      cargo: api.cargo[transfer.cargo_type]?.(),
+      priority: api.priority[transfer.priority]?.(),
       withDoctor: doctor ? window.HospitalI18n.t("trace_view.si") : window.HospitalI18n.t("trace_view.no"),
       doctor,
       equipment: transfer.special_equipment
@@ -104,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           transfer.route_snapshot?.stops?.length
             ? window.HospitalI18n.t("trace_view.paradas_value", {
                 value0: transfer.route_snapshot.stops
-                  .map(s => [s.name, s.address].filter(Boolean).join(' · '))
+                  .map(stopRecord => [stopRecord.name, stopRecord.address].filter(Boolean).join(' · '))
                   .join(' → ')
               })
             : ''
@@ -127,11 +147,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             })
     };
     Object.entries(values).forEach(([name, value]) => field(name, value));
-    window.HospitalI18n.bindText($('elapsed-time'), () =>
-      transfer.started_at
-        ? window.HospitalI18n.t("trace_view.value_min", { value0: Math.floor(transfer.elapsed_seconds / 60) })
-        : '—'
-    );
+    window.HospitalI18n.bindText($('elapsed-time'), () => {
+      if (transfer.started_at) {
+        return window.HospitalI18n.t("trace_view.value_min", {
+          value0: Math.floor(transfer.elapsed_seconds / 60)
+        });
+      } else {
+        return '—';
+      }
+    });
     const terminal = ['completed', 'cancelled'].includes(transfer.status);
     $('edit-transfer').disabled = busy || !transfer.can_manage || transfer.status !== 'scheduled';
     $('cancel-transfer').disabled = busy || !transfer.can_manage || terminal;
@@ -154,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               return window.HospitalI18n.t("trace_view.datos_actualizados");
             } else {
               if (event.to_status) {
-                return api.labels[event.to_status];
+                return api.labels[event.to_status]?.();
               } else {
                 return window.HospitalI18n.t("trace_view.actividad_del_traslado");
               }
@@ -175,7 +199,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderMap();
   }
   function renderMap() {
-    if (!transfer) return;
+    if (!transfer) {
+      return;
+    }
     if (transfer.geometry.length < 2) {
       routeMap?.remove();
       routeMap = null;
@@ -186,11 +212,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       $('map-preview-status').hidden = false;
       return;
     }
-    if (!window.L) return;
+    if (!window.L) {
+      return;
+    }
     const space = detail.querySelector('.map-space');
-    if (!space.clientWidth || !space.clientHeight) return;
-    const route = window.TraceMapShared.adapt(transfer),
-      key = JSON.stringify(route.coordinates);
+    if (!space.clientWidth || !space.clientHeight) {
+      return;
+    }
+    const route = window.TraceMapShared.adapt(transfer);
+    const key = JSON.stringify(route.coordinates);
     if (!routeMap) {
       window.HospitalI18n.bindText($('map-preview-status'), () =>
         window.HospitalI18n.t("trace_view.cargando_mapa")
@@ -258,11 +288,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     cancelAnimationFrame(mapFrame);
     mapFrame = requestAnimationFrame(() => {
       renderMap();
-      if (routeMap && transfer?.geometry.length >= 2)
+      if (routeMap && transfer?.geometry.length >= 2) {
         routeMap.fitBounds(
-          transfer.geometry.map(p => [p.latitude, p.longitude]),
+          transfer.geometry.map(point => [point.latitude, point.longitude]),
           { padding: [14, 14], maxZoom: 15, animate: false }
         );
+      }
     });
   }).observe(detail.querySelector('.map-space'));
   document.querySelectorAll('.transfer-dialog').forEach(dialog => {
@@ -270,12 +301,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       .querySelectorAll('[data-close-dialog]')
       .forEach(button => button.addEventListener('click', () => dialog.close()));
     dialog.addEventListener('cancel', event => {
-      if (busy) event.preventDefault();
+      if (busy) {
+        event.preventDefault();
+      }
     });
     dialog.addEventListener('close', () => {
       const trigger = triggers.get(dialog);
-      if (trigger?.disabled) document.querySelector('.back-link').focus();
-      else trigger?.focus();
+      if (trigger?.disabled) {
+        document.querySelector('.back-link').focus();
+      } else {
+        trigger?.focus();
+      }
     });
   });
   function openDialog(dialog, trigger) {
@@ -291,10 +327,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       .forEach(control => {
         control.disabled = value;
       });
-    if (transfer) render();
+    if (transfer) {
+      render();
+    }
   }
   async function save(work, dialog, text) {
-    if (busy) return;
+    if (busy) {
+      return;
+    }
     setBusy(true);
     try {
       transfer = await work();
@@ -309,7 +349,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
   $('edit-transfer').addEventListener('click', async event => {
-    if (busy || !transfer?.can_manage) return;
+    if (busy || !transfer?.can_manage) {
+      return;
+    }
     const trigger = event.currentTarget;
     setBusy(true);
     try {
@@ -341,7 +383,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           window.HospitalI18n.option(() => `${item.code} · ${item.name}`, item.id)
         )
       );
-      if (transfer.route_template_id && !catalog.routes.some(r => r.id === transfer.route_template_id))
+      if (
+        transfer.route_template_id &&
+        !catalog.routes.some(routeRecord => routeRecord.id === transfer.route_template_id)
+      ) {
         editForm.elements.routeTemplate.add(
           window.HospitalI18n.option(
             () =>
@@ -350,6 +395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             transfer.route_template_id
           )
         );
+      }
       const values = {
         routeTemplate: transfer.route_template_id ?? '',
         ambulance: vehicleLabel(transfer.ambulance),
@@ -365,12 +411,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         notes: transfer.notes
       };
       editForm.elements.reason.replaceChildren(
-        ...Object.entries(api.reason).map(([value, label]) => window.HospitalI18n.option(() => label, value))
+        ...Object.entries(api.reason)
+          .map(([labelKey, makeLabel]) => [labelKey, makeLabel()])
+          .map(([value, label]) => window.HospitalI18n.option(() => label, value))
       );
       editForm.elements.priority.replaceChildren(
-        ...Object.entries(api.priority).map(([value, label]) =>
-          window.HospitalI18n.option(() => label, value)
-        )
+        ...Object.entries(api.priority)
+          .map(([labelKey, makeLabel]) => [labelKey, makeLabel()])
+          .map(([value, label]) => window.HospitalI18n.option(() => label, value))
       );
       Object.entries(values).forEach(([name, value]) => {
         editForm.elements[name].value = value;
@@ -386,24 +434,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   function applyEditRoute(fill = true) {
-    const selected = editForm.elements.routeTemplate.value,
-      route = catalog?.routes.find(r => r.id === selected);
+    const selected = editForm.elements.routeTemplate.value;
+    const route = catalog?.routes.find(routeRecord => routeRecord.id === selected);
     for (const key of ['origin', 'destination']) {
       editForm.elements[key].readOnly = Boolean(selected);
-      if (fill && route) editForm.elements[key].value = route[`${key}_address`] || route[`${key}_name`];
-      else if (fill && !selected) editForm.elements[key].value = editBase[key].address || editBase[key].name;
+      if (fill && route) {
+        editForm.elements[key].value = route[`${key}_address`] || route[`${key}_name`];
+      } else if (fill && !selected) {
+        editForm.elements[key].value = editBase[key].address || editBase[key].name;
+      }
     }
   }
   editForm.elements.routeTemplate.addEventListener('change', () => applyEditRoute());
   editForm.elements.patient.addEventListener('input', () => {
     clearTimeout(patientTimer);
-    const r = ++patientRevision,
-      q = editForm.elements.patient.value.trim();
-    if (q.length < 2) return;
+    const searchRevision = ++patientRevision;
+    const patientQuery = editForm.elements.patient.value.trim();
+    if (patientQuery.length < 2) {
+      return;
+    }
     patientTimer = setTimeout(async () => {
       try {
-        const found = await api.patients(q);
-        if (r !== patientRevision) return;
+        const found = await api.patients(patientQuery);
+        if (searchRevision !== patientRevision) {
+          return;
+        }
         patientChoices = [...(editBase.patient ? [editBase.patient] : []), ...found];
         $('edit-patients').replaceChildren(
           ...found.map(item => window.HospitalI18n.option(() => patientLabel(item), patientLabel(item)))
@@ -415,14 +470,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   editForm.addEventListener('submit', event => {
     event.preventDefault();
-    if (busy || !editForm.checkValidity()) return;
-    const value = name => editForm.elements[name].value.trim(),
-      base = api.fields(editBase);
+    if (busy || !editForm.checkValidity()) {
+      return;
+    }
+    const value = name => editForm.elements[name].value.trim();
+    const base = api.fields(editBase);
     const vehicle = catalog.ambulances.find(item => vehicleLabel(item) === value('ambulance'));
     const crew = (name, roles) =>
       catalog.crew.find(item => crewLabel(item) === value(name) && roles.includes(item.role_code));
-    const driver = crew('driver', ['driver']),
-      companion = value('companion') ? crew('companion', ['copilot', 'doctor']) : null;
+    const driver = crew('driver', ['driver']);
+    let companionValue;
+    if (value('companion')) {
+      companionValue = crew('companion', ['copilot', 'doctor']);
+    } else {
+      companionValue = null;
+    }
+    const companion = companionValue;
     const patient = patientChoices.find(item => patientLabel(item) === value('patient'));
     if (
       !vehicle ||
@@ -449,10 +512,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       notes: value('notes')
     });
     base.route_template_id = value('routeTemplate') || null;
-    const selectedRoute = catalog.routes.find(r => r.id === base.route_template_id);
+    const selectedRoute = catalog.routes.find(routeRecord => routeRecord.id === base.route_template_id);
     base.refresh_route = editForm.elements.refreshRoute.checked;
-    if (selectedRoute && (base.route_template_id !== editBase.route_template_id || base.refresh_route))
+    if (selectedRoute && (base.route_template_id !== editBase.route_template_id || base.refresh_route)) {
       base.route_version = selectedRoute.version;
+    }
     save(
       () => api.update({ ...base, id, version: editBase.version }),
       $('edit-dialog'),
@@ -463,7 +527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusBase = transfer;
     $('transfer-status').replaceChildren(
       ...nextStates[transfer.status].map(status =>
-        window.HospitalI18n.option(() => api.labels[status], status)
+        window.HospitalI18n.option(() => api.labels[status]?.(), status)
       )
     );
     openDialog($('status-dialog'), event.currentTarget);
@@ -489,11 +553,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
   });
   async function refresh() {
-    if (refreshing || busy || document.hidden || !transfer) return;
+    if (refreshing || busy || document.hidden || !transfer) {
+      return;
+    }
     refreshing = true;
     try {
-      const snapshot = await api.snapshot({ transfer_id: id }),
-        item = snapshot.transfers[0];
+      const snapshot = await api.snapshot({ transfer_id: id });
+      const item = snapshot.transfers[0];
       if (item.version !== transfer.version) {
         transfer = await api.get(id);
       } else {
@@ -525,11 +591,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     tab.addEventListener('click', () => selectTab(tab));
     tab.addEventListener('keydown', event => {
       let nextIndex;
-      if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
-      if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
-      if (event.key === 'Home') nextIndex = 0;
-      if (event.key === 'End') nextIndex = tabs.length - 1;
-      if (nextIndex === undefined) return;
+      if (event.key === 'ArrowRight') {
+        nextIndex = (index + 1) % tabs.length;
+      }
+      if (event.key === 'ArrowLeft') {
+        nextIndex = (index - 1 + tabs.length) % tabs.length;
+      }
+      if (event.key === 'Home') {
+        nextIndex = 0;
+      }
+      if (event.key === 'End') {
+        nextIndex = tabs.length - 1;
+      }
+      if (nextIndex === undefined) {
+        return;
+      }
       event.preventDefault();
       selectTab(tabs[nextIndex]);
       tabs[nextIndex].focus();
@@ -567,9 +643,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   syncNavigation();
   try {
-    if (!(await window.HospitalAuth.ready)) return;
-    if (!/^[1-9][0-9]*$/.test(id ?? ''))
+    if (!(await window.HospitalAuth.ready)) {
+      return;
+    }
+    if (!/^[1-9][0-9]*$/.test(id ?? '')) {
       throw new Error(window.HospitalI18n.t("trace_view.selecciona_un_traslado_desde_la_lista"));
+    }
     try {
       sessionStorage.removeItem('hospitalTransfer1View');
     } catch (_) {}
@@ -586,7 +665,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearTimeout(patientTimer);
   });
   window.addEventListener('hospital:localechange', () => {
-    if (transfer) render();
+    if (transfer) {
+      render();
+    }
   });
   window.addEventListener('hospital:themechange', () => {
     routeStops?.eachLayer(layer =>

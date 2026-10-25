@@ -1,4 +1,7 @@
-/* Shared authorized transfer adapter and existing basemap configuration. */
+/* Shares basemap setup and adapts authorized, fictional transfer positions.
+ * API: no app requests; Leaflet uses the configured CARTO/OpenStreetMap tiles.
+ * DOM: optional carto-basemap-key meta; the calling page owns its map container.
+ */
 (() => {
   'use strict';
   function markerStatus(item) {
@@ -20,11 +23,26 @@
     return 'in_progress';
   }
 
-  function createBasemap(map, { onLoad = () => {}, onFallback = () => {}, onError = () => {} } = {}) {
+  function createBasemap(map, options = {}) {
+    let onLoad = options.onLoad;
+    if (onLoad === undefined) {
+      onLoad = () => {};
+    }
+    let onFallback = options.onFallback;
+    if (onFallback === undefined) {
+      onFallback = () => {};
+    }
+    let onError = options.onError;
+    if (onError === undefined) {
+      onError = () => {};
+    }
     const config = window.TRACE_MAP_CONFIG || {};
     const key =
       config.cartoApiKey || document.querySelector('meta[name="carto-basemap-key"]')?.content.trim();
-    const osmAttribution = `${window.HospitalI18n.mark("trace_map_shared.copy")} <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">${window.HospitalI18n.mark("trace_map_shared.openstreetmap")}</a> ${window.HospitalI18n.mark("trace_map_shared.contributors")}`;
+    const osmAttribution =
+      `${window.HospitalI18n.mark("trace_map_shared.copy")} ` +
+      `<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">${window.HospitalI18n.mark("trace_map_shared.openstreetmap")}` +
+      `</a> ${window.HospitalI18n.mark("trace_map_shared.contributors")}`;
     const osm = () =>
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -46,7 +64,10 @@
       if (useCarto) {
         layer = L.tileLayer(cartoUrl(), {
           maxZoom: 20,
-          attribution: `${osmAttribution}, ${window.HospitalI18n.mark("trace_map_shared.copy")} <a href="https://carto.com/attribution/" target="_blank" rel="noopener">${window.HospitalI18n.mark("trace_map_shared.carto")}</a>`
+          attribution:
+            `${osmAttribution}, ${window.HospitalI18n.mark("trace_map_shared.copy")} ` +
+            `<a href="https://carto.com/attribution/" target="_blank" rel="noopener">${window.HospitalI18n.mark("trace_map_shared.carto")}` +
+            `</a>`
         });
       } else {
         layer = osm();
@@ -91,7 +112,7 @@
 
   function adapt(item) {
     const status = markerStatus(item);
-    const coordinates = item.geometry.map(p => [p.latitude, p.longitude]);
+    const coordinates = item.geometry.map(point => [point.latitude, point.longitude]);
     return {
       id: item.id,
       get name() {

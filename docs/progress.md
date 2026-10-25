@@ -393,3 +393,5 @@ Batch 3 clinical directories are verified: 384 UI, 43 fleet browser, 99 fleet AP
 Batch 4 remaining management scripts are verified: 742 UI checks, live language switching, 98 boundary checks and source equivalence pass. Continue document scripts, then transfers/surveys and shared API infrastructure before PHP.
 
 Batch 5 document scripts are verified: 184 UI, 182 document browser, 46 document-link API and 98 boundary checks pass, as does source equivalence. Continue transfer/map scripts and survey scripts.
+
+Batch 6 transfer/map scripts are verified: 93 workflow checks, transfer/map UI journeys, 71 runtime language checks, 98 boundary checks and source equivalence pass. Public live map accessors remain intentionally. Continue survey scripts and participant page, then shared API infrastructure and PHP.

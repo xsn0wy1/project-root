@@ -1,0 +1,27 @@
+{
+  "public/src/js/traces/trace-api.js": {
+    "after_sha256": "d9e197bf541ff4739054f6b1c234bb922e787a14309b63c47f16beb33ab8f52a",
+    "before_sha256": "7fc149aca78b0f7bb3e2c1664b447308177b9d639bd23b60987d9c19def13825",
+    "reason": "Readability only: transfer/map page headers, explicit branches/guards/declarations/callback defaults, descriptive request/record/control/coordinate names, lazy translation functions with every map consumer updated, private STATUS data, and exact template text/evaluation order. Public live getters for map snapshots, names and width-based matches remain."
+  },
+  "public/src/js/traces/trace-map-shared.js": {
+    "after_sha256": "b99b69cb3b7125b692d4d33a10b22ce208f3a837cce722adc8c3a3f45106bbe3",
+    "before_sha256": "c9ce2a23c1af3deb563894d43e46804f8842587d966d194de4c0ef1965861a69",
+    "reason": "Readability only: transfer/map page headers, explicit branches/guards/declarations/callback defaults, descriptive request/record/control/coordinate names, lazy translation functions with every map consumer updated, private STATUS data, and exact template text/evaluation order. Public live getters for map snapshots, names and width-based matches remain."
+  },
+  "public/src/js/traces/trace-map.js": {
+    "after_sha256": "35d7b653be83c88e080887d9d804db919394b0f8bb15637b04f5ae28730ddda8",
+    "before_sha256": "a7add5353ff8e92b7db8d5039cb0951c18e01b55aba7f3db870c8f39567b70ac",
+    "reason": "Readability only: transfer/map page headers, explicit branches/guards/declarations/callback defaults, descriptive request/record/control/coordinate names, lazy translation functions with every map consumer updated, private STATUS data, and exact template text/evaluation order. Public live getters for map snapshots, names and width-based matches remain."
+  },
+  "public/src/js/traces/trace-view.js": {
+    "after_sha256": "c7c74d4580a19dc61cf7da64d77d010d42df1389bcfd2bf631a55a948bd739dc",
+    "before_sha256": "e1085e96a5fde8ac41d4333b8ad76612430bb0dc536366066d9c9021986a66d0",
+    "reason": "Readability only: transfer/map page headers, explicit branches/guards/declarations/callback defaults, descriptive request/record/control/coordinate names, lazy translation functions with every map consumer updated, private STATUS data, and exact template text/evaluation order. Public live getters for map snapshots, names and width-based matches remain."
+  },
+  "public/src/js/traces/trace.js": {
+    "after_sha256": "8a9d5b26fb79a3842f89a8e8950568b67714b657b7dadeb360e88f0aa7498425",
+    "before_sha256": "0864bb50b0c81c5ec2925aeac0c082366f88b2d4f7ecf85c387480af717e5ec6",
+    "reason": "Readability only: transfer/map page headers, explicit branches/guards/declarations/callback defaults, descriptive request/record/control/coordinate names, lazy translation functions with every map consumer updated, private STATUS data, and exact template text/evaluation order. Public live getters for map snapshots, names and width-based matches remain."
+  }
+}
