@@ -38,7 +38,7 @@ def cleanup(env):
     subprocess.run([PHP, '-r', code], cwd=ROOT, env=env, check=True, capture_output=True)
 
 
-def run_module(module, directory, port, contracts=False, fleet_browser=False):
+def run_module(module, directory, port, fleet_browser=False):
     directory.mkdir(parents=True)
     suffix = secrets.token_hex(4)
     env = clean_environment()
@@ -52,8 +52,6 @@ def run_module(module, directory, port, contracts=False, fleet_browser=False):
                HOSPITAL_BREVO_API_KEY='', HOSPITAL_MAIL_FROM_EMAIL='',
                HOSPITAL_GEOCODER_URL='https://127.0.0.1:9/api/', HOSPITAL_ROUTER_URL='https://127.0.0.1:9/route/v1/driving',
                HOSPITAL_ROUTE_MAPPING_ENABLED='true' if module in ['routes', 'transfers', 'audit_corrections'] else 'false', HOSPITAL_TEST_PHP=PHP)
-    if contracts:
-        env['HOSPITAL_API_CONTRACT_LOG'] = str(directory / 'contracts.jsonl')
     for domain in ['AUDIT', 'FLEET', 'DOCTOR', 'PERSONNEL', 'DESTINATION', 'ROUTE', 'SURVEY', 'THEME']:
         env['HOSPITAL_'+domain+'_TEST_DIR'] = str(directory)
     private = directory/'env.json'
@@ -126,12 +124,20 @@ def run_module(module, directory, port, contracts=False, fleet_browser=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--modules', default=','.join(MODULES))
+    parser.add_argument('--modules', default=','.join(MODULES),
+                        help='Product modules: '+','.join(MODULES))
+    parser.add_argument('--list', action='store_true', help='List the available product integration suites and exit.')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--port', type=int, default=8113)
-    parser.add_argument('--contracts', action='store_true', help='Inventory sanitized API outcomes using the existing Client.')
     parser.add_argument('--fleet-browser', action='store_true', help='Run the existing fleet UI journey before cleaning its disposable module fixture.')
     args = parser.parse_args()
+    for module in MODULES:
+        if not (ROOT/'tests'/f'{module}_integration.py').is_file():
+            parser.error('Missing integration suite: '+module)
+    if args.list:
+        for module in MODULES:
+            print(module+': tests/'+module+'_integration.py')
+        return 0
     modules = args.modules.split(',')
     if not modules or set(modules)-set(MODULES):
         parser.error('Choose existing module names: '+','.join(MODULES))
@@ -143,7 +149,7 @@ def main():
     results = []
     for module in modules:
         print('Checking '+module+' with a separate disposable database...', flush=True)
-        result = run_module(module, output/(module+'-'+secrets.token_hex(3)), args.port, args.contracts, args.fleet_browser)
+        result = run_module(module, output/(module+'-'+secrets.token_hex(3)), args.port, args.fleet_browser)
         results.append(result)
         (output/'report.json').write_text(json.dumps(results, indent=2)+'\n')
         print(module+': '+result['status']+'; '+str(result['checks'])+' checks; fixture cleaned.', flush=True)

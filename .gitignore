@@ -1,4 +1,14 @@
 backend/php/config/local.php
+backend/php/config/local.*.php
+.env
+.env.*
+!.env.example
+credentials.json
+credentials.*.json
+*.pem
+*.key
+*.p12
+*.pfx
 storage/**
 !storage/.gitkeep
 logs/**

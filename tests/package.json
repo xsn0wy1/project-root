@@ -1,8 +1,11 @@
 {
-  "name": "hospital-verification-tools",
+  "name": "hospital-product-tests",
   "private": true,
-  "description": "Development-only structural comparison; not required to run the website.",
+  "description": "Browser tests only; not required to run the website.",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
-    "acorn": "8.15.0"
+    "playwright": "1.62.1"
   }
 }

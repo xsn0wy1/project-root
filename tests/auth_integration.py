@@ -13,7 +13,6 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from contract_inventory import record_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = os.environ.get('HOSPITAL_AUTH_TEST_URL', 'http://127.0.0.1:8871').rstrip('/')
@@ -68,7 +67,6 @@ class Client:
         data_object = payload.get('data') if isinstance(payload, dict) else None
         if isinstance(data_object, dict) and data_object.get('csrf_token'):
             self.token = data_object['csrf_token']
-        record_contract(self, path, method, response.status, payload, response.headers)
         return response.status, payload, response.headers
 
     def csrf(self):
