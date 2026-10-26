@@ -36,6 +36,25 @@ The administrator command prompts for a password. Give accounts explicit `record
 
 `setup.php` creates owner-only `backend/php/config/local.php`, a new application key, a dedicated database user and private storage directories. It creates no login or clinical records. Run `backend/php/cli/preflight.php` with the same PHP executable to verify the installation. Repeating setup/migration preserves the saved key/configuration; for later source updates run `backend/php/cli/migrate.php` before preflight. Keep configuration, key and storage together in private backups. For a mounted development installation, set both `HOSPITAL_BASE_PATH=/hospital` and `HOSPITAL_APP_URL=http://127.0.0.1:8091/hospital/` consistently. The optional Apache example is `backend/apache/hospital.conf.example`; the automated installation checks use PHP's local server and do not modify Apache.
 
+## Demo data
+
+Run explicitly against the local/dev database, with `route_mapping_enabled` and trusted HTTPS router/geocoder URLs configured:
+
+```sh
+/Applications/XAMPP/xamppfiles/bin/php backend/php/cli/demo-data.php --reset
+```
+
+The command asks before deleting the existing records and stored documents/profile photo; `--yes` skips that confirmation. It keeps the first active admin account and its password. It creates two accounts (`dispatcher` and `records_manager`), 15 fictional patients, 8 doctors, 6 drivers, 4 copilots, 7 ambulances, 6 real Montevideo hospitals with fixed coordinates, 6 routed paths, 12 transfers, 6 generated PDF reports, and 3 surveys (2 published with 32/36 synthetic responses, 1 draft). Historical transfer dates are backdated after the normal validated lifecycle. The router must respond with more than 20 points per path before any reset occurs; routing uses the stored coordinates, without address lookup. Facility address sources and OpenStreetMap feature IDs are recorded in `demo-data.php`.
+
+The records manager also has one of the four fictional copilot profiles, so assigned transfers appear within the existing permissions. Generated passwords are written only to the ignored, owner-only `tests/.runtime/demo-data/<database-name>/credentials.json`; they are never printed. Each reset replaces the demo passwords. Setup and migration never run this command. Stop any simulation worker before resetting, then start the fictional shared simulation in another terminal:
+
+```sh
+/Applications/XAMPP/xamppfiles/bin/php backend/php/cli/simulate-transfers.php start
+/Applications/XAMPP/xamppfiles/bin/php backend/php/cli/simulate-transfers.php worker
+```
+
+Run the reset shortly before presenting, then keep the worker running during the presentation; Ctrl+C stops it. If a simulation is already paused, use `resume` instead of `start`.
+
 ## Organization
 
 - `public/`: browser pages, styles, artwork/vendor assets, and page-specific JavaScript.

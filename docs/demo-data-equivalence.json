@@ -1,0 +1,7 @@
+{
+  "backend/php/cli/demo-data.php": {
+    "before_sha256": null,
+    "after_sha256": "d7a752ed3a084d7d01a790a5eb9d18db7565d133776866dedd512dc39972ce3d",
+    "reason": "Owner-requested explicit local/dev demo-data CLI: validated domain saves, live routing, guarded reset and generated PDFs; existing application, API, schema and assets remain byte-identical."
+  }
+}
