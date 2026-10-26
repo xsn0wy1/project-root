@@ -506,7 +506,8 @@ function demo_historical_dates(PDO $db, string $id, DateTimeImmutable $scheduled
     $created = $scheduled->modify('-90 minutes');
     $started = $scheduled->modify('+2 minutes');
     $arrived = $started->modify('+' . $transfer['duration_seconds'] . ' seconds');
-    $finished = $arrived->modify('+4 minutes');
+    $returning = $arrived->modify('+4 minutes');
+    $finished = $returning->modify('+' . $transfer['duration_seconds'] . ' seconds');
     $startValue = null;
     $arrivalValue = null;
     if ($transfer['status'] === 'completed') {
@@ -527,6 +528,7 @@ function demo_historical_dates(PDO $db, string $id, DateTimeImmutable $scheduled
         $events->execute([$created->format('Y-m-d H:i:s'), $id, 'scheduled']);
         $events->execute([$started->format('Y-m-d H:i:s'), $id, 'in_progress']);
         $events->execute([$arrived->format('Y-m-d H:i:s'), $id, 'arrived']);
+        $events->execute([$returning->format('Y-m-d H:i:s'), $id, 'returning']);
         $events->execute([$finished->format('Y-m-d H:i:s'), $id, $transfer['status']]);
         $statement = $db->prepare('UPDATE transfer_positions SET recorded_at=CASE WHEN progress=0 THEN ? ELSE ? END WHERE transfer_id=?');
         $statement->execute([$started->format('Y-m-d H:i:s'), $arrived->format('Y-m-d H:i:s'), $id]);
@@ -573,8 +575,11 @@ function demo_transfers(PDO $db, array $config, string $actor, array $facilities
         if ($index < 6 || $index === 8 || $index === 9) {
             $transfer = transfers_change_status($db, $config, $actor, $transfer['id'], $transfer['version'], 'in_progress');
         }
-        if ($index < 6) {
+        if ($index < 6 || $index === 9) {
             $transfer = transfers_change_status($db, $config, $actor, $transfer['id'], $transfer['version'], 'arrived');
+            $transfer = transfers_change_status($db, $config, $actor, $transfer['id'], $transfer['version'], 'returning');
+        }
+        if ($index < 6) {
             $transfer = transfers_change_status($db, $config, $actor, $transfer['id'], $transfer['version'], 'completed');
         } elseif ($index === 6 || $index === 7) {
             $transfer = transfers_change_status($db, $config, $actor, $transfer['id'], $transfer['version'], 'cancelled');

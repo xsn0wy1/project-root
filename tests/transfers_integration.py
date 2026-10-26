@@ -130,7 +130,7 @@ def main():
     sim=simulation_control()[1]['data']
     check(admin.call('/api/v1/tracking.php?action=control','POST',{'command':'start','version':sim['version']},csrf=False)[0]==404,'HTTP writes cannot start the CLI-only simulation')
     sim=simulation_control({'command':'start','version':sim['version'],'speed':100})[1]['data'];check(sim['status']=='running','administrator explicitly starts the shared synthetic clock')
-    worker=subprocess.Popen([PHP,'backend/php/cli/simulate-transfers.php','worker','45'],cwd=ROOT,env=os.environ,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    worker=subprocess.Popen([PHP,'backend/php/cli/simulate-transfers.php','worker','75'],cwd=ROOT,env=os.environ,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
     try:
         deadline=time.monotonic()+8
         while time.monotonic()<deadline:
@@ -154,13 +154,107 @@ def main():
         check(one==two,'independent staff sessions observe the same stored position and timestamp')
         check(len(sql('SELECT id FROM transfer_positions WHERE transfer_id='+id)) > 1,'the shared simulator retains position history without an unused HTTP action')
         check(len(sql('SELECT * FROM resource_reservations WHERE transfer_id='+id))==2,'arrival retains vehicle and crew reservations until completion')
-        completed=status(first,current,'completed')[1]['data'];check(completed['finished_at'] is not None and not sql('SELECT * FROM resource_reservations WHERE transfer_id='+id),'completion releases resources and records its event')
+        check(status(first,current,'completed')[0]==409,'arrival cannot skip the return journey')
+        sim = simulation_control({'command': 'pause', 'version': sim['version']})[1]['data']
+        returning = status(first, current, 'returning')[1]['data']
+        destination = returning['geometry'][-1]
+        origin = returning['geometry'][0]
+        check(returning['status'] == 'returning' and returning['position']['progress'] == 0,
+              'returning starts a new leg at zero progress')
+        check(returning['position']['latitude'] == destination['latitude'] and
+              returning['position']['longitude'] == destination['longitude'],
+              'the return leg starts at the destination without jumping')
+        check(returning['started_at'] == current['started_at'] and returning['arrived_at'] == current['arrived_at'] and
+              returning['finished_at'] is None and returning['geometry'] == old_geometry,
+              'returning preserves outbound timestamps and immutable route geometry')
+        check(returning['events'][-1]['from_status'] == 'arrived' and returning['events'][-1]['to_status'] == 'returning',
+              'returning records the normal activity event')
+        check(status(first, current, 'returning')[0] == 409 and status(first, returning, 'arrived')[0] == 409,
+              'returning retains revision checks and cannot go backwards')
+        active = listing(first)
+        all_items = listing(first, state='all')['data']
+        active_count = 0
+        for transfer in all_items:
+            if transfer['status'] in ['scheduled', 'in_progress', 'arrived', 'returning']:
+                active_count += 1
+        check(any(transfer['id'] == id and transfer['status'] == 'returning' for transfer in active['data']) and
+              active['meta']['counts']['active_count'] == active_count,
+              'active lists and counters include returning transfers')
+        snapshot = assigned.call('/api/v1/tracking.php?action=snapshot')[1]['data']
+        check(any(transfer['id'] == id and transfer['status'] == 'returning' for transfer in snapshot['transfers']),
+              'the scoped fleet snapshot includes returning ambulances')
+        sql('UPDATE resource_reservations SET starts_at=UTC_TIMESTAMP()-INTERVAL 2 HOUR,'
+            'ends_at=UTC_TIMESTAMP()-INTERVAL 1 HOUR WHERE transfer_id=' + id)
+        check(call(first, 'create', fields(driver=crew[0], offset=172800))[0] == 409 and
+              call(first, 'create', fields(vehicle=1, offset=172800))[0] == 409,
+              'returning keeps the ambulance and crew busy even after their reservation interval')
+        reset = simulation_control({'command': 'reset', 'version': sim['version']})[1]['data']
+        reset_position = get(first, id)['position']
+        check(reset_position['progress'] == 0 and reset_position['latitude'] == destination['latitude'] and
+              reset_position['longitude'] == destination['longitude'],
+              'simulation reset starts a returning ambulance at the destination')
+        # A slow fixture clock exposes an intermediate sample on the return path.
+        sql('UPDATE simulation_runs SET speed=1 WHERE id=' + reset['run_id'])
+        sim = simulation_control({'command': 'resume', 'version': reset['version']})[1]['data']
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
+            current = get(first, id)
+            if current['position']['progress'] > 0:
+                break
+            time.sleep(.2)
+        previous = returning['geometry'][-2]
+        position = current['position']
+        direction = ((position['latitude'] - destination['latitude']) * (previous['latitude'] - destination['latitude']) +
+                     (position['longitude'] - destination['longitude']) * (previous['longitude'] - destination['longitude']))
+        check(current['status'] == 'returning' and 0 < position['progress'] < 1 and direction > 0,
+              'the worker moves back along the saved path in reverse')
+        check(len(sql('SELECT * FROM resource_reservations WHERE transfer_id=' + id)) == 2,
+              'the moving return leg retains both resource reservations')
+        sql('UPDATE simulation_runs SET speed=100 WHERE id=' + sim['run_id'])
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            completed = get(first, id)
+            if completed['status'] == 'completed':
+                break
+            time.sleep(.2)
+        check(completed['status'] == 'completed' and completed['position']['progress'] == 1 and
+              completed['position']['latitude'] == origin['latitude'] and completed['position']['longitude'] == origin['longitude'],
+              'the worker completes the return at the original origin')
+        check(completed['finished_at'] is not None and not sql('SELECT * FROM resource_reservations WHERE transfer_id=' + id) and
+              completed['events'][-1]['event_type'] == 'simulation_completed',
+              'return completion releases resources and records its event atomically')
         check(status(first,completed,'in_progress')[0]==409,'completed transfers cannot be restarted')
     finally:
         worker.terminate();worker.communicate(timeout=10)
     sql("UPDATE simulation_runs SET heartbeat_at=UTC_TIMESTAMP()-INTERVAL 20 SECOND WHERE id="+sim['run_id'])
     check(first.call('/api/v1/tracking.php?action=snapshot')[1]['data']['simulation']['stale'],'a stopped worker is observable as stale rather than fake live motion')
     check(simulation_control({'command':'stop','version':sim['version']})[0]==200,'administrator can stop the simulation explicitly')
+    lifecycle = ['in_progress', 'arrived', 'returning']
+    for cancel_state in ['scheduled', *lifecycle]:
+        created_status, payload, _headers = call(first, 'create', fields(offset=172800))
+        assert created_status == 201, payload
+        candidate = payload['data']
+        if cancel_state != 'scheduled':
+            for next_status in lifecycle:
+                code, payload, _headers = status(first, candidate, next_status)
+                assert code == 200, payload
+                candidate = payload['data']
+                if next_status == cancel_state:
+                    break
+        code, payload, _headers = status(first, candidate, 'cancelled')
+        check(code == 200 and not sql('SELECT * FROM resource_reservations WHERE transfer_id=' + candidate['id']),
+              'cancellation releases resources from ' + cancel_state)
+    code, payload, _headers = call(first, 'create', fields(offset=172800))
+    assert code == 201, payload
+    manual = payload['data']
+    for next_status in ['in_progress', 'arrived', 'returning', 'completed']:
+        code, payload, _headers = status(first, manual, next_status)
+        assert code == 200, payload
+        manual = payload['data']
+    check(manual['status'] == 'completed' and manual['events'][-1]['from_status'] == 'returning' and
+          manual['position']['latitude'] == manual['geometry'][0]['latitude'] and
+          not sql('SELECT * FROM resource_reservations WHERE transfer_id=' + manual['id']),
+          'manual status updates follow every step and finish at the origin')
     history=sql('SELECT id FROM transfer_positions WHERE transfer_id='+id+' ORDER BY id');old=str(history[0]['id']);latest=get(first,id)['position']['id']
     sql('UPDATE transfer_positions SET recorded_at=UTC_TIMESTAMP()-INTERVAL 8 DAY WHERE transfer_id='+id)
     assert cli('-r',r'require "backend/php/autoload.php";$c=Hospital\Config::load();tracking_prune(Hospital\Database::connect($c));').returncode==0

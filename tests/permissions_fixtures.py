@@ -70,6 +70,11 @@ body = dict(route_template_id=route['id'], route_version=route['version'],
 status, response, _headers = root.call('/api/v1/transfers.php?action=create', 'POST', body)
 assert status == 201, response
 transfer = response['data']
+for next_status in ['in_progress', 'arrived']:
+    status, response, _headers = root.call('/api/v1/transfers.php?action=status', 'POST',
+                                        dict(id=transfer['id'], version=transfer['version'], status=next_status))
+    assert status == 200, response
+    transfer = response['data']
 for account in accounts:
     account['transfer_id'] = transfer['id']
 
@@ -100,6 +105,7 @@ assert clients['staff'].call('/api/v1/surveys.php?action=get&id=' + accounts[1][
 
 fixture = RUNTIME.parent / 'role-fixture.json'
 fixture.write_text(json.dumps(dict(base=environment['HOSPITAL_AUTH_TEST_URL'], accounts=accounts,
-                                  transfer_id=transfer['id'], document_title=records['document']['title'])))
+                                  transfer_id=transfer['id'], transfer_status=transfer['status'],
+                                  document_title=records['document']['title'])))
 fixture.chmod(0o600)
 print('Four single-role accounts approved with users CLI; shared documents and preserved scopes checked.')

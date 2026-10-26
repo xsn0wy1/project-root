@@ -95,6 +95,7 @@ staff_page_head([
                 <div class="popover-heading"><h2 data-i18n="trace_map.filtrar_traslados">Filtrar traslados</h2><button class="text-button" id="reset-filters" type="button" data-i18n="trace_map.restablecer">Restablecer</button></div>
                 <p class="popover-eyebrow" data-i18n="trace_map.estado_del_traslado">ESTADO DEL TRASLADO</p>
                 <label><input type="checkbox" name="status" value="in_progress" checked><span class="metric-dot progress-dot"></span><i18n-text data-i18n="trace_map.en_curso_2">En curso</i18n-text><span class="filter-number">0</span></label>
+                <label><input type="checkbox" name="status" value="returning" checked><span class="metric-dot progress-dot"></span><i18n-text data-i18n="trace_view.retornando">Retornando</i18n-text><span class="filter-number">0</span></label>
                 <label><input type="checkbox" name="status" value="scheduled" checked><span class="metric-dot scheduled-dot"></span><i18n-text data-i18n="trace_map.programado_2">Programado</i18n-text><span class="filter-number">0</span></label>
                 <label><input type="checkbox" name="status" value="delayed" checked><span class="metric-dot delayed-dot"></span><i18n-text data-i18n="trace_map.demorado_2">Demorado</i18n-text><span class="filter-number">0</span></label>
                 <p class="filter-note" data-i18n="trace_map.los_filtros_se_aplican_al_mapa_y_a_la_lista">Los filtros se aplican al mapa y a la lista.</p>

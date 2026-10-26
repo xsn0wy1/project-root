@@ -150,7 +150,7 @@ staff_page_open([
   <dialog class="transfer-dialog compact-dialog" id="status-dialog" aria-labelledby="status-dialog-title">
     <form id="status-form">
       <header class="dialog-heading"><h2 id="status-dialog-title" data-i18n="trace_view.actualizar_estado">Actualizar estado</h2><button class="icon-button" type="button" data-close-dialog aria-label="Cerrar" data-i18n-aria-label="settings.cerrar"><span class="detail-icon color-icon close-icon" aria-hidden="true"></span></button></header>
-      <label><i18n-text data-i18n="trace_view.estado_del_traslado">Estado del traslado</i18n-text><span class="dialog-select"><select id="transfer-status" name="status"><option value="in-progress"></option><option value="arrived" data-i18n="trace_view.en_destino">En destino</option><option value="completed" data-i18n="trace_view.finalizado">Finalizado</option></select></span></label>
+      <label><i18n-text data-i18n="trace_view.estado_del_traslado">Estado del traslado</i18n-text><span class="dialog-select"><select id="transfer-status" name="status"><option value="in-progress"></option><option value="arrived" data-i18n="trace_view.en_destino">En destino</option><option value="returning" data-i18n="trace_view.retornando">Retornando</option><option value="completed" data-i18n="trace_view.finalizado">Finalizado</option></select></span></label>
       <div class="dialog-actions"><button class="detail-button" type="button" data-close-dialog data-i18n="trace_view.volver">Volver</button><button class="detail-button primary-button" type="submit" data-i18n="trace_view.guardar_estado">Guardar estado</button></div>
     </form>
   </dialog>

@@ -149,6 +149,9 @@ async function transferJourney(browser, context, page, base) {
   await page.locator('#update-status').waitFor({state: 'visible'}); await page.waitForFunction(() => !document.getElementById('update-status').disabled);
   await page.locator('#update-status').click(); await page.locator('#status-form [type=submit]').click();
   await page.locator('#status-dialog').waitFor({state: 'hidden'});
+  check((await api(page, endpoint('transfers', 'get') + '&id=' + id)).status === 'returning', 'arrival advances to the return journey');
+  await page.locator('#update-status').click(); await page.locator('#status-form [type=submit]').click();
+  await page.locator('#status-dialog').waitFor({state: 'hidden'});
   check((await api(page, endpoint('transfers', 'get') + '&id=' + id)).status === 'completed' && await page.locator('#edit-transfer').isDisabled(), 'completion retains history and locks assignment editing');
   return id;
 }

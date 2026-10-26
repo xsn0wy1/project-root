@@ -11,6 +11,9 @@
     if (item.status === 'arrived') {
       return 'arrived';
     }
+    if (item.status === 'returning') {
+      return 'returning';
+    }
     if (item.status === 'completed') {
       return 'completed';
     }
@@ -113,14 +116,21 @@
   function adapt(item) {
     const status = markerStatus(item);
     const coordinates = item.geometry.map(point => [point.latitude, point.longitude]);
+    let origin = item.origin.name;
+    let destination = item.destination.name;
+    if (item.status === 'returning') {
+      coordinates.reverse();
+      origin = item.destination.name;
+      destination = item.origin.name;
+    }
     return {
       id: item.id,
       get name() {
         return window.HospitalI18n.t("trace.traslado_value", { value0: item.id });
       },
       ambulance: item.ambulance.code,
-      origin: item.origin.name,
-      destination: item.destination.name,
+      origin,
+      destination,
       eta: window.TraceApi.time(item.eta).slice(0, 5),
       status,
       color: ['#8b5cf6', '#3b82f6', '#06b6d4', '#10b981', '#f97316'][Number(item.id) % 5],

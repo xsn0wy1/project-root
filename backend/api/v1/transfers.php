@@ -64,7 +64,7 @@ switch ($action) {
         break;
     case 'status':
         $body = Request::body(['id', 'version', 'status']);
-        $status = transfer_input_choice($body['status'] ?? null, ['in_progress', 'arrived', 'completed', 'cancelled']);
+        $status = transfer_input_choice($body['status'] ?? null, ['in_progress', 'arrived', 'returning', 'completed', 'cancelled']);
         Response::json(transfers_change_status($db, $config, $actor, Request::id($body['id'] ?? null), $body['version'] ?? null, $status));
         break;
     case 'draft':

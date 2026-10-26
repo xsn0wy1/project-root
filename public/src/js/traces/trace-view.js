@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const nextStates = {
     scheduled: ['in_progress'],
     in_progress: ['arrived'],
-    arrived: ['completed'],
+    arrived: ['returning'],
+    returning: ['completed'],
     completed: [],
     cancelled: []
   };

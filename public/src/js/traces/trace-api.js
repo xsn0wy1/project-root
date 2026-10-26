@@ -17,6 +17,9 @@
     arrived: function () {
       return window.HospitalI18n.t("trace_view.en_destino");
     },
+    returning: function () {
+      return window.HospitalI18n.t("trace_view.retornando");
+    },
     completed: function () {
       return window.HospitalI18n.t("trace_view.finalizado");
     },

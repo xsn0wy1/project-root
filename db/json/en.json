@@ -189,6 +189,7 @@
   "trace_view.guardar_cambios": "Save changes",
   "trace_view.estado_del_traslado": "Transfer status",
   "trace_view.en_destino": "At destination",
+  "trace_view.retornando": "Returning",
   "trace_view.finalizado": "Completed",
   "trace_view.guardar_estado": "Save status",
   "trace_view.deseas_cancelar_este_traslado_esta_accion_marcara_el_traslado_como_cancelado": "Do you want to cancel this transfer? This action will mark the transfer as cancelled.",

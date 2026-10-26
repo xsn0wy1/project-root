@@ -137,7 +137,7 @@ foreach ($files as $file) {
 $span = $db->query('SELECT DATEDIFF(UTC_TIMESTAMP(),MIN(scheduled_at)) past_days,DATEDIFF(MAX(scheduled_at),UTC_TIMESTAMP()) future_days FROM transfers')->fetch();
 echo json_encode(['states'=>$states,'surveys'=>$surveys,'path_points'=>$points,'pdf_files'=>count($files),'span'=>$span], JSON_THROW_ON_ERROR);
 '''))
-    assert verification['states'] == {'cancelled': 2, 'completed': 6, 'in_progress': 2, 'scheduled': 2}
+    assert verification['states'] == {'cancelled': 2, 'completed': 6, 'in_progress': 1, 'returning': 1, 'scheduled': 2}
     assert sorted(row['responses'] for row in verification['surveys']) == [0, 32, 36]
     assert min(verification['path_points']) > 20 and verification['pdf_files'] == 6
     assert verification['span']['past_days'] >= 28 and verification['span']['future_days'] >= 2

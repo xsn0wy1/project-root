@@ -596,7 +596,7 @@ function transfers_reserve(
         $resources[] = ['staff', $fieldValues['companion_id']];
     }
     foreach ($resources as [$kind,$resource]) {
-        $preparedStatement = $db->prepare("SELECT r.transfer_id FROM resource_reservations r JOIN transfers t ON t.id=r.transfer_id WHERE r.resource_type=? AND r.resource_id=? AND r.transfer_id<>? AND ((r.starts_at<? AND r.ends_at>?) OR (t.status IN ('in_progress','arrived') AND r.ends_at<=UTC_TIMESTAMP())" . ($starting ? " OR t.status IN ('in_progress','arrived')" : '') . ') LIMIT 1 FOR UPDATE');
+        $preparedStatement = $db->prepare("SELECT r.transfer_id FROM resource_reservations r JOIN transfers t ON t.id=r.transfer_id WHERE r.resource_type=? AND r.resource_id=? AND r.transfer_id<>? AND ((r.starts_at<? AND r.ends_at>?) OR (t.status IN ('in_progress','arrived','returning') AND r.ends_at<=UTC_TIMESTAMP())" . ($starting ? " OR t.status IN ('in_progress','arrived','returning')" : '') . ') LIMIT 1 FOR UPDATE');
         $preparedStatement->execute([$kind, $resource, $id, $end, $start]);
         if ($preparedStatement->fetchColumn()) {
             throw new ApiException(
@@ -835,7 +835,7 @@ function transfers_update(PDO $db, array $config, string $actor, string $id, arr
 
 function transfers_change_status(PDO $db, array $config, string $actor, string $id, $version, string $status): array
 {
-    transfer_input_choice($status, ['in_progress', 'arrived', 'completed', 'cancelled']);
+    transfer_input_choice($status, ['in_progress', 'arrived', 'returning', 'completed', 'cancelled']);
     transfers_transaction(
         $db,
         $config,
@@ -846,19 +846,22 @@ function transfers_change_status(PDO $db, array $config, string $actor, string $
             $allowed = [
                 'scheduled' => ['in_progress', 'cancelled'],
                 'in_progress' => ['arrived', 'cancelled'],
-                'arrived' => ['completed', 'cancelled'],
+                'arrived' => ['returning', 'cancelled'],
+                'returning' => ['completed', 'cancelled'],
                 'completed' => [],
                 'cancelled' => []
             ];
             if (!in_array($status, $allowed[$row['status']], true)) {
                 throw new ApiException(409, 'INVALID_TRANSITION', \Hospital\I18n::t("errors.el_estado_no_permite_esa_transicion"));
             }
-            $column = [
-                'in_progress' => 'started_at',
-                'arrived' => 'arrived_at',
-                'completed' => 'finished_at',
-                'cancelled' => 'finished_at'
-            ][$status];
+            $timestamp = '';
+            if ($status === 'in_progress') {
+                $timestamp = ',started_at=UTC_TIMESTAMP()';
+            } elseif ($status === 'arrived') {
+                $timestamp = ',arrived_at=UTC_TIMESTAMP()';
+            } elseif ($status === 'completed' || $status === 'cancelled') {
+                $timestamp = ',finished_at=UTC_TIMESTAMP()';
+            }
             if ($status === 'in_progress') {
                 $preparedStatement = $db->prepare('SELECT staff_id,duty FROM transfer_crew WHERE transfer_id=?');
                 $preparedStatement->execute([$id]);
@@ -890,8 +893,15 @@ function transfers_change_status(PDO $db, array $config, string $actor, string $
             }
             if ($status === 'arrived') {
                 tracking_sample($db, $id, json_decode($row['geometry'], true), 1, null, 1);
+            } elseif ($status === 'returning' || $status === 'completed') {
+                $points = array_reverse(json_decode($row['geometry'], true));
+                $progress = 0;
+                if ($status === 'completed') {
+                    $progress = 1;
+                }
+                tracking_sample($db, $id, $points, $progress, null, 1);
             }
-            $preparedStatement = $db->prepare('UPDATE transfers SET status=?,' . $column . '=UTC_TIMESTAMP(),version=version+1,updated_at=UTC_TIMESTAMP() WHERE id=?');
+            $preparedStatement = $db->prepare('UPDATE transfers SET status=?' . $timestamp . ',version=version+1,updated_at=UTC_TIMESTAMP() WHERE id=?');
             $preparedStatement->execute([$status, $id]);
             if (in_array($status, ['completed', 'cancelled'], true)) {
                 $preparedStatement = $db->prepare('DELETE FROM resource_reservations WHERE transfer_id=?');
@@ -916,9 +926,15 @@ function transfers_payload(PDO $db, array $row, bool $detail = false): array
             'responsibility' => $member['responsibility']
         ];
     }
+    $elapsedUntil = $row['finished_at'] ?? $row['arrived_at'] ?? gmdate('Y-m-d H:i:s');
+    $etaStart = $row['started_at'] ?? $row['scheduled_at'];
+    if ($row['status'] === 'returning') {
+        $elapsedUntil = gmdate('Y-m-d H:i:s');
+        $etaStart = $row['updated_at'];
+    }
     $elapsed = $row['started_at'] === null ? 0 : max(
         0,
-        strtotime(($row['finished_at'] ?? $row['arrived_at'] ?? gmdate('Y-m-d H:i:s')) . ' UTC') - strtotime($row['started_at'] . ' UTC')
+        strtotime($elapsedUntil . ' UTC') - strtotime($row['started_at'] . ' UTC')
     );
     $delayed = $row['status'] === 'in_progress' && (($row['duration_seconds'] !== null && $elapsed > (int)$row['duration_seconds']) || strtotime($row['started_at'] . ' UTC') > strtotime($row['scheduled_at'] . ' UTC') + 300);
     $data = [
@@ -953,7 +969,7 @@ function transfers_payload(PDO $db, array $row, bool $detail = false): array
         'elapsed_seconds' => $elapsed,
         'eta' => $row['duration_seconds'] === null ? null : users_date(gmdate(
             'Y-m-d H:i:s',
-            strtotime(($row['started_at'] ?? $row['scheduled_at']) . ' UTC') + (int)$row['duration_seconds']
+            strtotime($etaStart . ' UTC') + (int)$row['duration_seconds']
         ))
     ];
     if ($detail) {
@@ -1008,14 +1024,14 @@ function transfers_listing(PDO $db, string $actor, array $query): array
     }
     $args = [];
     $scope = transfer_scope($db, $actor, $args);
-    $preparedStatement = $db->prepare("SELECT COUNT(*) AS all_count,COALESCE(SUM(t.status IN ('scheduled','in_progress','arrived')),0) AS active_count,COALESCE(SUM(t.status='completed'),0) AS completed_count FROM transfers t WHERE " . $scope);
+    $preparedStatement = $db->prepare("SELECT COUNT(*) AS all_count,COALESCE(SUM(t.status IN ('scheduled','in_progress','arrived','returning')),0) AS active_count,COALESCE(SUM(t.status='completed'),0) AS completed_count FROM transfers t WHERE " . $scope);
     $preparedStatement->execute($args);
     $counts = $preparedStatement->fetch();
     $counts = array_map('intval', $counts);
     $where = [$scope];
     $state = transfer_input_choice($query['state'] ?? 'active', ['active', 'completed', 'all']);
     if ($state === 'active') {
-        $where[] = "t.status IN ('scheduled','in_progress','arrived')";
+        $where[] = "t.status IN ('scheduled','in_progress','arrived','returning')";
     } elseif ($state === 'completed') {
         $where[] = "t.status='completed'";
     }

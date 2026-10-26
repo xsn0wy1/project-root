@@ -37,6 +37,12 @@
         return window.HospitalI18n.t("trace_view.en_destino");
       }
     },
+    returning: {
+      className: 'status-progress',
+      label: function () {
+        return window.HospitalI18n.t("trace_view.retornando");
+      }
+    },
     completed: {
       className: 'status-scheduled',
       label: function () {
@@ -57,7 +63,7 @@
     window.TraceApi.report(new Error(window.HospitalI18n.t("trace_map.identificador_de_traslado_no_valido")));
     requestedTransfer = null;
   }
-  const filterStatuses = ['in_progress', 'scheduled', 'delayed'];
+  const filterStatuses = ['in_progress', 'returning', 'scheduled', 'delayed'];
   let loaded = false;
   let polling = false;
   let stopped = false;
@@ -235,7 +241,7 @@
     window.HospitalI18n.bindText($('total-count'), () => transfers.length);
     window.HospitalI18n.bindText(
       $('progress-count'),
-      () => transfers.filter(item => ['in_progress', 'arrived'].includes(item.status)).length
+      () => transfers.filter(item => ['in_progress', 'arrived', 'returning'].includes(item.status)).length
     );
     window.HospitalI18n.bindText(
       $('scheduled-count'),

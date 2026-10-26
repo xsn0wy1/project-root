@@ -50,7 +50,7 @@ def run():
     check(all(c['id']!=cid for c in catalog()['facilities']) and get(mixed['id'])['origin']['name']==record['name'],'archiving a template preserves pending trace snapshots')
     attempt={**mixed_fields,'create_token':dispatcher.call('/api/v1/transfers.php?action=create-token')[1]['data']['create_token']}
     check(dispatcher.call('/api/v1/transfers.php?action=create','POST',attempt)[1]['error']['code']=='FACILITY_UNAVAILABLE','archived template IDs cannot be newly selected')
-    mixed=state(mixed,'in_progress');mixed=state(mixed,'arrived');mixed=state(mixed,'completed')
+    mixed=state(mixed,'in_progress');mixed=state(mixed,'arrived');mixed=state(mixed,'returning');mixed=state(mixed,'completed')
     check(mixed['status']=='completed' and mixed['position'] is None,'unmapped trace lifecycle works after template removal')
     code,payload,_=call('restore.php',dict(id=cid,version=center['version']));assert code==200,payload
     center=payload['data']

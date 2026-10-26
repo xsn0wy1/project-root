@@ -72,6 +72,17 @@ async function run() {
         JSON.stringify({locale: original.settings.locale, theme: original.settings.theme}), {mode: 0o600});
       staff = true;
       try {
+        if (account.role === 'admin' && fixture.transfer_status === 'arrived') {
+          await page.goto(fixture.base + '/src/views/traces/trace-view.php?id=' + fixture.transfer_id);
+          await page.evaluate(async () => { await HospitalI18n.ready; await HospitalAuth.ready; });
+          await page.waitForFunction(() => document.getElementById('transfer-detail').dataset.status === 'arrived');
+          await page.locator('#update-status').click();
+          assert.equal(await page.locator('#transfer-status').inputValue(), 'returning');
+          await page.locator('#status-form [type=submit]').click();
+          await page.waitForFunction(() => document.getElementById('transfer-detail').dataset.status === 'returning');
+          fixture.transfer_status = 'returning';
+          proof.returningStatusButton = true;
+        }
         for (const locale of locales) {
           for (const theme of themes) {
             await page.evaluate(async preferences => {
@@ -136,6 +147,33 @@ async function run() {
                         currentCase + ': transfer action visibility: ' + control);
                     }
                   }
+                  if (fixture.transfer_status === 'returning') {
+                    const returningLabel = await page.evaluate(() => HospitalI18n.t('trace_view.retornando'));
+                    if (file === 'traces/trace.php') {
+                      const card = page.locator('#transferGrid [data-transfer-id="' + fixture.transfer_id + '"]');
+                      assert.equal(await card.getAttribute('data-status'), 'returning', currentCase);
+                      assert.equal(await card.locator('.status-label').textContent(), returningLabel.toUpperCase(), currentCase);
+                    } else if (file === 'traces/trace-view.php') {
+                      assert.equal(await page.locator('#transfer-detail').getAttribute('data-status'), 'returning', currentCase);
+                      assert.equal(await page.locator('[data-status-label]').first().textContent(), returningLabel, currentCase);
+                      assert(await page.locator('.transfer-timeline').innerText().then(text => text.includes(returningLabel)), currentCase);
+                    } else if (file === 'traces/trace-map.php') {
+                      const marker = await page.evaluate(id => TraceMap.transfers.find(transfer => transfer.id === id), fixture.transfer_id);
+                      assert.equal(marker.status, 'returning', currentCase);
+                      assert.equal(marker.lifecycle, 'returning', currentCase);
+                      assert(Number(await page.locator('#progress-count').textContent()) >= 1, currentCase);
+                      await page.locator('#filter-toggle').click();
+                      const returningFilter = page.locator('#filter-panel input[value="returning"]');
+                      assert(await returningFilter.isChecked(), currentCase);
+                      assert.equal(await returningFilter.locator('..').locator('i18n-text').textContent(), returningLabel, currentCase);
+                      assert.equal(await returningFilter.locator('..').locator('.filter-number').textContent(), '1', currentCase);
+                      await returningFilter.uncheck();
+                      assert.equal(await page.locator('#transfer-list [data-transfer-id="' + fixture.transfer_id + '"]').count(), 0, currentCase);
+                      await returningFilter.check();
+                      assert.equal(await page.locator('#transfer-list [data-transfer-id="' + fixture.transfer_id + '"]').count(), 1, currentCase);
+                      await page.locator('#filter-toggle').click();
+                    }
+                  }
                 }
                 const screenshot = (account.role === 'admin' && locale === 'es-UY' && theme === 'dark' && size === 'desktop') ||
                   (size === 'phone' && locale === 'es-UY' && ['traces/trace-map.php', 'surveys/survey-view.php'].includes(file));
@@ -162,6 +200,30 @@ async function run() {
         await context.close();
       }
       console.log(account.role + ': every staff page checked' + (smoke ? '.' : ' in both themes/languages, desktop/phone.'));
+    }
+    if (fixture.transfer_status === 'returning') {
+      const administrator = fixture.accounts.find(account => account.roles.includes('admin'));
+      const context = await browser.newContext();
+      try {
+        const page = await context.newPage();
+        page.on('pageerror', error => proof.scriptErrors.push(error.message));
+        await page.goto(fixture.base + '/');
+        await page.evaluate(async () => { await HospitalI18n.ready; });
+        await page.evaluate(async account => {
+          await HospitalApi.post('auth.php?action=login', {username: account.username, password: account.password});
+        }, administrator);
+        await page.goto(fixture.base + '/src/views/traces/trace-view.php?id=' + fixture.transfer_id);
+        await page.evaluate(async () => { await HospitalI18n.ready; await HospitalAuth.ready; });
+        await page.waitForFunction(() => document.getElementById('transfer-detail').dataset.status === 'returning');
+        await page.locator('#update-status').click();
+        assert.equal(await page.locator('#transfer-status').inputValue(), 'completed');
+        await page.locator('#status-form [type=submit]').click();
+        await page.waitForFunction(() => document.getElementById('transfer-detail').dataset.status === 'completed');
+        assert(await page.locator('#update-status').isDisabled());
+        proof.completedStatusButton = true;
+      } finally {
+        await context.close();
+      }
     }
     assert.deepEqual(proof.scriptErrors, [], 'Browser runtime errors');
     assert.deepEqual(proof.apiErrors, [], 'Unexpected API errors');

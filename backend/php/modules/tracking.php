@@ -126,12 +126,16 @@ function tracking_control(PDO $db, array $config, string $command, $version, $sp
                     $preparedStatement = $db->prepare('UPDATE simulation_runs SET status=?,last_tick_at=NULL,version=version+1,generation=generation+? WHERE id=?');
                     $preparedStatement->execute([$status, $command === 'reset' ? 1 : 0, $run['id']]);
                     if ($command === 'reset') {
-                        $rows = $db->query("SELECT id,geometry FROM transfers WHERE status='in_progress' ORDER BY id FOR UPDATE")->fetchAll();
+                        $rows = $db->query("SELECT id,status,geometry FROM transfers WHERE status IN ('in_progress','returning') ORDER BY id FOR UPDATE")->fetchAll();
                         foreach ($rows as $row) {
+                            $points = json_decode($row['geometry'], true);
+                            if ($row['status'] === 'returning') {
+                                $points = array_reverse($points);
+                            }
                             tracking_sample(
                                 $db,
                                 (string)$row['id'],
-                                json_decode($row['geometry'], true),
+                                $points,
                                 0,
                                 (string)$run['id'],
                                 (int)$run['generation'] + 1
@@ -172,26 +176,42 @@ function tracking_tick(PDO $db, array $config): int
                 $preparedStatement->execute([$run['id']]);
                 $count = 0;
                 if ($run['status'] === 'running') {
-                    $rows = $db->query("SELECT t.*,p.progress FROM transfers t LEFT JOIN transfer_latest_positions l ON l.transfer_id=t.id LEFT JOIN transfer_positions p ON p.id=l.position_id WHERE t.status='in_progress' ORDER BY t.id FOR UPDATE")->fetchAll();
+                    $rows = $db->query("SELECT t.*,p.progress FROM transfers t LEFT JOIN transfer_latest_positions l ON l.transfer_id=t.id LEFT JOIN transfer_positions p ON p.id=l.position_id WHERE t.status IN ('in_progress','returning') ORDER BY t.id FOR UPDATE")->fetchAll();
                     foreach ($rows as $row) {
                         if ($row['duration_seconds'] === null || (int)$row['duration_seconds'] <= 0) {
                             continue;
                         }
                         $progress = min(1, (float)($row['progress'] ?? 0) + $seconds * (float)$run['speed'] / (int)$row['duration_seconds']);
+                        $points = json_decode($row['geometry'], true);
+                        if ($row['status'] === 'returning') {
+                            $points = array_reverse($points);
+                        }
                         tracking_sample(
                             $db,
                             (string)$row['id'],
-                            json_decode($row['geometry'], true),
+                            $points,
                             $progress,
                             (string)$run['id'],
                             (int)$run['generation']
                         );
                         $count++;
                         if ($progress >= 1) {
-                            $preparedStatement = $db->prepare("UPDATE transfers SET status='arrived',arrived_at=UTC_TIMESTAMP(),version=version+1,updated_at=UTC_TIMESTAMP() WHERE id=?");
-                            $preparedStatement->execute([$row['id']]);
-                            transfers_event($db, (string)$row['id'], null, 'simulation_arrived', 'in_progress', 'arrived');
-                            transfer_audit($db, null, 'transfer.simulation_arrived', (string)$row['id']);
+                            $nextStatus = 'arrived';
+                            $timestamp = 'arrived_at';
+                            $event = 'simulation_arrived';
+                            if ($row['status'] === 'returning') {
+                                $nextStatus = 'completed';
+                                $timestamp = 'finished_at';
+                                $event = 'simulation_completed';
+                            }
+                            $preparedStatement = $db->prepare('UPDATE transfers SET status=?,' . $timestamp . '=UTC_TIMESTAMP(),version=version+1,updated_at=UTC_TIMESTAMP() WHERE id=?');
+                            $preparedStatement->execute([$nextStatus, $row['id']]);
+                            if ($nextStatus === 'completed') {
+                                $preparedStatement = $db->prepare('DELETE FROM resource_reservations WHERE transfer_id=?');
+                                $preparedStatement->execute([$row['id']]);
+                            }
+                            transfers_event($db, (string)$row['id'], null, $event, $row['status'], $nextStatus);
+                            transfer_audit($db, null, 'transfer.' . $event, (string)$row['id']);
                         }
                     }
                 }
@@ -220,7 +240,7 @@ function tracking_snapshot(PDO $db, string $actor, array $query): array
         $args[] = Request::id($query['transfer_id']);
         transfers_row($db, $actor, (string)$args[count($args) - 1]);
     } else {
-        $where[] = "t.status IN ('scheduled','in_progress','arrived')";
+        $where[] = "t.status IN ('scheduled','in_progress','arrived','returning')";
     }
     if (isset($query['after_id'])) {
         $where[] = 't.id>?';
