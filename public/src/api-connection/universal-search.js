@@ -134,7 +134,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_pacientes");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.abrir_la_seccion_de_pacientes");
@@ -153,7 +153,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_medicos");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.equipo_medico_y_especialidades");
@@ -172,7 +172,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_ambulancias");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.abrir_la_seccion_de_ambulancias");
@@ -207,7 +207,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_cuentas");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.aprobacion_y_permisos_del_personal");
@@ -224,7 +224,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_rutas");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.recorridos_opcionales_para_traslados");
@@ -241,7 +241,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_destinos");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.plantillas_de_centros_y_direcciones");
@@ -260,7 +260,7 @@
           return window.HospitalI18n.t("universal_search.gestionar_personal");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.choferes_y_copilotos");
@@ -330,7 +330,7 @@
           return window.HospitalI18n.t("management.gestion_de_datos");
         },
         section: function () {
-          return window.HospitalI18n.t("trace_map.gestion");
+          return window.HospitalI18n.t("main_menu.gestion");
         },
         detail: function () {
           return window.HospitalI18n.t("universal_search.pacientes_ambulancias_y_personal");
@@ -393,8 +393,8 @@
       const roles = window.HospitalAuth?.current?.user?.roles;
       return (
         Boolean(roles) &&
-        (!item.requiredRole || roles.includes(item.requiredRole)) &&
-        (!item.requiredRoles || item.requiredRoles.some(role => roles.includes(role)))
+        (!item.requiredRole || window.HospitalAuth.hasRole(item.requiredRole)) &&
+        (!item.requiredRoles || item.requiredRoles.some(role => window.HospitalAuth.hasRole(role)))
       );
     }
 

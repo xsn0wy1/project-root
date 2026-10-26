@@ -175,7 +175,7 @@ async function compactStatus(browser, context, id) {
         await admin.evaluate(() => HospitalI18n.ready);
         await admin.evaluate(password => HospitalApi.post('auth.php?action=login', {username: 'system_admin', password}), env.HOSPITAL_ADMIN_PASSWORD);
         const forbidden = await admin.goto(url);
-        check(forbidden.status() === 403 && new URL(admin.url()).pathname.endsWith('/ambulances.php') && await admin.locator('.error-card').isVisible(), 'admin without dispatcher receives the standalone 403 page');
+        check(forbidden.status() === 200 && new URL(admin.url()).pathname.endsWith('/ambulances.php') && await admin.locator('#new-ambulance').isVisible(), 'administrators receive the fleet page and its management controls');
         check(proof.nativeDialogs.length === 0 && proof.scriptErrors.length === 0, 'no native alerts/validation popups or uncaught script errors');
     } finally {
         fs.writeFileSync(path.join(runtime, 'browser-report.json'), JSON.stringify(proof, null, 2) + '\n');

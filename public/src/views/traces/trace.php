@@ -2,6 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__, 4) . '/backend/php/core/page.php';
 require_staff_page('traces/trace.php');
+$dispatchHidden = '';
+if (!user_has_role($db, (string)$GLOBALS['page_user']['id'], 'dispatcher')) {
+    $dispatchHidden = ' hidden';
+}
 require dirname(__DIR__, 4) . '/backend/php/components/shell.php';
 staff_page_open([
     'module' => 'traces',
@@ -33,7 +37,7 @@ staff_page_open([
                         </div>
 
                         <div class="heading-actions">
-                            <button type="button" class="action-button primary-action">
+                            <button type="button" class="action-button primary-action" data-required-role="dispatcher"<?= $dispatchHidden ?>>
                                 <img src="../../../assets/Icons/plus-icon.svg" alt="" aria-hidden="true"
                                     class="button-icon">
                                 <i18n-text data-i18n="trace_new.nuevo_traslado">Nuevo Traslado</i18n-text>

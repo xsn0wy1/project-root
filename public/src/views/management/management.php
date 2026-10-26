@@ -4,7 +4,7 @@ require_staff_page('management/management.php');
 require_once dirname(__DIR__, 4) . '/backend/php/components/shell.php';
 staff_page_open([
     'module' => 'management',
-    'title_key' => 'trace_map.gestion',
+    'title_key' => 'main_menu.gestion',
     'title' => 'Gestión',
     'stylesheet' => 'management/management.css',
     'background' => true,

@@ -343,7 +343,7 @@ function surveys_query(PDO $db, string $sql, array $params = []): \PDOStatement
 
 function surveys_admin(PDO $db, string $actor): bool
 {
-    return in_array('admin', users_roles($db, $actor), true);
+    return user_has_role($db, $actor, 'admin');
 }
 
 function surveys_actor(PDO $db, string $actor): void

@@ -222,7 +222,6 @@
   :root .patient-topbar { flex-wrap: wrap; height: auto; gap: 12px; padding-bottom: 12px; }
   :root .reading-controls { width: 100%; justify-content: space-between; gap: 12px; }
   :root .language-control { display: flex; width: min(220px, calc(100% - 60px)); height: 44px; }
-  :root .language-control > :is(svg,i) { display: none; }
   :root .language-control > .hospital-select { height: 44px; }
   :root .patient-layout { min-height: 0; grid-template-columns: minmax(0,1fr); }
   :root .patient-survey { min-height: 0; padding: 24px 18px; }

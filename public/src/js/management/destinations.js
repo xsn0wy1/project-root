@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!session) {
         return;
       }
-      if (!session.user.roles.includes('dispatcher')) {
+      if (!window.HospitalAuth.hasRole('dispatcher')) {
         location.replace(api.page('src/views/management/management.php'));
         return;
       }

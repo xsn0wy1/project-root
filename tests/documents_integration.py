@@ -156,10 +156,10 @@ def main():
     check(upload(first,{**basic,"title":"Changed retry"},original)[0]==409, "reusing a create token with different content fails")
     check(binary(first,id)[1]==original, "authenticated preview returns original PDF bytes")
     check(binary(first,id,extra="&download=1")[1]==original, "download bytes match the upload exactly")
-    check(binary(Client(),id)[0]==401 and binary(second,id)[0]==404, "anonymous and unrelated staff cannot retrieve document bytes")
-    check(second.call("/api/v1/documents.php?action=get&id="+id)[0]==404, "metadata is scoped by document permission")
-    check(second.call("/api/v1/documents.php?action=list")[1]["data"]==[], "list and count do not leak another uploader's documents")
-    check(admin.call("/api/v1/documents.php?action=get&id="+id)[0]==404, "account administration does not implicitly grant clinical document access")
+    check(binary(Client(),id)[0]==401 and binary(second,id)[0]==200, "anonymous access is denied; all active staff can retrieve document bytes")
+    check(second.call("/api/v1/documents.php?action=get&id="+id)[0]==200, "metadata is shared among active staff")
+    check(any(row["id"]==id for row in second.call("/api/v1/documents.php?action=list")[1]["data"]), "list and count include documents from other uploaders")
+    check(admin.call("/api/v1/documents.php?action=get&id="+id)[0]==200, "admin can access shared clinical documents")
     check(manager.call("/api/v1/documents.php?action=get&id="+id)[0]==200 and binary(manager,id)[0]==200, "records managers can access hospital documents")
     check(first.call("/api/v1/documents.php?action=content&id="+id+"&source=/etc/passwd")[0]==422, "binary handler rejects arbitrary source/path parameters")
     status, data, headers = binary(first,id,range="bytes=0-8")
@@ -170,10 +170,9 @@ def main():
     check(status==200 and not content and int(headers["Content-Length"])==len(original), "HEAD returns correct headers without file bytes")
     check(headers["Cache-Control"]=="no-store, private" and headers["X-Content-Type-Options"]=="nosniff" and "sandbox" in headers["Content-Security-Policy"], "private binary responses prevent caching and active document execution")
     check(first.call("/storage/documents/test.bin")[0]==404, "uploaded storage is outside the web root")
-    check(second.call("/api/v1/documents.php?action=update","POST",metadata(item,title="Forbidden"))[0]==404, "unrelated staff cannot edit documents")
     check(first.call("/api/v1/documents.php?action=update","POST",metadata(item,title="Nuevo título"),csrf=False)[0]==403, "metadata edits require CSRF")
-    updated=first.call("/api/v1/documents.php?action=update","POST",metadata(item,title="Nuevo título"))[1]["data"]
-    check(updated["title"]=="Nuevo título" and updated["version"]==2 and updated["file"]["version"]==1, "metadata edits persist without creating a binary version")
+    updated=second.call("/api/v1/documents.php?action=update","POST",metadata(item,title="Nuevo título"))[1]["data"]
+    check(updated["title"]=="Nuevo título" and updated["version"]==2 and updated["file"]["version"]==1, "staff can edit another uploader's metadata without creating a binary version")
     check(first.call("/api/v1/documents.php?action=update","POST",metadata(item,title="Stale"))[0]==409 and detail(first,id)["title"]=="Nuevo título", "stale edits cannot overwrite current metadata")
     independent=Client(); assert independent.login(username,PASSWORD)[0]==200
     with ThreadPoolExecutor(2) as pool:
@@ -182,10 +181,12 @@ def main():
     current=detail(first,id); replacement=pdf_bytes("Archivo reemplazado",3)
     before=files()
     check(upload(first,{"id":id,"version":1},replacement,endpoint="replace-file")[0]==409 and files()==before, "stale replacement keeps original bytes and creates no orphan")
-    status, replaced=upload(first,{"id":id,"version":current["version"]},replacement,endpoint="replace-file")
+    status, replaced=upload(second,{"id":id,"version":current["version"]},replacement,endpoint="replace-file")
     check(status==200 and replaced["data"]["file"]["version"]==2 and len(replaced["data"]["file_versions"])==2, "replacement appends an immutable file version")
+    uploaders = sql('SELECT uploaded_by FROM document_versions WHERE document_id=' + id + ' ORDER BY version_number')
+    check([str(row['uploaded_by']) for row in uploaders] == [uid, other_uid], "shared replacements retain the actual uploader of every immutable version")
     check(binary(first,id,1)[1]==original and binary(first,id,2)[1]==replacement, "old and current versions remain independently retrievable")
-    check(binary(second,id,1)[0]==404, "historical versions obey the same permissions")
+    check(binary(second,id,1)[0]==200, "historical versions are shared with active staff")
     current=replaced["data"]
     trigger = 'document_failure_' + SUFFIX
     before_files = files(); before_count = sql('SELECT COUNT(*) AS n FROM documents WHERE uploader_user_id='+uid)[0]['n']
@@ -222,13 +223,12 @@ def main():
     check(first.call("/api/v1/documents.php?action=list&q=Atomic")[1]["meta"]["total"]==1 and first.call("/api/v1/documents.php?action=list&q=%25")[1]["data"]==[], "search filters real records and escapes SQL wildcard input")
     check(first.call("/api/v1/documents.php?action=list&sort=DROP+TABLE")[0]==422, "sort fields are allowlisted")
     current=detail(first,id)
-    check(second.call("/api/v1/documents.php?action=archive","POST",{"id":id,"version":current["version"]})[0]==404, "archive enforces ownership")
-    archived=first.call("/api/v1/documents.php?action=archive","POST",{"id":id,"version":current["version"]})[1]["data"]
-    check(archived["archived_at"] is not None and binary(first,id)[0]==404, "archive hides bytes without deleting file history")
+    archived=second.call("/api/v1/documents.php?action=archive","POST",{"id":id,"version":current["version"]})[1]["data"]
+    check(archived["archived_at"] is not None and binary(first,id)[0]==404, "any active staff can archive; bytes hide without deleting file history")
     check(first.call("/api/v1/documents.php?action=list&state=archived")[1]["data"][0]["id"]==id and first.call("/api/v1/documents.php?action=list&type=pdf")[1]["data"]==[], "archived records appear only in the archived list")
     check(first.call("/api/v1/documents.php?action=update","POST",metadata(archived))[0]==409, "archived documents cannot be edited")
-    restored=first.call("/api/v1/documents.php?action=restore","POST",{"id":id,"version":archived["version"]})[1]["data"]
-    check(restored["archived_at"] is None and binary(first,id,1)[1]==original, "restore makes the retained original history accessible")
+    restored=second.call("/api/v1/documents.php?action=restore","POST",{"id":id,"version":archived["version"]})[1]["data"]
+    check(restored["archived_at"] is None and binary(first,id,1)[1]==original, "any active staff can restore the retained original history")
     old_files = files()
     orphans = [storage/'documents'/(secrets.token_hex(32)+'.bin'),storage/'quarantine'/(secrets.token_hex(32)+'.bin')]
     for path in orphans:
@@ -239,9 +239,9 @@ def main():
     status,other=upload(second,fields(second,administrative),original)
     assert status==201
     own=detail(first,formats[0]["id"])
-    request=[{"id":own["id"],"version":own["version"]},{"id":other["data"]["id"],"version":1}]
+    request=[{"id":own["id"],"version":own["version"]},{"id":other["data"]["id"],"version":1},{"id":"999999999999","version":1}]
     result=first.call("/api/v1/documents.php?action=bulk-archive","POST",{"documents":request})[1]["data"]
-    check(result[0]["success"] and not result[1]["success"] and result[1]["error"]["status"]==404, "bulk archive returns per-item outcomes without bypassing permission")
+    check(result[0]["success"] and result[1]["success"] and not result[2]["success"] and result[2]["error"]["status"]==404, "bulk archive shares documents and retains per-item missing-record outcomes")
     duplicate=[{"id":id,"version":restored["version"]}]*2
     check(first.call("/api/v1/documents.php?action=bulk-archive","POST",{"documents":duplicate})[0]==422 and detail(first,id)["archived_at"] is None, "invalid bulk selections are rejected before any mutation")
     check(int(sql("SELECT COUNT(*) AS n FROM audit_events WHERE resource_type='document' AND resource_id="+id)[0]["n"])>=10, "document reads and mutations are audited with record IDs")

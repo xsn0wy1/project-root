@@ -158,7 +158,7 @@
       return controls.get(select);
     }
     // These existing backed menus already use the shared design and their own IDs.
-    if (select.multiple || (select.hidden && !options.button) || select.closest('.trace-select')) {
+    if (select.multiple || (select.hidden && !options.button) || select.closest('.trace-select,.language-control')) {
       return null;
     }
     const computed = getComputedStyle(select);

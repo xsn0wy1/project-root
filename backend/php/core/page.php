@@ -28,8 +28,7 @@ function require_staff_page(string $view): void
         'management/accounts' => 'admin',
     ];
     if (isset($permissions[$page])) {
-        $roles = users_roles($db, (string) $user['id']);
-        if (!in_array($permissions[$page], $roles, true)) {
+        if (!user_has_role($db, (string) $user['id'], $permissions[$page])) {
             $GLOBALS['page_user'] = $user;
             require_once dirname(__DIR__, 3) . '/public/src/views/error.php';
             render_error_page(403);

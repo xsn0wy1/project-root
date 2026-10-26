@@ -200,7 +200,7 @@ function patient_input_fields(array $input): array
 
 function patients_access(PDO $db, string $actor): void
 {
-    if (!in_array('records_manager', users_roles($db, $actor), true)) {
+    if (!user_has_role($db, $actor, 'records_manager')) {
         throw new ApiException(
             403,
             'FORBIDDEN',

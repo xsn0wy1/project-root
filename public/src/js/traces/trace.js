@@ -215,6 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.HospitalI18n.bindText($('completedCount'), () => result.meta.counts.completed_count);
         window.HospitalI18n.bindText($('allCount'), () => result.meta.counts.all_count);
         document.querySelector('.primary-action').disabled = !result.meta.can_manage;
+        document.querySelector('.primary-action').hidden = !result.meta.can_manage;
         if (!isList() && page > 1 && !items.length && total) {
           page = Math.ceil(total / 3);
           return load();

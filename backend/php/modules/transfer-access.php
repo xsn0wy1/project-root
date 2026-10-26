@@ -5,7 +5,7 @@ use Hospital\Http\ApiException;
 
 function transfer_dispatch(PDO $db, string $actor): bool
 {
-    return in_array('dispatcher', users_roles($db, $actor), true);
+    return user_has_role($db, $actor, 'dispatcher');
 }
 
 function transfer_require_dispatch(PDO $db, string $actor): void

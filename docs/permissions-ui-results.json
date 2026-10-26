@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "api_suites": [
+    {
+      "module": "ambulances",
+      "passed": true,
+      "checks": 99
+    },
+    {
+      "module": "auth",
+      "passed": true,
+      "checks": 59
+    },
+    {
+      "module": "destinations",
+      "passed": true,
+      "checks": 87
+    },
+    {
+      "module": "doctors",
+      "passed": true,
+      "checks": 18
+    },
+    {
+      "module": "documents",
+      "passed": true,
+      "checks": 82
+    },
+    {
+      "module": "patients",
+      "passed": true,
+      "checks": 67
+    },
+    {
+      "module": "personnel",
+      "passed": true,
+      "checks": 87
+    },
+    {
+      "module": "routes",
+      "passed": true,
+      "checks": 40
+    },
+    {
+      "module": "surveys",
+      "passed": true,
+      "checks": 48
+    },
+    {
+      "module": "transfers",
+      "passed": true,
+      "checks": 76
+    }
+  ],
+  "api_checks": 767,
+  "browser_role_matrix_cases": 672,
+  "role_pages": {
+    "admin": {
+      "200": [
+        "documents/documents-edit.php",
+        "documents/documents-upload.php",
+        "documents/documents-viewer.php",
+        "documents/documents.php",
+        "main-menu.php",
+        "management/accounts.php",
+        "management/ambulances.php",
+        "management/destinations.php",
+        "management/doctors.php",
+        "management/management.php",
+        "management/patients.php",
+        "management/personnel.php",
+        "management/routes.php",
+        "settings.php",
+        "surveys/survey-new.php",
+        "surveys/survey-view.php",
+        "surveys/survey.php",
+        "traces/trace-map.php",
+        "traces/trace-new.php",
+        "traces/trace-view.php",
+        "traces/trace.php"
+      ],
+      "403": []
+    },
+    "dispatcher": {
+      "200": [
+        "documents/documents-edit.php",
+        "documents/documents-upload.php",
+        "documents/documents-viewer.php",
+        "documents/documents.php",
+        "main-menu.php",
+        "management/ambulances.php",
+        "management/destinations.php",
+        "management/management.php",
+        "management/personnel.php",
+        "management/routes.php",
+        "settings.php",
+        "surveys/survey-new.php",
+        "surveys/survey-view.php",
+        "surveys/survey.php",
+        "traces/trace-map.php",
+        "traces/trace-new.php",
+        "traces/trace-view.php",
+        "traces/trace.php"
+      ],
+      "403": [
+        "management/accounts.php",
+        "management/doctors.php",
+        "management/patients.php"
+      ]
+    },
+    "records_manager": {
+      "200": [
+        "documents/documents-edit.php",
+        "documents/documents-upload.php",
+        "documents/documents-viewer.php",
+        "documents/documents.php",
+        "main-menu.php",
+        "management/doctors.php",
+        "management/management.php",
+        "management/patients.php",
+        "settings.php",
+        "surveys/survey-new.php",
+        "surveys/survey-view.php",
+        "surveys/survey.php",
+        "traces/trace-map.php",
+        "traces/trace-view.php",
+        "traces/trace.php"
+      ],
+      "403": [
+        "management/accounts.php",
+        "management/ambulances.php",
+        "management/destinations.php",
+        "management/personnel.php",
+        "management/routes.php",
+        "traces/trace-new.php"
+      ]
+    },
+    "staff": {
+      "200": [
+        "documents/documents-edit.php",
+        "documents/documents-upload.php",
+        "documents/documents-viewer.php",
+        "documents/documents.php",
+        "main-menu.php",
+        "management/management.php",
+        "settings.php",
+        "surveys/survey-new.php",
+        "surveys/survey-view.php",
+        "surveys/survey.php",
+        "traces/trace-map.php",
+        "traces/trace-view.php",
+        "traces/trace.php"
+      ],
+      "403": [
+        "management/accounts.php",
+        "management/ambulances.php",
+        "management/destinations.php",
+        "management/doctors.php",
+        "management/patients.php",
+        "management/personnel.php",
+        "management/routes.php",
+        "traces/trace-new.php"
+      ]
+    }
+  },
+  "first_paint_cases": 84,
+  "actual_demo_admin_pages": 21,
+  "ui_checks": 954,
+  "ui_page_theme_viewport_cases": 100,
+  "visual_combinations": 4,
+  "document_browser_checks": 182,
+  "recovery_browser_checks": 130,
+  "stored_role_assignments_changed": false,
+  "notes": [
+    "Initial assertions for superseded admin/document restrictions were updated and rechecked.",
+    "Unchanged role denials, CSRF, version conflicts, tokens, immutable bytes and transactions remain checked."
+  ]
+}

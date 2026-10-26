@@ -29,6 +29,10 @@ async function api(page, route, body) {
 }
 async function choose(page, selector, value) {
   const button = await page.locator(selector).evaluate(el => el.dataset.hospitalButton);
+  if (!button && await page.locator(selector).evaluate(el => Boolean(el.closest('.language-control')))) {
+    await page.locator(selector).selectOption(value);
+    return;
+  }
   await page.locator('#' + button).click();
   await page.locator(`[role=option][data-value="${value}"]:visible`).click();
 }

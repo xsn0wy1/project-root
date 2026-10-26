@@ -1,5 +1,5 @@
 """Focused route catalog, optional presets, snapshots and cached mapping checks."""
-import hashlib,json,os,subprocess
+import hashlib,json,os,secrets,subprocess
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from urllib.parse import urlencode
@@ -35,8 +35,14 @@ def run():
     admin=Client();assert admin.login('system_admin',ADMIN_PASSWORD)[0]==200
     call=lambda action,data=None:dispatcher.call('/api/v1/routes.php?action=' + action.replace('.php', '').replace('?', '&'),'POST' if data is not None else 'GET',data)
     catalog=lambda:dispatcher.call('/api/v1/transfers.php?action=catalogs')[1]['data']
-    check(Client().call('/api/v1/routes.php?action=list')[0]==401 and admin.call('/api/v1/routes.php?action=list')[0]==403,'routes require dispatcher access')
-    forbidden_status, forbidden_html, forbidden_headers = admin.call('/src/views/management/routes.php')
+    check(Client().call('/api/v1/routes.php?action=list')[0]==401 and admin.call('/api/v1/routes.php?action=list')[0]==200,'routes admit dispatchers/admins and require authentication')
+    forbidden_staff=Client(); forbidden_name='routes_staff_'+SUFFIX
+    forbidden_staff.csrf()
+    status,payload,_=forbidden_staff.call('/api/v1/auth.php?action=register','POST',dict(username=forbidden_name,email=forbidden_name+'@hospital.example',national_id=str(93000000+secrets.randbelow(999999)),password=PASSWORD))
+    assert status==201
+    subprocess.run([PHP,'backend/php/cli/users.php','approve',forbidden_name,'staff'],cwd=ROOT,check=True,capture_output=True)
+    assert forbidden_staff.login(forbidden_name,PASSWORD)[0]==200
+    forbidden_status, forbidden_html, forbidden_headers = forbidden_staff.call('/src/views/management/routes.php')
     check(forbidden_status == 403 and 'Location' not in forbidden_headers and
           'text/html' in forbidden_headers['Content-Type'] and '<html' in forbidden_html,
           'route page retains its role check and the accepted 403 error page')

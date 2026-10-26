@@ -85,10 +85,10 @@ async function run() {
               for (const file of files) {
                 currentCase = [account.role, locale, theme, size, file].join(' ');
                 const required = permissions[file];
-                const allowed = !required || account.roles.includes(required);
+                const allowed = !required || account.roles.includes('admin') || account.roles.includes(required);
                 const query = new URLSearchParams();
                 if (file.endsWith('documents-viewer.php') || file.endsWith('documents-edit.php')) query.set('id', account.document_id);
-                if (file.endsWith('trace-view.php')) query.set('id', fixture.transfer_id);
+                if (file.endsWith('trace-view.php')) query.set('id', account.transfer_id || fixture.transfer_id);
                 if (file.endsWith('survey-view.php')) query.set('id', account.survey_id);
                 const url = fixture.base + '/src/views/' + file + (query.size ? '?' + query : '');
                 pending.clear();
@@ -109,8 +109,33 @@ async function run() {
                 if (allowed) {
                   assert.equal(await page.locator('.app-shell').count(), 1, currentCase + ': staff shell');
                   assert.equal(await page.locator('.hospital-notification[role="alert"]').count(), 0, currentCase + ': unexpected popup');
-                  if (file.endsWith('documents.php')) assert(await page.locator('body').innerText().then(text => text.includes('Informe')), currentCase + ': seeded documents');
+                  if (file.endsWith('documents.php')) assert(await page.locator('body').innerText().then(text => text.includes(fixture.document_title || 'Informe')), currentCase + ': seeded documents');
                   if (file.endsWith('survey.php')) assert(await page.locator('body').innerText().then(text => text.includes(account.survey_title)), currentCase + ': owned survey');
+                  const targets = await page.locator('a[href]').evaluateAll(links => links.filter(link =>
+                    link.checkVisibility({checkVisibilityCSS: true}) && !link.closest('[hidden]'))
+                    .map(link => new URL(link.href).pathname));
+                  for (const target of targets) {
+                    const targetFile = target.split('/src/views/')[1];
+                    const targetRole = permissions[targetFile];
+                    assert(!targetRole || account.roles.includes('admin') || account.roles.includes(targetRole),
+                      currentCase + ': visible link targets a forbidden page: ' + target);
+                  }
+                  const dispatch = account.roles.includes('admin') || account.roles.includes('dispatcher');
+                  if (file === 'traces/trace.php' || file === 'traces/trace-view.php') {
+                    const html = await response.text();
+                    const tags = html.match(/<button\b[^>]*data-required-role="dispatcher"[^>]*>/g) || [];
+                    assert.equal(tags.length, file === 'traces/trace.php' ? 1 : 3, currentCase + ': server-rendered dispatch controls');
+                    for (const tag of tags) assert.equal(/\shidden(?:\s|>)/.test(tag), !dispatch,
+                      currentCase + ': permission state is correct at first paint');
+                  }
+                  if (file === 'traces/trace.php') assert.equal(await page.locator('.primary-action').isVisible(), dispatch,
+                    currentCase + ': New Transfer visibility');
+                  if (file === 'traces/trace-view.php') {
+                    for (const control of ['edit-transfer', 'cancel-transfer', 'update-status']) {
+                      assert.equal(await page.locator('#' + control).isVisible(), dispatch,
+                        currentCase + ': transfer action visibility: ' + control);
+                    }
+                  }
                 }
                 const screenshot = (account.role === 'admin' && locale === 'es-UY' && theme === 'dark' && size === 'desktop') ||
                   (size === 'phone' && locale === 'es-UY' && ['traces/trace-map.php', 'surveys/survey-view.php'].includes(file));

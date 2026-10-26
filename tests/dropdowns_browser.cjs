@@ -10,9 +10,9 @@ async function ready(p){await p.evaluate(async()=>{await HospitalI18n.ready;awai
 async function visit(p,file,id){await p.evaluate(()=>HospitalApi.post('auth.php?action=heartbeat'));const target=base+'/src/views/'+file+(id?'?id='+id:'');await p.goto(target,{waitUntil:'domcontentloaded'});assert.equal(new URL(p.url()).pathname,new URL(target).pathname,'unexpected page redirect');await ready(p);}
 async function selectButton(p,selector){const id=await p.locator(selector).getAttribute('data-hospital-button');assert(id,'missing shared dropdown for '+selector);return p.locator('#'+id);}
 async function reviewControls(p,label){
- const states=await p.locator('select').evaluateAll(nodes=>nodes.map((node,index)=>({index,button:node.dataset.hospitalButton,multiple:node.multiple,disabled:node.disabled})));
+ const states=await p.locator('select').evaluateAll(nodes=>nodes.map((node,index)=>({index,button:node.dataset.hospitalButton,multiple:node.multiple,nativeLanguage:Boolean(node.closest('.language-control')),disabled:node.disabled})));
  for(const state of states){
-  if(state.multiple)continue;assert(state.button,label+' has an unstyled select');
+  if(state.multiple||state.nativeLanguage)continue;assert(state.button,label+' has an unstyled select');
   const control=p.locator('select').nth(state.index),button=p.locator('#'+state.button);
   if(!await button.isVisible())continue;
   if(await p.locator('dialog[open]').count() && !await control.evaluate(node=>Boolean(node.closest('dialog[open]'))))continue;

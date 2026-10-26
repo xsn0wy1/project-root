@@ -157,6 +157,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     const terminal = ['completed', 'cancelled'].includes(transfer.status);
+    $('edit-transfer').hidden = !transfer.can_manage;
+    $('cancel-transfer').hidden = !transfer.can_manage;
+    $('update-status').hidden = !transfer.can_manage;
     $('edit-transfer').disabled = busy || !transfer.can_manage || transfer.status !== 'scheduled';
     $('cancel-transfer').disabled = busy || !transfer.can_manage || terminal;
     $('update-status').disabled = busy || !transfer.can_manage || !nextStates[transfer.status].length;

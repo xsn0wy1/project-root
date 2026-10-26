@@ -98,7 +98,7 @@ def run():
     check(anonymous.call('/api/v1/documents.php?action=patient-link', 'POST', body)[0] == 401, 'issuing links requires a staff session')
     check(owner.call('/api/v1/documents.php?action=patient-link', 'POST', body, csrf=False)[0] == 403, 'issuing links requires CSRF')
     check(owner.call('/api/v1/documents.php?action=patient-link')[0] == 405, 'GET never creates links')
-    check(link(other, item)[0] == link(admin, item)[0] == 404, 'unrelated staff and account-only administrators cannot share a document')
+    check(link(other, item)[0] == link(admin, item)[0] == 200, 'active staff and admins can share a hospital document')
     check(owner.call('/api/v1/documents.php?action=patient-link', 'POST', dict(body, source='/etc/passwd'))[0] == 422, 'issuance rejects arbitrary source fields')
     check(owner.call('/api/v1/documents.php?action=patient-link', 'POST', dict(body, version=999))[0] == 409, 'stale document revisions cannot issue links')
     check(link(owner, item, version=99)[0] == 404, 'only an existing attached file version can be shared')
@@ -131,8 +131,8 @@ def run():
     assert status == 200; item = payload['data']
     fresh = link(owner, item, version=2)[1]['data']['token']
     check(raw != fresh and public(raw)[1] == original and public(fresh)[1] == replacement, 'each QR stays pinned to its immutable selected file version')
-    check(link(other, item, token=raw)[0] == 404 and owner.call('/api/v1/documents.php?action=patient-link', 'POST', dict(body, action='revoke', token=raw), csrf=False)[0] == 403, 'revocation independently enforces ownership and CSRF')
-    check(link(owner, item, token=raw)[0] == 200 and public(raw)[0] == 404 and public(fresh)[0] == 200, 'revoking one version blocks its token without affecting another version')
+    check(link(other, item, token='a'*64)[0] == 409 and owner.call('/api/v1/documents.php?action=patient-link', 'POST', dict(body, action='revoke', token=raw), csrf=False)[0] == 403, 'revocation independently enforces the exact token and CSRF')
+    check(link(other, item, token=raw)[0] == 200 and public(raw)[0] == 404 and public(fresh)[0] == 200, 'any active staff can revoke one version without affecting another version')
     new_old = link(owner, item)[1]['data']['token']
     check(new_old != raw and link(owner, item, token=raw)[0] == 409 and public(new_old)[0] == 200, 'reissue replaces revoked credentials and stale dialogs cannot revoke the replacement')
     sql('UPDATE document_access_links SET expires_at=UTC_TIMESTAMP()-INTERVAL 1 SECOND')

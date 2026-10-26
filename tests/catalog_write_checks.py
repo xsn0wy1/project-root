@@ -30,7 +30,8 @@ def verify_catalog_writes(domain, dispatcher, admin, record):
     def expect(result, status, code, label):
         check(result[0] == status and result[1]['error']['code'] == code, domain + ': ' + label)
 
-    roles = [('anonymous', Client()), ('admin', admin)]
+    check(request(admin, 'list')[0] == 200, domain + ': admin inherits catalog access')
+    roles = [('anonymous', Client())]
     roles[0][1].csrf()
     for index, role in enumerate(['staff', 'records_manager']):
         client = Client(); client.csrf()

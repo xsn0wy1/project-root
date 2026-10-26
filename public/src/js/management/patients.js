@@ -818,7 +818,7 @@
     if (!payload) {
       return;
     }
-    if (!payload.user.roles.includes('records_manager')) {
+    if (!window.HospitalAuth.hasRole('records_manager')) {
       report(
         new api.ApiError(
           window.HospitalI18n.t("patients.se_requiere_permiso_de_gestion_de_registros"),

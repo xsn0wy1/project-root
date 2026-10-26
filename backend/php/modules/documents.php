@@ -5,7 +5,7 @@ use Hospital\Http\Request;
 
 function documents_manager(PDO $db, string $actor): bool
 {
-    return in_array('records_manager', users_roles($db, $actor), true);
+    return user_has_role($db, $actor, 'records_manager');
 }
 
 function documents_actor(PDO $db, string $actor): void
@@ -30,10 +30,6 @@ function documents_row(PDO $db, string $actor, string $id, bool $lock = false): 
 {
     $sql = 'SELECT d.*, c.code AS category_code, c.name AS category_name, c.requires_patient, p.full_name AS patient_name, p.national_id AS patient_national_id, p.status AS patient_status, COALESCE(NULLIF(s.full_name,\'\'), u.username) AS uploader_name FROM documents d JOIN document_categories c ON c.id = d.category_id LEFT JOIN patients p ON p.id = d.patient_id JOIN users u ON u.id = d.uploader_user_id JOIN staff s ON s.id = u.staff_id WHERE d.id = ?';
     $parameters = [$id];
-    if (!documents_manager($db, $actor)) {
-        $sql .= ' AND d.uploader_user_id = ?';
-        $parameters[] = $actor;
-    }
     $stmt = $db->prepare($sql . ($lock ? ' FOR UPDATE' : ''));
     $stmt->execute($parameters);
     $row = $stmt->fetch();
@@ -374,10 +370,6 @@ function documents_listing(PDO $db, string $actor, array $query): array
     }
     $where = ['d.archived_at IS ' . ($state === 'active' ? 'NULL' : 'NOT NULL')];
     $params = [];
-    if (!documents_manager($db, $actor)) {
-        $where[] = 'd.uploader_user_id = ?';
-        $params[] = $actor;
-    }
     if ($type !== '') {
         $where[] = 'v.extension = ?';
         $params[] = $type;

@@ -165,8 +165,8 @@ function staff_sidebar(
         [
             $hub ? '#' : $managementPrefix . 'management.php',
             'database-cog.svg',
-            $root || $document || $transfer ? 'main_menu.gestion' : 'trace_map.gestion',
-            $root || $document || $transfer ? 'Gestion' : 'Gestión'
+            'main_menu.gestion',
+            'Gestión'
         ],
         [
             $section === 'settings' ? '#' : $prefix . 'settings.php',

@@ -1,7 +1,7 @@
 /* Loads staff sessions, renders identity and coordinates session/settings updates.
  * API: auth me/heartbeat/logout; settings diagnostics.
  * DOM: data-current-user-* elements, profile buttons and data-logout controls.
- * ready/current retain their existing live property interfaces.
+ * hasRole includes admin access; ready/current retain their live interfaces.
  */
 (() => {
   'use strict';
@@ -18,6 +18,13 @@
   let refreshing = null;
   let channel;
   let diagnosticsSent = false;
+  function hasRole(role) {
+    if (!current) {
+      return false;
+    }
+    const roles = current.user.roles;
+    return roles.includes('admin') || roles.includes(role);
+  }
   function diagnostics(payload) {
     if (diagnosticsSent || !payload.settings.optional_diagnostics || document.readyState !== 'complete') {
       return;
@@ -123,7 +130,7 @@
     window.HospitalTheme.accountTheme(payload.settings.theme, payload.user.id);
     window.HospitalI18n?.accountLocale(payload.settings.locale);
     document.querySelectorAll('[data-required-role]').forEach(element => {
-      element.hidden = !user.roles.includes(element.dataset.requiredRole);
+      element.hidden = !hasRole(element.dataset.requiredRole);
     });
     window.dispatchEvent(new CustomEvent('hospital:session', { detail: payload }));
     diagnostics(payload);
@@ -251,6 +258,7 @@
       return current;
     },
     refresh,
+    hasRole,
     logout,
     apply,
     settingsChanged: payload => {

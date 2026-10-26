@@ -1,0 +1,132 @@
+{
+  "backend/php/components/shell.php": {
+    "before_sha256": "c64b777762f8c20f7310897acd5605963a4377d1f39ec81ce543666ed26f707a",
+    "after_sha256": "cc97774298a812fe91daad39df60b862020019d77b5ead69acb54bf6acd88842",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "backend/php/core/page.php": {
+    "before_sha256": "d08b368b28ac497a00f503bfbf10c94f82e36cf64d786c32f2eddb7effb5d8bf",
+    "after_sha256": "7d21d07ba930e2e47dd3b27c6d5c3fd96907b6503ecd69ea441ca0aed0e14df5",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "backend/php/modules/auth.php": {
+    "before_sha256": "00e0393a45f81bce6a38edd601ebee38b253ce90463329b083334c8679077751",
+    "after_sha256": "a366d93065edbddb712a47588ec4d549d2c7033d540d7b4c018b4c02592669a2",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "backend/php/modules/documents.php": {
+    "before_sha256": "fe9855e44c458d3aae6a9f94bfb247417580985d1d3cfa4d2e3b95c0c28c98b7",
+    "after_sha256": "6af5437138851351cc59518778f86e7b181ce26f66559d8e2cfe7c5a13a73a89",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "backend/php/modules/patients.php": {
+    "before_sha256": "563fe2d54446e13a198bf9b089a8bb2bc2a149296035e1dadf32de9f34e420e4",
+    "after_sha256": "7e6bd701e0b7777dd354998180f15b60452cc255456edad50bd2030068130767",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "backend/php/modules/surveys.php": {
+    "before_sha256": "820cc4a8da4ac8796d4ff3b96550848101a5b11977f340db11f0be39557965e4",
+    "after_sha256": "324a9999ba888aaff86d08effc919181418f47dfe5556d85d99e497724a519ec",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "backend/php/modules/transfer-access.php": {
+    "before_sha256": "7c5d10e05aefa6212cad8748517432e0c7b9de793ddf02c7899dc7ebbdecd92f",
+    "after_sha256": "317585a6431c09e03cddc104ddef8fd29894490afd64f45fc9be34089114764f",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "db/json/es.json": {
+    "before_sha256": "671df60f512d6d015b466824408c38f624ef34569a34f4913f7d962dfe25804b",
+    "after_sha256": "666b894a3990e7c8a843e7e72ada26ba3e001cbf05331cc5e69dd71ebb3bf2eb",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/assets/Icons/check-icon.svg": {
+    "before_sha256": null,
+    "after_sha256": "81f2e899e044b0da14878af766b0d4eba975190e1bb1ca65e88ea937273b265f",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/api-connection/auth-session.js": {
+    "before_sha256": "0da273536727336bcde6f2f300d718f03f8d23b66b617d4a43d4ce777945b72e",
+    "after_sha256": "9dcc0b59a17e1871f7464ab0894fc8fafc4322219a23588474671d420c310ea9",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/api-connection/universal-search.js": {
+    "before_sha256": "83c65f7bee5fc7c86697759a8b03d160a87575df392362932894fc526d36172c",
+    "after_sha256": "6f64a9c230b06533c5b7812208dba7d1bf34e2bf25298525537236e3f618ffdc",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/css/responsive.css": {
+    "before_sha256": "585c45786f45442212491331d251dcdab4f19b6b9ff65ffaa462497ae9aaa7f8",
+    "after_sha256": "d5908380653113086dc7ab0016e91bb9bb06617b247733a883ffe29471ead41e",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/css/traces/trace-map.css": {
+    "before_sha256": "de396957e29e6edbfcf396c6969ae7da0b0400725b3b0a06a96749365b9f52c7",
+    "after_sha256": "dc7a67588162990c1bc779c06edcf407cfefeff6b6a4a0efdbb5d47c2115e0bc",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/dropdowns.js": {
+    "before_sha256": "2f46d8fde102357f0700ed98bfdd64d5345dfd85f47d1a4d8a57ea3116db153b",
+    "after_sha256": "c1a2692ee3173ce8a54f7ed33f753e3c0583fdafaef32bf7b3164258b997fb92",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/management/ambulances.js": {
+    "before_sha256": "36c3f0328e5a58e7e5f81f9b851b3bd03c1e9ee188bbaf9f1eedce7f2affa53d",
+    "after_sha256": "eaca409ab7beea3dd72e955d4ddc517ba2d489177c1543561aca7317824e70e0",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/management/destinations.js": {
+    "before_sha256": "3058d21516812ada0cb30cfedd8a89f8aaaa850a183b917cf0c6a6f930cbc87b",
+    "after_sha256": "2bff0e61019122762b91a57e000658ad78326208660622354fb8fe27f484c402",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/management/doctors.js": {
+    "before_sha256": "69497092a477f40794b78dbc82461b219a1cb76db3f984213c1f2ee348cb5c19",
+    "after_sha256": "e735a6a430622a96c04b3182d552d6e2bc4e9d647cf42cc7d96e61de78a514f5",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/management/patients.js": {
+    "before_sha256": "11779c088cc64037f803e9e85f78ca571803b7c52c28185eefb818e689a5ff1c",
+    "after_sha256": "2695af1bc6b10f6c6dfaa752dee5fbbf698a6dacb3823877c690f9935bb2e7af",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/management/personnel.js": {
+    "before_sha256": "c36afe3ea82f26a2cb6310c076ced12f86c6546146a417b8e7d2502eddb928bd",
+    "after_sha256": "0f27daaa10a8cd863c1d14be578d2d942cf4f45e000c500be50f628d71edb238",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/traces/trace-view.js": {
+    "before_sha256": "b46df5c15c572a7a0ba35d4625b415fbf5e365c9d2e35e1ad90a07b51143c84c",
+    "after_sha256": "b6635ee3583d6542078d6b2fde65746ef98174edb988e138686ab6aad0bb8f1c",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/js/traces/trace.js": {
+    "before_sha256": "70842c8c7a823c03b03bf078b2b42cc47d8f622bbdb268b7977b007a21ef90b2",
+    "after_sha256": "462ac387d90d4baa5a3b130846db12d8869840143a2da0aa016c150952165a32",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/views/management/management.php": {
+    "before_sha256": "4f8973245b8f4d9eca55b8723cdce10e269adcfc1537270734f87cd0a457125c",
+    "after_sha256": "cf237dc0d029291758548e1ec0ccccc3e82410cb1d076e191a305a3e1eefb2a8",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/views/surveys/survey-new.php": {
+    "before_sha256": "66fcf3445d9b4453ab44c1c34261586fbe12b94aa9339a0fb36ca066536183d7",
+    "after_sha256": "822252128dd66b6313160eb4c459a8e18ef0ac6c8d2fd2d697637225a49bbfd1",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/views/traces/trace-map.php": {
+    "before_sha256": "65bf0e62abd2ab86aaf3d7bcdfefc6330f39cd573270a9ed2b394c76bba8759a",
+    "after_sha256": "b2689164e5b80dbaa4f585503ba96a889922cf67ebd6e3bf7336d6c195adeb74",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/views/traces/trace-view.php": {
+    "before_sha256": "b9011f36d7914e6a4e2c65bf5a6acb0a8ab843235d30bfec50b562f0d58a278b",
+    "after_sha256": "dab5eb8fc65d093d8979f38dfb8bef7328f2890465e6667e8106d868b3cc546a",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  },
+  "public/src/views/traces/trace.php": {
+    "before_sha256": "d85157c8b0f97cce5e33bc40fca1b186a8a07aa9f766986fb12575a73727ed93",
+    "after_sha256": "ee3164b1be1c4f9764fc3a1485b65d08ec4ee1a0bff791664792e0b28c942b9a",
+    "reason": "Explicitly requested admin role inheritance, shared active-staff documents, role-safe controls, or the four scoped UI repairs."
+  }
+}

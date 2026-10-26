@@ -848,7 +848,7 @@
       if (!session) {
         return;
       }
-      if (!session.user.roles.includes("records_manager")) {
+      if (!window.HospitalAuth.hasRole('records_manager')) {
         location.replace(api.page("src/views/management/management.php"));
         return;
       }

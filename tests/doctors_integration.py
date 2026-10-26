@@ -17,7 +17,7 @@ def run():
     from auth_integration import ADMIN_PASSWORD
     assert admin.login('system_admin', ADMIN_PASSWORD)[0] == 200
     call = lambda action, data=None: manager.call('/api/v1/doctors.php?action=' + action.replace('.php', '').replace('?', '&'), 'POST' if data is not None else 'GET', data)
-    check(Client().call('/api/v1/doctors.php?action=list')[0] == 401 and admin.call('/api/v1/doctors.php?action=list')[0] == 403, 'doctor records require records_manager access')
+    check(Client().call('/api/v1/doctors.php?action=list')[0] == 401 and admin.call('/api/v1/doctors.php?action=list')[0] == 200, 'doctor records admit records managers/admins and require authentication')
     check(call('list.php')[1]['data'] == [], 'directory starts empty without browser sample records')
     record = dict(title='Dra.', full_name='Lucía Prueba', national_id='9.800.123-5', license='MSP-98765',
                   specialty='Cardiología', department='Consultorios Externos', office='Consultorio 12',
@@ -33,8 +33,8 @@ def run():
           all(isinstance(value, str) for group in payload['data'].values() for value in group),
           'doctor editor catalogs preserve their named string-list contract')
     check(Client().call('/api/v1/doctors.php?action=catalogs')[0] == 401 and
-          admin.call('/api/v1/doctors.php?action=catalogs')[0] == 403,
-          'doctor editor catalogs require the explicit records_manager role')
+          admin.call('/api/v1/doctors.php?action=catalogs')[0] == 200,
+          'doctor editor catalogs admit records managers/admins')
     status, payload, headers = call('catalogs', {})
     check(status == 405 and headers['Allow'] == 'GET', 'doctor editor catalogs reject writes')
     check(sql('SELECT COUNT(*) AS n FROM users WHERE staff_id=' + did)[0]['n'] == 0, 'creating a doctor does not create a login account')

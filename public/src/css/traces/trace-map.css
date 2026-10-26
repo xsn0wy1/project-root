@@ -15,7 +15,7 @@
   font-family: "Inclusive Sans", "Inter", "Segoe UI", sans-serif;
 }
 
-body { background: var(--background); color: var(--text); font-size: 13px; -webkit-font-smoothing: antialiased; }
+body { background: var(--background); color: var(--text); font-size: 13px; }
 button, input { font: inherit; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
 button, a { touch-action: manipulation; }

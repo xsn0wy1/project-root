@@ -2,6 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__, 4) . '/backend/php/core/page.php';
 require_staff_page('traces/trace-view.php');
+$dispatchHidden = '';
+if (!user_has_role($db, (string)$GLOBALS['page_user']['id'], 'dispatcher')) {
+    $dispatchHidden = ' hidden';
+}
 require dirname(__DIR__, 4) . '/backend/php/components/shell.php';
 staff_page_open([
     'module' => 'traces',
@@ -38,8 +42,8 @@ staff_page_open([
               </div>
             </div>
             <div class="header-actions">
-              <button class="detail-button" id="edit-transfer" type="button" disabled><img class="detail-icon" src="../../../assets/Icons/edit-icon.svg" alt=""><span data-i18n="trace_view.editar">Editar</span></button>
-              <button class="detail-button danger-button" id="cancel-transfer" type="button" disabled><span class="detail-icon color-icon trash-icon" aria-hidden="true"></span><span data-i18n="trace_view.cancelar_traslado">Cancelar traslado</span></button>
+              <button class="detail-button" id="edit-transfer" type="button" data-required-role="dispatcher"<?= $dispatchHidden ?> disabled><img class="detail-icon" src="../../../assets/Icons/edit-icon.svg" alt=""><span data-i18n="trace_view.editar">Editar</span></button>
+              <button class="detail-button danger-button" id="cancel-transfer" type="button" data-required-role="dispatcher"<?= $dispatchHidden ?> disabled><span class="detail-icon color-icon trash-icon" aria-hidden="true"></span><span data-i18n="trace_view.cancelar_traslado">Cancelar traslado</span></button>
             </div>
           </div>
         </header>
@@ -115,7 +119,7 @@ staff_page_open([
           </section>
           <footer class="transfer-footer">
             <p class="view-message" id="view-message" role="status" aria-live="polite"></p>
-            <button class="detail-button primary-button" id="update-status" type="button" disabled><img class="detail-icon" src="../../../assets/Icons/reload-icon.svg" alt=""><span data-i18n="trace_view.actualizar_estado">Actualizar estado</span></button>
+            <button class="detail-button primary-button" id="update-status" type="button" data-required-role="dispatcher"<?= $dispatchHidden ?> disabled><img class="detail-icon" src="../../../assets/Icons/reload-icon.svg" alt=""><span data-i18n="trace_view.actualizar_estado">Actualizar estado</span></button>
           </footer>
         </div>
       </article>

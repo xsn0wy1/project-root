@@ -43,7 +43,7 @@ def page_guard_checks(dispatcher, admin):
                    'surveys/survey':None, 'surveys/survey-new':None, 'surveys/survey-view':None}
     for role, client in [('anonymous', Client()), ('admin', admin), ('dispatcher', dispatcher), ('records_manager', clinical)]:
         for page, permission in permissions.items():
-            allowed = role != 'anonymous' and (permission is None or permission == role)
+            allowed = role != 'anonymous' and (permission is None or permission == role or role == 'admin')
             status, body, headers = client.call('/src/views/'+page+'.php')
             check(status == (200 if allowed else 303 if role == 'anonymous' else 403), 'PHP page guard: '+role+' / '+page)
             if role == 'anonymous':
@@ -66,7 +66,7 @@ def run():
     page_guard_checks(dispatcher, admin)
     call = lambda action, data=None: dispatcher.call('/api/v1/ambulances.php?action='+action, 'POST' if data is not None else 'GET', data)
     catalog = lambda: dispatcher.call('/api/v1/transfers.php?action=catalogs')[1]['data']
-    check(Client().call('/api/v1/ambulances.php?action=list')[0] == 401 and admin.call('/api/v1/ambulances.php?action=list')[0] == 403, 'fleet management requires explicit dispatcher access')
+    check(Client().call('/api/v1/ambulances.php?action=list')[0] == 401 and admin.call('/api/v1/ambulances.php?action=list')[0] == 200, 'fleet management admits dispatchers/admins and requires authentication')
     check(call('list')[1]['data'] == [], 'SQL fleet starts empty without mock vehicles')
     record = dict(plate='sAB-901', model='Mercedes-Benz Sprinter', capacity=4, operational_status='available')
     check(dispatcher.call('/api/v1/ambulances.php?action=create','POST',record,csrf=False)[0] == 403, 'fleet writes require CSRF')

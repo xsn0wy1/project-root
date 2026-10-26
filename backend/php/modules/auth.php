@@ -183,7 +183,7 @@ function auth_require_user(PDO $db, array $config, bool $touch = true): array
 function auth_require_admin(PDO $db, array $config): array
 {
     $user = auth_require_user($db, $config);
-    if (!in_array('admin', users_roles($db, (string) $user['id']), true)) {
+    if (!user_has_role($db, (string) $user['id'], 'admin')) {
         throw new ApiException(403, 'FORBIDDEN', \Hospital\I18n::t("errors.no_tenes_permiso_para_esta_accion"));
     }
     return $user;
@@ -318,6 +318,13 @@ function users_roles(PDO $db, string $id): array
     return $stmt->fetchAll(\PDO::FETCH_COLUMN);
 }
 
+// Effective access never changes the roles stored or displayed for the account.
+function user_has_role(PDO $db, string $actor, string $role): bool
+{
+    $roles = users_roles($db, $actor);
+    return in_array('admin', $roles, true) || in_array($role, $roles, true);
+}
+
 function users_settings(PDO $db, string $id): array
 {
     $stmt = $db->prepare('SELECT us.*,COALESCE(s.version,0) AS staff_revision FROM user_settings us JOIN users u ON u.id=us.user_id LEFT JOIN staff s ON s.id=u.staff_id WHERE us.user_id = ?');
@@ -449,7 +456,7 @@ function accounts_assert_actor(PDO $db, ?string $actor): void
         || $user['status'] !== 'active'
         || $user['staff_status'] !== 'active'
         || (int)$user['auth_version'] !== (int)($_SESSION['auth_version'] ?? 0)
-        || !in_array('admin', users_roles($db, $actor), true)
+        || !user_has_role($db, $actor, 'admin')
     ) {
         throw new ApiException(403, 'FORBIDDEN', \Hospital\I18n::t("errors.no_tenes_permiso_para_esta_accion"));
     }
@@ -763,7 +770,7 @@ function password_change(PDO $db, array $config, ?string $actor, string $id, arr
         ) {
             throw new ApiException(401, 'SESSION_EXPIRED', \Hospital\I18n::t("errors.la_sesion_vencio"));
         }
-        if ($admin && $actor !== null && !in_array('admin', users_roles($db, $actor), true)) {
+        if ($admin && $actor !== null && !user_has_role($db, $actor, 'admin')) {
             throw new ApiException(403, 'FORBIDDEN', \Hospital\I18n::t("errors.se_requiere_un_administrador"));
         }
         $user = $actor === $id ? $acting : users_by_id($db, $id, true);

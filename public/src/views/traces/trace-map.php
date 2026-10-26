@@ -58,8 +58,8 @@ staff_page_head([
         <a class="nav-item" href="../surveys/survey.php" title="Encuestas" data-i18n-title="main_menu.encuestas">
           <span class="icon" style="--icon-image: url('../../../assets/Icons/survey-icon.svg')" aria-hidden="true"></span><span data-i18n="main_menu.encuestas">Encuestas</span>
         </a>
-        <a class="nav-item" href="../management/management.php" title="Gestión" data-i18n-title="trace_map.gestion">
-          <span class="icon" style="--icon-image: url('../../../assets/Icons/database-cog.svg')" aria-hidden="true"></span><span data-i18n="trace_map.gestion">Gestión</span>
+        <a class="nav-item" href="../management/management.php" title="Gestión" data-i18n-title="main_menu.gestion">
+          <span class="icon" style="--icon-image: url('../../../assets/Icons/database-cog.svg')" aria-hidden="true"></span><span data-i18n="main_menu.gestion">Gestión</span>
         </a>
         <div class="nav-spacer"></div>
         <a class="nav-item" href="../settings.php" title="Configuración" data-i18n-title="main_menu.configuracion">

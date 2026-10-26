@@ -20,7 +20,7 @@ def run():
     def state(trace,status):
         code,payload,_=dispatcher.call('/api/v1/transfers.php?action=status','POST',dict(id=trace['id'],version=trace['version'],status=status));assert code==200,payload
         return payload['data']
-    check(Client().call('/api/v1/destinations.php?action=list')[0]==401 and admin.call('/api/v1/destinations.php?action=list')[0]==403,'destination management requires dispatcher access')
+    check(Client().call('/api/v1/destinations.php?action=list')[0]==401 and admin.call('/api/v1/destinations.php?action=list')[0]==200,'destination management admits dispatchers/admins and requires authentication')
     check({c['name'] for c in call('list.php')[1]['data']} == {'Hospital de Clinicas de Montevideo', 'Facultad de Medicina'},'fresh center catalog contains only the two configured institutional defaults')
     record=dict(name='Centro Ficticio',address='Calle Prueba 100',locality='Montevideo',facility_type='health_center',phone='',notes='Entrada lateral.\nAvisar al llegar.',availability='active')
     check(dispatcher.call('/api/v1/destinations.php?action=create','POST',record,csrf=False)[0]==403,'destination writes require CSRF')

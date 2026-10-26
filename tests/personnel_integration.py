@@ -18,7 +18,7 @@ def run():
     admin=Client(); assert admin.login('system_admin',ADMIN_PASSWORD)[0]==200
     call=lambda action,data=None:dispatcher.call('/api/v1/personnel.php?action=' + action.replace('.php', '').replace('?', '&'),'POST' if data is not None else 'GET',data)
     catalog=lambda:dispatcher.call('/api/v1/transfers.php?action=catalogs')[1]['data']
-    check(Client().call('/api/v1/personnel.php?action=list')[0]==401 and admin.call('/api/v1/personnel.php?action=list')[0]==403,'personnel management requires dispatcher access')
+    check(Client().call('/api/v1/personnel.php?action=list')[0]==401 and admin.call('/api/v1/personnel.php?action=list')[0]==200,'personnel management admits dispatchers/admins and requires authentication')
     check(call('list.php')[1]['data']==[],'personnel starts empty without browser samples')
     record=dict(full_name='Chofer Ficticio',national_id='9.800.323-5',phone='099 123 456',responsibility='driver',driving_license='A-1234567',availability='active')
     check(dispatcher.call('/api/v1/personnel.php?action=create','POST',record,csrf=False)[0]==403,'personnel writes require CSRF')

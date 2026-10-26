@@ -59,7 +59,7 @@ def main():
         actors.append(c)
     first,second,staff,dispatcher=actors
     check(call(Client(),'catalogs.php')[0]==401,'patient catalogs require authentication')
-    check(all(call(c,'list.php',{})[0]==403 for c in [admin,staff,dispatcher]),'full clinical records require explicit records_manager, including for admins')
+    check(all(call(c,'list.php',{})[0]==403 for c in [staff,dispatcher]) and call(admin,'list.php',{})[0]==200,'clinical records admit records managers/admins and deny other staff')
     forbidden_status, forbidden_html, forbidden_headers = staff.call('/src/views/management/patients.php')
     check(forbidden_status == 403 and 'Location' not in forbidden_headers and
           'text/html' in forbidden_headers['Content-Type'] and '<html' in forbidden_html and
@@ -88,7 +88,7 @@ def main():
     found=dispatcher.call('/api/v1/transfers.php?action=patients','POST',{'q':base['national_id']})[1]['data']
     check(found[0]['id']==id and found[0]['age']==34 and found[0]['age_is_estimate'],'transfer selector uses canonical patient and recorded age')
     check(call(second,'get.php?id='+id)[1]['data']['phone']==base['phone'],'another records manager reads the committed data')
-    check(call(staff,'get.php?id='+id)[0]==403 and call(admin,'get.php?id='+id)[0]==403,'knowing an ID does not grant full patient access')
+    check(call(staff,'get.php?id='+id)[0]==403 and call(admin,'get.php?id='+id)[0]==200,'staff cannot guess patient records; admins inherit clinical access')
     check(call(first,'get.php?id=9999999')[0]==404,'missing patient returns 404')
     check(call(first,'list.php',{'q':'%'})[1]['meta']['total']==0,'SQL wildcard search is escaped')
     check(call(first,'list.php',{'q':base['national_id'],'care_status':'inpatient'})[1]['meta']['total']==1,'search and clinical-state filters use SQL')

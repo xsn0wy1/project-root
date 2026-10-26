@@ -58,7 +58,7 @@ def main():
         return {'id':item['id'],'version':item['version'],'ambulance_id':item['ambulance']['id'],'driver_id':item['crew']['driver']['id'],'companion_id':item['crew'].get('companion',{}).get('id'),'patient_id':item['patient']['id'] if item['patient'] else None,'origin_facility_id':item['origin']['id'],'destination_facility_id':item['destination']['id'],'scheduled_at':datetime.fromisoformat(item['scheduled_at'].replace('Z','+00:00')).astimezone(timezone(timedelta(hours=-3))).isoformat(),'cargo_type':item['cargo_type'],'priority':item['priority'],'reason':item['reason'],'notes':item['notes'],**{key:item[key] for key in ['special_equipment','with_family','interdepartmental','critical_patient']},**overrides}
     check(Client().call('/api/v1/tracking.php?action=snapshot')[0]==401,'tracking requires a live approved session')
     check(Client().call('/api/v1/transfers.php?action=list','POST',{})[0] in [401,403],'transfer list requires authentication and CSRF')
-    check(call(unrelated,'catalogs')[0]==403 and call(admin,'catalogs')[0]==403 and call(records,'catalogs')[0]==403,'staff, admin and records roles do not implicitly gain dispatch catalogs')
+    check(call(unrelated,'catalogs')[0]==403 and call(admin,'catalogs')[0]==200 and call(records,'catalogs')[0]==403,'admins inherit dispatch catalogs; unrelated staff and records managers do not')
     check(first.call('/api/v1/transfers.php?action=list','POST',{},csrf=False)[0]==403,'private transfer searches require CSRF')
     check(first.call('/api/v1/transfers.php?action=list')[0]==405,'transfer searches keep names out of GET URLs')
     check(listing(unrelated)['data']==[],'unassigned staff see no placeholder or other transfers')
@@ -77,7 +77,7 @@ def main():
     check(call(first,'create',base)[1]['data']['id']==id,'identical creation retries return the same transfer')
     check(call(first,'create',{**base,'notes':'Different retry'})[0]==409,'retry keys cannot be reused for different data')
     check(call(assigned,'get?id='+id)[0]==200 and listing(assigned)['meta']['total']==1,'assigned staff can read their transfer and scoped count')
-    check(call(unrelated,'get?id='+id)[0]==404 and call(records,'get?id='+id)[0]==404 and call(admin,'get?id='+id)[0]==404,'unrelated roles cannot retrieve transfer details by guessing IDs')
+    check(call(unrelated,'get?id='+id)[0]==404 and call(records,'get?id='+id)[0]==404 and call(admin,'get?id='+id)[0]==200,'unassigned staff/records managers cannot guess transfer IDs; admins can read all')
     snap=assigned.call('/api/v1/tracking.php?action=snapshot')[1]['data']
     check([x['id'] for x in snap['transfers']]==[id] and 'patient' not in snap['transfers'][0] and 'crew' not in snap['transfers'][0] and 'notes' not in snap['transfers'][0],'fleet snapshots are scoped and omit patient, crew and notes')
     check(unrelated.call('/api/v1/tracking.php?action=history&transfer_id='+id)[0]==404,'retired history action exposes no assignment data')
