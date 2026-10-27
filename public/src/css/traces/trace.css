@@ -888,10 +888,23 @@
         gap: 12px 20px;
     }
 
-    .list-row-identity { grid-area: identity; }
-    .list-row-route { grid-area: route; }
-    .list-row-crew { grid-area: crew; }
-    .list-row-action { grid-area: action; justify-self: end; width: 150px; }
+    .list-row-identity {
+        grid-area: identity;
+    }
+
+    .list-row-route {
+        grid-area: route;
+    }
+
+    .list-row-crew {
+        grid-area: crew;
+    }
+
+    .list-row-action {
+        grid-area: action;
+        justify-self: end;
+        width: 150px;
+    }
 
     .list-row-crew .transfer-information {
         flex-direction: row;
@@ -901,6 +914,7 @@
 }
 
 @container trace-content (max-width: 570px) {
+
     .all-transfers-heading,
     .all-transfers-controls {
         padding-right: 14px;
@@ -1089,6 +1103,7 @@
 }
 
 @media (max-width: 770px) {
+
     .content-card,
     .app-shell.menu-open .content-card {
         width: 100%;

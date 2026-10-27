@@ -53,7 +53,7 @@
   letter-spacing: -0.025em;
 }
 
-.management-heading > p {
+.management-heading>p {
   max-width: 520px;
   margin: 0 0 2px;
   color: var(--management-muted);
@@ -146,7 +146,7 @@
   text-transform: uppercase;
 }
 
-.management-card__copy > span {
+.management-card__copy>span {
   max-width: 300px;
   color: var(--management-muted);
   font-size: clamp(0.84rem, 1vw, 1.02rem);
@@ -193,8 +193,7 @@
 .management-card__arrow:hover img,
 .management-card__arrow:focus-visible img {
   opacity: 1;
-  filter: brightness(0) saturate(100%) invert(77%) sepia(11%) saturate(1478%) hue-rotate(189deg) brightness(97%)
-    contrast(96%);
+  filter: brightness(0) saturate(100%) invert(77%) sepia(11%) saturate(1478%) hue-rotate(189deg) brightness(97%) contrast(96%);
 }
 
 .management-card__arrow:focus-visible {
@@ -249,6 +248,7 @@
 }
 
 @media (max-width: 770px) {
+
   .management-panel,
   .app-shell.menu-open .management-panel {
     width: 100%;
@@ -278,7 +278,7 @@
     gap: 10px;
   }
 
-  .management-card__copy > span {
+  .management-card__copy>span {
     font-size: 0.84rem;
     line-height: 1.4;
   }
@@ -286,6 +286,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .management-panel,
   .management-card,
   .management-card__arrow {
@@ -293,4 +294,6 @@
   }
 }
 
-.management-card[data-required-role][hidden] { display: none; }
+.management-card[data-required-role][hidden] {
+  display: none;
+}

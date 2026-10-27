@@ -184,8 +184,8 @@ body {
   background: #abbaea;
 }
 
-.document-field + .document-field,
-.document-field + .field-row {
+.document-field+.document-field,
+.document-field+.field-row {
   margin-top: 16px;
 }
 
@@ -407,8 +407,8 @@ body {
   margin-top: 12px;
 }
 
-.current-file > img,
-.file-summary > img {
+.current-file>img,
+.file-summary>img {
   width: 28px;
   height: 28px;
   object-fit: contain;
@@ -568,8 +568,8 @@ body {
     margin-bottom: 11px;
   }
 
-  .document-field + .document-field,
-  .document-field + .field-row {
+  .document-field+.document-field,
+  .document-field+.field-row {
     margin-top: 11px;
   }
 
@@ -640,6 +640,7 @@ body {
 }
 
 @media (max-width: 770px) {
+
   .document-content-card,
   .app-shell.menu-open .document-content-card {
     width: 100%;
@@ -714,6 +715,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .document-workspace *,
   .document-workspace *::before,
   .document-workspace *::after {

@@ -28,13 +28,13 @@
     box-shadow: 0 0 0 4px rgba(122, 145, 220, 0.08);
 }
 
-.tarjeta > form > input:enabled:hover,
+.tarjeta>form>input:enabled:hover,
 .tarjeta .password-wrapper:hover,
 .tarjeta .campo:has(input:enabled):hover {
     transform: translateY(-2px);
 }
 
-.tarjeta > form > input:enabled:focus,
+.tarjeta>form>input:enabled:focus,
 .tarjeta .password-wrapper:focus-within,
 .tarjeta .campo:focus-within {
     transform: translateY(-1px);
@@ -106,6 +106,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .tarjeta input,
     .tarjeta .password-wrapper,
     .tarjeta .campo,

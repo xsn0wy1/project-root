@@ -22,7 +22,9 @@
   overflow: visible;
 }
 
-.ambulances-page .topbar { flex: none; }
+.ambulances-page .topbar {
+  flex: none;
+}
 
 .ambulances-page .ambulances-hero {
   width: calc(100% - 108px);
@@ -67,10 +69,14 @@
 .ambulance-dialog button,
 .ambulances-hero input,
 .ambulance-dialog input,
-.ambulance-dialog select { font: inherit; }
+.ambulance-dialog select {
+  font: inherit;
+}
 
 .ambulances-hero button,
-.ambulance-dialog button { cursor: pointer; }
+.ambulance-dialog button {
+  cursor: pointer;
+}
 
 .ambulances-hero :is(button, input):focus-visible,
 .ambulance-dialog :is(button, input, select):focus-visible {
@@ -89,9 +95,14 @@
 }
 
 .ambulances-hero img[src="#"],
-.ambulance-dialog img[src="#"] { visibility: hidden; }
+.ambulance-dialog img[src="#"] {
+  visibility: hidden;
+}
 
-.summary-back img { width: 20px; height: 20px; }
+.summary-back img {
+  width: 20px;
+  height: 20px;
+}
 
 .metrics {
   display: grid;
@@ -126,11 +137,31 @@
   color: #eeeeee;
 }
 
-.metric-icon img { width: 24px; height: 24px; }
+.metric-icon img {
+  width: 24px;
+  height: 24px;
+}
 
-.metric-card strong { color: #eeeeee; font-size: 23px; line-height: 1; font-weight: 700; }
-.metric-card div > span { margin-top: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-.metric-card small { margin-top: 3px; color: var(--ambulance-muted); font-size: 10px; line-height: 1.2; }
+.metric-card strong {
+  color: #eeeeee;
+  font-size: 23px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.metric-card div>span {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.metric-card small {
+  margin-top: 3px;
+  color: var(--ambulance-muted);
+  font-size: 10px;
+  line-height: 1.2;
+}
 
 .ambulance-workspace {
   position: relative;
@@ -208,7 +239,11 @@
   color: #101732;
 }
 
-.plus-circle img { width: 14px; height: 14px; filter: none; }
+.plus-circle img {
+  width: 14px;
+  height: 14px;
+  filter: none;
+}
 
 .ambulance-search {
   height: 34px;
@@ -228,14 +263,25 @@
   border-color: rgba(171, 186, 234, .5);
   background: rgba(150, 163, 209, .07);
 }
+
 .ambulance-search:focus-within {
   transform: translateY(-1px);
   border-color: var(--ambulance-accent);
   background: rgba(150, 163, 209, .1);
   box-shadow: 0 0 0 3px rgba(170, 191, 255, .12);
 }
-.ambulance-search img { width: 15px; height: 15px; opacity: .7; transition: opacity .24s ease; }
-.ambulance-search:is(:hover, :focus-within) img { opacity: 1; }
+
+.ambulance-search img {
+  width: 15px;
+  height: 15px;
+  opacity: .7;
+  transition: opacity .24s ease;
+}
+
+.ambulance-search:is(:hover, :focus-within) img {
+  opacity: 1;
+}
+
 .ambulance-search input {
   width: 100%;
   height: 100%;
@@ -247,8 +293,15 @@
   color: var(--ambulance-text);
   font-size: 11px !important;
 }
-.ambulance-search input::placeholder { color: #8d97ad; opacity: 1; }
-.ambulances-hero .ambulance-search input:focus-visible { outline: none; }
+
+.ambulance-search input::placeholder {
+  color: #8d97ad;
+  opacity: 1;
+}
+
+.ambulances-hero .ambulance-search input:focus-visible {
+  outline: none;
+}
 
 .status-filters {
   display: flex;
@@ -259,6 +312,7 @@
   overflow: hidden;
   background: var(--ambulance-control);
 }
+
 .filter-button {
   flex: 1;
   min-width: 0;
@@ -272,8 +326,14 @@
   white-space: nowrap;
   transition: background .2s ease, border-color .2s ease;
 }
-.filter-button:last-child { border-right: 0; }
-.filter-button:hover { background: rgba(171, 186, 234, .11); }
+
+.filter-button:last-child {
+  border-right: 0;
+}
+
+.filter-button:hover {
+  background: rgba(171, 186, 234, .11);
+}
 
 .ambulance-list {
   min-height: 0;
@@ -300,10 +360,24 @@
   transition: border-color .2s ease, background .2s ease;
 }
 
-.ambulance-row:hover { border-color: var(--ambulance-line-bright); background: rgba(255, 255, 255, .035); }
-.ambulance-row.is-selected { border-color: #6689ef; background: rgba(75, 109, 222, .12); }
+.ambulance-row:hover {
+  border-color: var(--ambulance-line-bright);
+  background: rgba(255, 255, 255, .035);
+}
+
+.ambulance-row.is-selected {
+  border-color: #6689ef;
+  background: rgba(75, 109, 222, .12);
+}
+
 .ambulance-identity,
-.ambulance-info { min-width: 0; display: flex; align-items: center; gap: 9px; }
+.ambulance-info {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
 .ambulance-avatar {
   width: 36px;
   height: 36px;
@@ -315,9 +389,17 @@
   background: #111934;
   color: #eeeeee;
 }
-.ambulance-avatar img { width: 21px; height: 21px; }
-.ambulance-identity > span:last-child,
-.ambulance-info span { min-width: 0; }
+
+.ambulance-avatar img {
+  width: 21px;
+  height: 21px;
+}
+
+.ambulance-identity>span:last-child,
+.ambulance-info span {
+  min-width: 0;
+}
+
 .ambulance-identity strong,
 .ambulance-info b,
 .ambulance-info small {
@@ -326,12 +408,42 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ambulance-identity strong { font-size: 12px; font-weight: 600; }
-.ambulance-identity small { display: block; margin-top: 4px; color: var(--ambulance-muted); font-size: 10px; white-space: nowrap; }
-.ambulance-identity small span { margin: 0 5px; color: #838ba1; }
-.ambulance-info > img { width: 18px; height: 18px; }
-.ambulance-info b { font-size: 11px; font-weight: 500; }
-.ambulance-info small { margin-top: 4px; color: var(--ambulance-muted); font-size: 10px; font-weight: 400; }
+
+.ambulance-identity strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ambulance-identity small {
+  display: block;
+  margin-top: 4px;
+  color: var(--ambulance-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.ambulance-identity small span {
+  margin: 0 5px;
+  color: #838ba1;
+}
+
+.ambulance-info>img {
+  width: 18px;
+  height: 18px;
+}
+
+.ambulance-info b {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.ambulance-info small {
+  margin-top: 4px;
+  color: var(--ambulance-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
 .status-pill {
   justify-self: start;
   display: inline-flex;
@@ -356,10 +468,19 @@
   color: #eeeeee;
   transition: background .2s ease, border-color .2s ease;
 }
-.row-action img,
-.icon-button img { width: 16px; height: 16px; }
 
-.empty-state { padding: 22px; margin: 0; color: var(--ambulance-muted); text-align: center; }
+.row-action img,
+.icon-button img {
+  width: 16px;
+  height: 16px;
+}
+
+.empty-state {
+  padding: 22px;
+  margin: 0;
+  color: var(--ambulance-muted);
+  text-align: center;
+}
 
 .directory-footer {
   min-height: 29px;
@@ -386,10 +507,16 @@
   color: #c6cbd9;
   font-size: 10px;
 }
-.pagination span { border: 0; background: transparent; }
+
+.pagination span {
+  border: 0;
+  background: transparent;
+}
+
 .pagination button {
   transition: transform .24s ease, border-color .24s ease, background-color .24s ease, box-shadow .24s ease, filter .24s ease;
 }
+
 .pagination button:not(:disabled):is(:hover, :focus-visible) {
   transform: translateY(-2px);
   border-color: var(--ambulance-accent);
@@ -398,8 +525,14 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, .18), 0 0 0 2px rgba(170, 191, 255, .08);
 }
 
-.pagination button.is-active:is(:hover, :focus-visible) { filter: brightness(1.12); }
-.pagination button:disabled { opacity: .4; cursor: default; }
+.pagination button.is-active:is(:hover, :focus-visible) {
+  filter: brightness(1.12);
+}
+
+.pagination button:disabled {
+  opacity: .4;
+  cursor: default;
+}
 
 .ambulance-workspace.has-selection::after {
   content: "";
@@ -409,6 +542,7 @@
   border-radius: inherit;
   background: rgba(8, 12, 28, .45);
 }
+
 .detail-panel {
   position: absolute;
   z-index: 2;
@@ -427,7 +561,10 @@
   transition: transform .42s cubic-bezier(.2, .8, .2, 1), visibility .42s;
 }
 
-.detail-heading { margin-bottom: 12px; }
+.detail-heading {
+  margin-bottom: 12px;
+}
+
 .detail-hero {
   display: flex;
   align-items: center;
@@ -437,13 +574,34 @@
   border-radius: 12px;
   background: var(--ambulance-surface-dark);
 }
-.detail-hero .ambulance-avatar { width: 50px; height: 50px; }
-.detail-hero .ambulance-avatar img { width: 27px; height: 27px; }
 
-.detail-hero strong { display: block; font-size: 13px; }
-.detail-hero p { margin: 5px 0 0; color: var(--ambulance-muted); font-size: 10px; }
+.detail-hero .ambulance-avatar {
+  width: 50px;
+  height: 50px;
+}
 
-.detail-grid { display: grid; gap: 8px; margin-top: 8px; }
+.detail-hero .ambulance-avatar img {
+  width: 27px;
+  height: 27px;
+}
+
+.detail-hero strong {
+  display: block;
+  font-size: 13px;
+}
+
+.detail-hero p {
+  margin: 5px 0 0;
+  color: var(--ambulance-muted);
+  font-size: 10px;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .detail-card {
   min-width: 0;
   padding: 12px;
@@ -451,16 +609,63 @@
   border-radius: 12px;
   background: var(--ambulance-surface-dark);
 }
-.detail-card h3 { margin: 0 0 10px; font-size: 11px; }
-.detail-card dl { display: grid; grid-template-columns: minmax(115px, 1fr) minmax(0, 1fr); gap: 8px; margin: 0; font-size: 10px; }
-.detail-card dt { display: flex; align-items: flex-start; gap: 6px; color: var(--ambulance-muted); }
-.detail-card dt img { width: 13px; height: 13px; }
-.detail-status-control { display: block; position: relative; height: 13px; }
-.detail-status-control .hospital-select { position: absolute; top: -7px; height: 28px; }
-.detail-status-control select { height: 28px; width: 100%; font: inherit; }
-.detail-status-control .filter-trigger { padding: 0 7px; font-size: 10px; border-radius: 7px; }
-:root .detail-status-control :is(.hospital-select,select,.filter-trigger) { min-height: 0; }
-:root .detail-status-control :is(.filter-trigger,.hospital-select-label) { font-size: 10px !important; }
+
+.detail-card h3 {
+  margin: 0 0 10px;
+  font-size: 11px;
+}
+
+.detail-card dl {
+  display: grid;
+  grid-template-columns: minmax(115px, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  font-size: 10px;
+}
+
+.detail-card dt {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--ambulance-muted);
+}
+
+.detail-card dt img {
+  width: 13px;
+  height: 13px;
+}
+
+.detail-status-control {
+  display: block;
+  position: relative;
+  height: 13px;
+}
+
+.detail-status-control .hospital-select {
+  position: absolute;
+  top: -7px;
+  height: 28px;
+}
+
+.detail-status-control select {
+  height: 28px;
+  width: 100%;
+  font: inherit;
+}
+
+.detail-status-control .filter-trigger {
+  padding: 0 7px;
+  font-size: 10px;
+  border-radius: 7px;
+}
+
+:root .detail-status-control :is(.hospital-select, select, .filter-trigger) {
+  min-height: 0;
+}
+
+:root .detail-status-control :is(.filter-trigger, .hospital-select-label) {
+  font-size: 10px !important;
+}
 
 .ambulance-dialog {
   width: min(720px, calc(100vw - 30px));
@@ -472,15 +677,70 @@
   color: var(--ambulance-text);
   box-shadow: 0 30px 90px rgba(0, 0, 0, .5);
 }
-.ambulance-dialog::backdrop { background: rgba(5, 8, 22, .75); backdrop-filter: blur(5px); }
-.ambulance-dialog form { padding: 22px; }
-.ambulance-dialog .dialog-heading { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
-.ambulance-dialog .eyebrow { margin: 0 0 4px; color: var(--ambulance-accent); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-.ambulance-dialog h2 { margin: 0; font-size: 22px; }
-.ambulance-dialog .dialog-heading p:last-child { margin: 7px 0 0; color: var(--ambulance-muted); font-size: 12px; line-height: 1.5; }
-.dialog-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; max-height: 58vh; overflow-y: auto; padding: 5px; margin: 17px -5px 0; scrollbar-width: thin; scrollbar-color: var(--ambulance-line-bright) transparent; }
-.dialog-fields label { min-width: 0; display: grid; gap: 7px; color: #d8ddea; font-size: 11px; font-weight: 600; transition: color .24s ease; }
-.dialog-fields label:focus-within { color: var(--ambulance-accent); }
+
+.ambulance-dialog::backdrop {
+  background: rgba(5, 8, 22, .75);
+  backdrop-filter: blur(5px);
+}
+
+.ambulance-dialog form {
+  padding: 22px;
+}
+
+.ambulance-dialog .dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.ambulance-dialog .eyebrow {
+  margin: 0 0 4px;
+  color: var(--ambulance-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.ambulance-dialog h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.ambulance-dialog .dialog-heading p:last-child {
+  margin: 7px 0 0;
+  color: var(--ambulance-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dialog-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  max-height: 58vh;
+  overflow-y: auto;
+  padding: 5px;
+  margin: 17px -5px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ambulance-line-bright) transparent;
+}
+
+.dialog-fields label {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  color: #d8ddea;
+  font-size: 11px;
+  font-weight: 600;
+  transition: color .24s ease;
+}
+
+.dialog-fields label:focus-within {
+  color: var(--ambulance-accent);
+}
+
 .field-control {
   height: 40px;
   min-width: 0;
@@ -493,7 +753,13 @@
   background: var(--ambulance-control);
   transition: border-color .24s ease, background-color .24s ease, box-shadow .24s ease;
 }
-.field-control img { width: 16px; height: 16px; opacity: .7; }
+
+.field-control img {
+  width: 16px;
+  height: 16px;
+  opacity: .7;
+}
+
 .field-control input,
 .field-control select {
   width: 100%;
@@ -508,17 +774,38 @@
   font-weight: 400;
 }
 
-.ambulance-dialog select option { background: #111934; color: var(--ambulance-text); }
+.ambulance-dialog select option {
+  background: #111934;
+  color: var(--ambulance-text);
+}
 
 .field-control:focus-within {
   border-color: var(--ambulance-accent);
   background-color: #17213f;
   box-shadow: 0 0 0 3px rgba(170, 191, 255, .1);
 }
-.ambulance-dialog .field-control :is(input, select):focus-visible { outline: none; }
-.field-control input::placeholder { color: #818ca5; }
-.form-error { margin: 14px 0 0; color: #ff9cab; font-size: 12px; }
-.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+.ambulance-dialog .field-control :is(input, select):focus-visible {
+  outline: none;
+}
+
+.field-control input::placeholder {
+  color: #818ca5;
+}
+
+.form-error {
+  margin: 14px 0 0;
+  color: #ff9cab;
+  font-size: 12px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
 .dialog-actions button {
   min-height: 41px;
   display: inline-flex;
@@ -530,43 +817,198 @@
   font-size: 12px;
   font-weight: 600;
 }
-.cancel-button { border: 1px solid var(--ambulance-line-bright); background: rgba(27, 36, 63, .48); color: var(--ambulance-text); }
-.save-button { border: 1px solid #c9cddc; background: #eeeeee; color: #101732; }
-.save-button:hover { background: #fff; }
-.ambulance-dialog .save-button { border-color: #6689ef; background: #4b6dde url("../../../assets/special-bg.png") center / cover no-repeat; color: #fff; }
-.ambulance-dialog .save-button img { width: 15px; height: 15px; filter: brightness(0) invert(1); }
+
+.cancel-button {
+  border: 1px solid var(--ambulance-line-bright);
+  background: rgba(27, 36, 63, .48);
+  color: var(--ambulance-text);
+}
+
+.save-button {
+  border: 1px solid #c9cddc;
+  background: #eeeeee;
+  color: #101732;
+}
+
+.save-button:hover {
+  background: #fff;
+}
+
+.ambulance-dialog .save-button {
+  border-color: #6689ef;
+  background: #4b6dde url("../../../assets/special-bg.png") center / cover no-repeat;
+  color: #fff;
+}
+
+.ambulance-dialog .save-button img {
+  width: 15px;
+  height: 15px;
+  filter: brightness(0) invert(1);
+}
 
 /* Desktop mockup: keep the patient page's proportions without mobile layouts. */
-.ambulances-page { min-width: 1100px; overflow-x: auto; }
-.ambulances-page [hidden] { display: none !important; }
-.ambulances-page .app-shell { min-height: 650px; padding: 32px 42px 55px; }
-.ambulances-page .sidebar { position: absolute; left: 42px; top: 32px; width: 92px; height: 100px; border-radius: 30px; }
-.ambulances-page .app-shell.menu-open .sidebar { width: 260px; height: calc(100vh - 87px); }
-.ambulances-page .sidebar-action { width: 92px; height: 92px; padding: 0; }
-.ambulances-page .sidebar-action span { width: 36px; height: 4px; }
-.ambulances-page .topbar { width: calc(100% - 108px); margin-left: 108px; min-height: 100px; padding: 0 28px; border-radius: 30px; }
-.ambulances-page .app-shell.menu-open .topbar { width: calc(100% - 280px); margin-left: 280px; }
-.ambulances-page .brand { font-size: clamp(1.45rem, 2vw, 2.25rem); gap: 14px; }
-.ambulances-page .brand img { width: 62px; height: 62px; }
-.ambulances-page .search-action { right: 0; width: 52px; height: 52px; }
-.ambulances-page .search-action img { width: 22px; height: 22px; }
-.ambulances-page .quick-search-topbar { --search-expanded-width: min(580px, calc(100% - 440px)); }
-.ambulances-page .ambulances-hero { min-height: 405px; }
-.metric-card div > span { white-space: normal; }
-.status-pill--operational { background: rgba(16, 185, 129, .12); color: #56d695; }
-.status-pill--maintenance { background: rgba(245, 158, 11, .12); color: #eac37b; }
-.status-pill--unavailable { background: rgba(244, 63, 94, .12); color: #fb8195; }
-.detail-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-.detail-actions button, .empty-state button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border-radius: 9px; font: inherit; font-size: 11px; cursor: pointer; }
-.detail-actions .save-button img { filter: brightness(0); width: 14px; height: 14px; }
-.detail-actions .cancel-button { color: #fb8195; }
-#ambulance-plate { text-transform: uppercase; }
-.delete-dialog { width: 460px; }
+.ambulances-page {
+  min-width: 1100px;
+  overflow-x: auto;
+}
 
-.delete-dialog #delete-description { line-height: 1.6; margin-top: 12px; }
+.ambulances-page [hidden] {
+  display: none !important;
+}
 
-.delete-button:hover { background: rgba(244, 63, 94, .2); }
-.ambulance-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100; padding: 13px 20px; border: 1px solid var(--ambulance-line-bright); border-radius: 12px; background: #111934; color: var(--ambulance-text); font-size: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, .25); }
+.ambulances-page .app-shell {
+  min-height: 650px;
+  padding: 32px 42px 55px;
+}
+
+.ambulances-page .sidebar {
+  position: absolute;
+  left: 42px;
+  top: 32px;
+  width: 92px;
+  height: 100px;
+  border-radius: 30px;
+}
+
+.ambulances-page .app-shell.menu-open .sidebar {
+  width: 260px;
+  height: calc(100vh - 87px);
+}
+
+.ambulances-page .sidebar-action {
+  width: 92px;
+  height: 92px;
+  padding: 0;
+}
+
+.ambulances-page .sidebar-action span {
+  width: 36px;
+  height: 4px;
+}
+
+.ambulances-page .topbar {
+  width: calc(100% - 108px);
+  margin-left: 108px;
+  min-height: 100px;
+  padding: 0 28px;
+  border-radius: 30px;
+}
+
+.ambulances-page .app-shell.menu-open .topbar {
+  width: calc(100% - 280px);
+  margin-left: 280px;
+}
+
+.ambulances-page .brand {
+  font-size: clamp(1.45rem, 2vw, 2.25rem);
+  gap: 14px;
+}
+
+.ambulances-page .brand img {
+  width: 62px;
+  height: 62px;
+}
+
+.ambulances-page .search-action {
+  right: 0;
+  width: 52px;
+  height: 52px;
+}
+
+.ambulances-page .search-action img {
+  width: 22px;
+  height: 22px;
+}
+
+.ambulances-page .quick-search-topbar {
+  --search-expanded-width: min(580px, calc(100% - 440px));
+}
+
+.ambulances-page .ambulances-hero {
+  min-height: 405px;
+}
+
+.metric-card div>span {
+  white-space: normal;
+}
+
+.status-pill--operational {
+  background: rgba(16, 185, 129, .12);
+  color: #56d695;
+}
+
+.status-pill--maintenance {
+  background: rgba(245, 158, 11, .12);
+  color: #eac37b;
+}
+
+.status-pill--unavailable {
+  background: rgba(244, 63, 94, .12);
+  color: #fb8195;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.detail-actions button,
+.empty-state button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.detail-actions .save-button img {
+  filter: brightness(0);
+  width: 14px;
+  height: 14px;
+}
+
+.detail-actions .cancel-button {
+  color: #fb8195;
+}
+
+#ambulance-plate {
+  text-transform: uppercase;
+}
+
+.delete-dialog {
+  width: 460px;
+}
+
+.delete-dialog #delete-description {
+  line-height: 1.6;
+  margin-top: 12px;
+}
+
+.delete-button:hover {
+  background: rgba(244, 63, 94, .2);
+}
+
+.ambulance-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 13px 20px;
+  border: 1px solid var(--ambulance-line-bright);
+  border-radius: 12px;
+  background: #111934;
+  color: var(--ambulance-text);
+  font-size: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .25);
+}
 
 /* Consistent hover, keyboard focus, and pressed feedback. */
 .new-ambulance-button,
@@ -616,7 +1058,9 @@
 }
 
 .icon-button:is(:hover, :focus-visible) img,
-.detail-actions .cancel-button img { filter: var(--ambulance-danger-icon); }
+.detail-actions .cancel-button img {
+  filter: var(--ambulance-danger-icon);
+}
 
 .detail-actions .cancel-button:is(:hover, :focus-visible),
 .delete-button:is(:hover, :focus-visible) {
@@ -634,6 +1078,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .summary-back,
   .ambulances-hero button,
   .ambulance-search,
@@ -641,5 +1086,7 @@
   .ambulance-dialog button,
   .ambulance-dialog .icon-button img,
   .dialog-fields :is(label, input, select),
-  .field-control { transition: none; }
+  .field-control {
+    transition: none;
+  }
 }

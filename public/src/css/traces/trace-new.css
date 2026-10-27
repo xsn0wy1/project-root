@@ -245,7 +245,7 @@
     background: var(--section-color);
 }
 
-.form-column > .form-section:first-child {
+.form-column>.form-section:first-child {
     min-height: 0;
 }
 
@@ -291,7 +291,7 @@
     flex-shrink: 0;
 }
 
-.field > label {
+.field>label {
     margin: 0;
     display: block;
     color: var(--muted-color);
@@ -351,7 +351,7 @@
     resize: vertical;
 }
 
-.route-section > .field:last-child {
+.route-section>.field:last-child {
     flex: 1;
     min-height: 0;
 }
@@ -374,7 +374,7 @@
     box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-.field:focus-within > label {
+.field:focus-within>label {
     color: #ccd7ff;
 }
 
@@ -584,8 +584,16 @@ input[type="time"] {
 .form-message:empty {
     visibility: hidden;
 }
-.form-message.error { color: #ef7b85; }
-.field-error { color: #ef7b85; font-size: 0.72rem; line-height: 1.4; }
+
+.form-message.error {
+    color: #ef7b85;
+}
+
+.field-error {
+    color: #ef7b85;
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
 
 .form-actions {
     min-height: 38px;

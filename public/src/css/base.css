@@ -32,9 +32,13 @@ html[data-theme="light"] {
 }
 
 /* Shared rules. Page sheets keep their page-specific values and overrides. */
-i18n-text { display: contents; }
+i18n-text {
+  display: contents;
+}
 
-html[lang="en"]:not(.i18n-ready) body { visibility: hidden; }
+html[lang="en"]:not(.i18n-ready) body {
+  visibility: hidden;
+}
 
 [hidden] {
   display: none !important;
@@ -73,10 +77,21 @@ html[lang="en"]:not(.i18n-ready) body { visibility: hidden; }
   pointer-events: auto;
 }
 
-.hospital-notification[data-type="error"] { border-left-color: #ef7b85; }
-.hospital-notification[data-type="success"] { border-left-color: #2ecc71; }
-html[data-theme="light"] .hospital-notification[data-type="error"] { border-left-color: #a33450; }
-html[data-theme="light"] .hospital-notification[data-type="success"] { border-left-color: #246c50; }
+.hospital-notification[data-type="error"] {
+  border-left-color: #ef7b85;
+}
+
+.hospital-notification[data-type="success"] {
+  border-left-color: #2ecc71;
+}
+
+html[data-theme="light"] .hospital-notification[data-type="error"] {
+  border-left-color: #a33450;
+}
+
+html[data-theme="light"] .hospital-notification[data-type="success"] {
+  border-left-color: #246c50;
+}
 
 .hospital-notification .hospital-notification-close {
   position: absolute;
@@ -98,13 +113,25 @@ html[data-theme="light"] .hospital-notification[data-type="success"] { border-le
   background: rgba(var(--tint), 0.1);
 }
 
-html[data-theme="light"] .tarjeta .form-message.error { color: #a33450; }
+html[data-theme="light"] .tarjeta .form-message.error {
+  color: #a33450;
+}
 
-.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .tarjeta button:enabled:hover {
 
-    background-color: #1d4ed8;
+  background-color: #1d4ed8;
 
 }
 
@@ -117,7 +144,11 @@ html[data-theme="light"] .tarjeta .form-message.error { color: #a33450; }
   flex: none;
 }
 
-.metric-card div { min-width: 0; display: flex; flex-direction: column; }
+.metric-card div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
 
 .directory-panel {
   width: 100%;
@@ -144,13 +175,27 @@ html[data-theme="light"] .tarjeta .form-message.error { color: #a33450; }
   color: #fff;
 }
 
-.status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.status-pill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
-.row-action .chevron-icon { transform: rotate(180deg); }
+.row-action .chevron-icon {
+  transform: rotate(180deg);
+}
 
-.empty-state[hidden] { display: none; }
+.empty-state[hidden] {
+  display: none;
+}
 
-.pagination { display: flex; align-items: center; gap: 4px; }
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
 .pagination button.is-active {
   border-color: #6689ef;
@@ -158,20 +203,43 @@ html[data-theme="light"] .tarjeta .form-message.error { color: #a33450; }
   color: #fff;
 }
 
-.has-selection .detail-panel { visibility: visible; transform: translateX(0); }
+.has-selection .detail-panel {
+  visibility: visible;
+  transform: translateX(0);
+}
 
-.detail-hero-text { min-width: 0; flex: 1; }
+.detail-hero-text {
+  min-width: 0;
+  flex: 1;
+}
 
-.detail-hero .status-pill { align-self: flex-start; }
+.detail-hero .status-pill {
+  align-self: flex-start;
+}
 
-.detail-card dd { margin: 0; overflow-wrap: anywhere; }
+.detail-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
 
-.field-control select { cursor: pointer; }
+.field-control select {
+  cursor: pointer;
+}
 
-.field-control:hover { border-color: rgba(171, 186, 234, .5); }
+.field-control:hover {
+  border-color: rgba(171, 186, 234, .5);
+}
 
-.delete-dialog-content { padding: 22px; }
+.delete-dialog-content {
+  padding: 22px;
+}
 
-.delete-button { border: 1px solid rgba(244, 63, 94, .4); background: rgba(244, 63, 94, .12); color: #ff9eae; }
+.delete-button {
+  border: 1px solid rgba(244, 63, 94, .4);
+  background: rgba(244, 63, 94, .12);
+  color: #ff9eae;
+}
 
-.full-width { grid-column: 1 / -1; }
+.full-width {
+  grid-column: 1 / -1;
+}
